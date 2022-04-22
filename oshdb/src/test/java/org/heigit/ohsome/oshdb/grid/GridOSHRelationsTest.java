@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.grid;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
 import java.io.IOException;
@@ -18,16 +18,12 @@ import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-/**
- * General {@link GridOSHRelations} tests case.
- *
- */
-public class GridOSHRelationsTest {
+class GridOSHRelationsTest {
 
   @Test
-  public void test() throws IOException {
+  void test() throws IOException {
     var node100 = buildOSHNode(node(100L, 1, 1L, 0L, 123, tags(1, 2), 494094984, 86809727));
     var node102 = buildOSHNode(node(102L, 1, 1L, 0L, 123, tags(2, 1), 494094984, 86809727));
     var node104 = buildOSHNode(node(104L, 1, 1L, 0L, 123, tags(2, 4), 494094984, 86809727));

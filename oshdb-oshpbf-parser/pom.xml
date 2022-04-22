@@ -33,10 +33,5 @@
       <artifactId>rxjava</artifactId>
       <version>${rxjava2.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
   </dependencies>
 </project>

@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,22 +21,20 @@ import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedContributionTypes;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the get contributor user id method of the OSHDB API.
  */
-@SuppressWarnings("javadoc")
-public class TestOSMContributionGetContributorUserId {
-  public TestOSMContributionGetContributorUserId() throws Exception {
-  }
+class TestOSMContributionGetContributorUserId {
+  TestOSMContributionGetContributorUserId() throws Exception {}
 
   private final OSHEntity dummyOshEntity = OSHNodeImpl.build(Collections.singletonList(
       OSM.node(-1L, 1, 0L, 1L, 1, new int[]{}, 0, 0)
   ));
 
   @Test
-  public void node() throws Exception {
+  void node() throws Exception {
     // timestamp match
     OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
@@ -92,7 +90,7 @@ public class TestOSMContributionGetContributorUserId {
   }
 
   @Test
-  public void wayDirect() throws Exception {
+  void wayDirect() throws Exception {
     OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         OSM.way(1L, 1, 123L, 1L, 7, new int[] {}, new OSMMember[] {}), null,
@@ -105,7 +103,7 @@ public class TestOSMContributionGetContributorUserId {
   }
 
   @Test
-  public void wayIndirect() throws Exception {
+  void wayIndirect() throws Exception {
     List<OSMNode> versions = new ArrayList<>();
     versions.add(OSM.node(3L, 3, 125L, 4L, 8, new int[] {}, 0, 0));
     versions.add(OSM.node(3L, 2, 123L, 3L, 7, new int[] {}, 0, 0));
@@ -127,7 +125,7 @@ public class TestOSMContributionGetContributorUserId {
   }
 
   @Test
-  public void relationDirect() throws Exception {
+  void relationDirect() throws Exception {
     OSMContribution c = new OSMContributionImpl(new IterateAllEntry(
         new OSHDBTimestamp(123),
         OSM.relation(1L, 1, 123L, 1L, 7, new int[] {}, new OSMMember[] {}),
@@ -141,7 +139,7 @@ public class TestOSMContributionGetContributorUserId {
   }
 
   @Test
-  public void relationIndirectWay() throws Exception {
+  void relationIndirectWay() throws Exception {
     List<OSMWay> versions = new ArrayList<>();
     versions.add(
         OSM.way(3L, 3, 125L, 4L, 8, new int[] {}, new OSMMember[] {})
@@ -169,7 +167,7 @@ public class TestOSMContributionGetContributorUserId {
   }
 
   @Test
-  public void relationIndirectWayNode() throws Exception {
+  void relationIndirectWayNode() throws Exception {
     List<OSMNode> nodeVersions = new ArrayList<>();
     nodeVersions.add(OSM.node(3L, 3, 125L, 4L, 8, new int[] {}, 0, 0));
     nodeVersions.add(OSM.node(3L, 2, 123L, 3L, 7, new int[] {}, 0, 0));

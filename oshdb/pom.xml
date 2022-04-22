@@ -27,14 +27,7 @@
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
     </dependency>
-    
-    <!-- TEST dependencies -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
@@ -47,7 +40,6 @@
       <version>${h2.version}</version>
       <scope>test</scope>
     </dependency>
-    
   </dependencies>
   
   <profiles>

@@ -1,15 +1,15 @@
 package org.heigit.ohsome.oshdb.osm;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OSMMemberTest {
+class OSMMemberTest {
 
-  public OSMMemberTest() {}
+  OSMMemberTest() {}
 
   @Test
-  public void testGetId() {
+  void testGetId() {
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     long expResult = 1L;
     long result = instance.getId();
@@ -17,7 +17,7 @@ public class OSMMemberTest {
   }
 
   @Test
-  public void testGetType() {
+  void testGetType() {
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     OSMType expResult = OSMType.WAY;
     OSMType result = instance.getType();
@@ -25,7 +25,7 @@ public class OSMMemberTest {
   }
 
   @Test
-  public void testGetRoleId() {
+  void testGetRoleId() {
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     int expResult = 1;
     int result = instance.getRawRoleId();
@@ -33,7 +33,7 @@ public class OSMMemberTest {
   }
 
   @Test
-  public void testGetData() {
+  void testGetData() {
     // getEntity (explicit null)
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1, null);
     Object expResult = null;
@@ -42,7 +42,7 @@ public class OSMMemberTest {
   }
 
   @Test
-  public void testGetData2() {
+  void testGetData2() {
     // getEntity (implicit null)
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     Object expResult = null;
@@ -51,11 +51,10 @@ public class OSMMemberTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     String expResult = "T:WAY ID:1 R:1";
     String result = instance.toString();
     assertEquals(expResult, result);
   }
-
 }

@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.Polygon;
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on special situations
  * which are related to OSHDB grid cells.
  */
-public class IterateByContributionNotOsmTypeSpecificTest {
+class IterateByContributionNotOsmTypeSpecificTest {
 
   TagInterpreter areaDecider;
   private final List<OSHRelation> oshRelations;
@@ -35,7 +35,7 @@ public class IterateByContributionNotOsmTypeSpecificTest {
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * a list of {@link OSHRelation OSHRelations}.
    */
-  public IterateByContributionNotOsmTypeSpecificTest() throws IOException {
+  IterateByContributionNotOsmTypeSpecificTest() throws IOException {
     OSMXmlReader osmXmlTestData = new OSMXmlReader();
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
@@ -44,7 +44,7 @@ public class IterateByContributionNotOsmTypeSpecificTest {
   }
 
   @Test
-  public void testCellOutsidePolygon() throws IOException {
+  void testCellOutsidePolygon() throws IOException {
     final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0,
         Collections.emptyList());
 
@@ -74,7 +74,7 @@ public class IterateByContributionNotOsmTypeSpecificTest {
   }
 
   @Test
-  public void testCellCoveringPolygon() throws IOException {
+  void testCellCoveringPolygon() throws IOException {
     final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0,
         oshRelations);
 
@@ -104,7 +104,7 @@ public class IterateByContributionNotOsmTypeSpecificTest {
   }
 
   @Test
-  public void testCellFullyInsidePolygon() throws IOException {
+  void testCellFullyInsidePolygon() throws IOException {
     final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0,
         oshRelations);
 

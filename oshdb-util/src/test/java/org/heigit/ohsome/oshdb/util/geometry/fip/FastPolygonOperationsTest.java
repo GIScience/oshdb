@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.util.geometry.fip;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -15,11 +15,11 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * Tests the {@link FastPolygonOperations} class.
  */
-public class FastPolygonOperationsTest {
+class FastPolygonOperationsTest {
   private final GeometryFactory gf = new GeometryFactory();
 
   @Test
-  public void testEmptyGeometryPolygon() {
+  void testEmptyGeometryPolygon() {
     Polygon p = FastPointInPolygonTest.createPolygon();
     FastPolygonOperations pop = new FastPolygonOperations(p);
 
@@ -30,7 +30,7 @@ public class FastPolygonOperationsTest {
   }
 
   @Test
-  public void testNullGeometryPolygon() {
+  void testNullGeometryPolygon() {
     Polygon p = FastPointInPolygonTest.createPolygon();
     FastPolygonOperations pop = new FastPolygonOperations(p);
 
@@ -38,7 +38,7 @@ public class FastPolygonOperationsTest {
   }
 
   @Test
-  public void testBug206() throws ParseException {
+  void testBug206() throws ParseException {
     // see https://github.com/GIScience/oshdb/pull/204
     String polyWkt = "POLYGON ((-0.0473915 51.5539955,-0.0473872 51.5540543,-0.0473811 51.554121,"
         + "-0.0473792 51.5541494,-0.0473193 51.5541485,-0.047305 51.5540903,-0.0472924 51.5540904,"
@@ -76,7 +76,7 @@ public class FastPolygonOperationsTest {
   }
 
   @Test
-  public void testGeometries() throws ParseException {
+  void testGeometries() throws ParseException {
     String polyWkt = "POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0), (1 1, 1 9, 9 9, 9 1, 1 1))";
     Polygon poly = (Polygon) (new WKTReader()).read(polyWkt).buffer(0.1, 200);
     FastPolygonOperations pop = new FastPolygonOperations(poly);

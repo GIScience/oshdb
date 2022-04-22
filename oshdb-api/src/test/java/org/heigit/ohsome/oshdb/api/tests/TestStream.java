@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.concurrent.ConcurrentHashMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -11,12 +11,12 @@ import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the stream method of the OSHDB API.
  */
-public class TestStream {
+class TestStream {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -24,7 +24,7 @@ public class TestStream {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  public TestStream() throws Exception {
+  TestStream() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(false);
   }
 
@@ -37,7 +37,7 @@ public class TestStream {
   }
 
   @Test
-  public void testForEach() throws Exception {
+  void testForEach() throws Exception {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -49,7 +49,7 @@ public class TestStream {
   }
 
   @Test
-  public void testForEachGroupedById() throws Exception {
+  void testForEachGroupedById() throws Exception {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -61,7 +61,7 @@ public class TestStream {
   }
 
   @Test
-  public void testForEachAggregatedByTimestamp() throws Exception {
+  void testForEachAggregatedByTimestamp() throws Exception {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)

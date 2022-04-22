@@ -1,8 +1,8 @@
 package org.heigit.ohsome.oshdb.osh;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -15,17 +15,16 @@ import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("javadoc")
-public class OSHNodeTest {
+class OSHNodeTest {
   private static final int USER_A = 1;
   private static final int[] TAGS_A = new int[] {1, 1};
   private static final int[] LONLAT_A = new int[] {86756350, 494186210};
   private static final int[] LONLAT_B = new int[] {87153340, 494102830};
 
   @Test
-  public void testBuildAndSerialize() throws IOException, ClassNotFoundException {
+  void testBuildAndSerialize() throws IOException, ClassNotFoundException {
     OSHNode hnode = buildOSHNode(
         OSM.node(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
         OSM.node(123L, -2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1])
@@ -52,7 +51,7 @@ public class OSHNodeTest {
   }
 
   @Test
-  public void testToString() throws IOException {
+  void testToString() throws IOException {
     OSHNode instance = buildOSHNode(
         OSM.node(123L, 2, 2L, 0L, USER_A, TAGS_A, LONLAT_A[0], LONLAT_A[1]),
         OSM.node(123L, 1, 1L, 0L, USER_A, TAGS_A, LONLAT_B[0], LONLAT_B[1])
@@ -65,7 +64,7 @@ public class OSHNodeTest {
   }
 
   @Test
-  public void testHashCodeEquals() throws IOException {
+  void testHashCodeEquals() throws IOException {
     var expected = buildOSHNode(
         OSM.node(123L, 1, 1L, 0L, USER_A, TAGS_A, 0, 0)
     );

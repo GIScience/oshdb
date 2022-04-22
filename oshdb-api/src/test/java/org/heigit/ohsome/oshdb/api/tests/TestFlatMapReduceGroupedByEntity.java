@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +15,10 @@ import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
- * Test flat map method with groupByEntity of the MapReducer class of the OSHDB API.
+ * Test flatMap method with groupByEntity of the MapReducer class of the OSHDB API.
  */
 abstract class TestFlatMapReduceGroupedByEntity {
   private final OSHDBDatabase oshdb;
@@ -50,7 +50,7 @@ abstract class TestFlatMapReduceGroupedByEntity {
   }
 
   @Test
-  public void testOSMContributionView() throws Exception {
+  void testOSMContributionView() throws Exception {
     Number result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .groupByEntity()
@@ -77,7 +77,7 @@ abstract class TestFlatMapReduceGroupedByEntity {
   }
 
   @Test
-  public void testOSMEntitySnapshotView() throws Exception {
+  void testOSMEntitySnapshotView() throws Exception {
     Number result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .groupByEntity()

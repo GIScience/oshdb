@@ -1,8 +1,9 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -24,13 +25,13 @@ import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Test aggregate by geometry method of the OSHDB API.
+ * Test aggregateByGeometry method of the OSHDB API.
  */
-public class TestMapAggregateByGeometry {
+class TestMapAggregateByGeometry {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -39,7 +40,7 @@ public class TestMapAggregateByGeometry {
 
   private static final double DELTA = 1e-4;
 
-  public TestMapAggregateByGeometry() throws Exception {
+  TestMapAggregateByGeometry() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
@@ -77,7 +78,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testOSMContribution() throws Exception {
+  void testOSMContribution() throws Exception {
     SortedMap<String, Integer> resultCount = createMapReducerOSMContribution()
         .timestamps(timestamps2)
         .aggregateByGeometry(getSubRegions())
@@ -102,7 +103,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testOSMEntitySnapshot() throws Exception {
+  void testOSMEntitySnapshot() throws Exception {
     SortedMap<String, Integer> resultCount = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .aggregateByGeometry(getSubRegions())
@@ -127,7 +128,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testZerofill() throws Exception {
+  void testZerofill() throws Exception {
     SortedMap<String, Integer> resultZerofilled = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .aggregateByGeometry(getSubRegions())
@@ -137,7 +138,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testCombinedWithAggregateByTimestamp() throws Exception {
+  void testCombinedWithAggregateByTimestamp() throws Exception {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
@@ -156,7 +157,7 @@ public class TestMapAggregateByGeometry {
   }
 
   @Test
-  public void testCombinedWithAggregateByTimestampOrder() throws Exception {
+  void testCombinedWithAggregateByTimestampOrder() throws Exception {
     SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, List<Long>> resultGeomTime =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
@@ -181,23 +182,27 @@ public class TestMapAggregateByGeometry {
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
-  @Test(expected = UnsupportedOperationException.class)
-  public void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps1)
-        .map(ignored -> null)
-        .aggregateByTimestamp()
-        .aggregateByGeometry(getSubRegions())
-        .collect();
+  @Test()
+  void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
+    assertThrows(UnsupportedOperationException.class, () -> {
+      createMapReducerOSMEntitySnapshot()
+          .timestamps(timestamps1)
+          .map(ignored -> null)
+          .aggregateByTimestamp()
+          .aggregateByGeometry(getSubRegions())
+          .collect();
+    });
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
-  @Test(expected = UnsupportedOperationException.class)
-  public void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps1)
-        .groupByEntity()
-        .aggregateByGeometry(getSubRegions())
-        .collect();
+  @Test()
+  void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
+    assertThrows(UnsupportedOperationException.class, () -> {
+      createMapReducerOSMEntitySnapshot()
+          .timestamps(timestamps1)
+          .groupByEntity()
+          .aggregateByGeometry(getSubRegions())
+          .collect();
+    });
   }
 }

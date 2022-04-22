@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -46,7 +46,7 @@ abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
     ignite = Ignition.start(cfg);
   }
 
-  public TestMapReduceOSHDBIgnite(OSHDBIgnite oshdb) throws Exception {
+  TestMapReduceOSHDBIgnite(OSHDBIgnite oshdb) throws Exception {
     super(oshdb);
 
     final String prefix = "tests";

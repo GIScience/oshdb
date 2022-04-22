@@ -1,9 +1,10 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
@@ -13,9 +14,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaMulti
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaNever;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
-import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -27,18 +26,16 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * Tests the {@link OSHDBGeometryBuilder} class.
  */
-public class OSHDBGeometryBuilderTest {
-
-  private final OSMXmlReader testData = new OSMXmlReader();
+class OSHDBGeometryBuilderTest extends OSHDBGeometryTest {
   private static final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTest() {
-    testData.add("./src/test/resources/geometryBuilder.osh");
+  OSHDBGeometryBuilderTest() {
+    super("./src/test/resources/geometryBuilder.osh");
   }
 
   @Test
-  public void testPointGetGeometry() {
-    OSMEntity entity = testData.nodes().get(1L).get(1);
+  void testPointGetGeometry() {
+    OSMEntity entity = nodes(1L, 1);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, null);
     assertTrue(result instanceof Point);
@@ -47,8 +44,8 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testPointGetGeometryClipped() {
-    OSMEntity entity = testData.nodes().get(1L).get(1);
+  void testPointGetGeometryClipped() {
+    OSMEntity entity = nodes(1L, 1);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     // by bbox
     OSHDBBoundingBox clipBbox = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
@@ -68,9 +65,9 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testWayGetGeometry() {
+  void testWayGetGeometry() {
     // linestring
-    OSMEntity entity = testData.ways().get(1L).get(0);
+    OSMEntity entity = ways(1L, 0);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     TagInterpreter areaDecider = new FakeTagInterpreterAreaNever();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -82,7 +79,7 @@ public class OSHDBGeometryBuilderTest {
     assertEquals(80.1, result.getCoordinates()[1].y, DELTA);
 
     // polygon
-    entity = testData.ways().get(2L).get(0);
+    entity = ways(2L, 0);
     areaDecider = new FakeTagInterpreterAreaAlways();
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals("Polygon", result.getGeometryType());
@@ -91,7 +88,7 @@ public class OSHDBGeometryBuilderTest {
     assertEquals(result.getCoordinates()[0].y, result.getCoordinates()[4].y, DELTA);
 
     // other timestamp -> changed member
-    entity = testData.ways().get(1L).get(0);
+    entity = ways(1L, 0);
     timestamp = TimestampParser.toOSHDBTimestamp("2003-01-01");
     areaDecider = new FakeTagInterpreterAreaNever();
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -99,9 +96,9 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testWayGetGeometryIncomplete() {
+  void testWayGetGeometryIncomplete() {
     // linestring with 3 node references, only 2 present
-    OSMEntity entity = testData.ways().get(3L).get(0);
+    OSMEntity entity = ways(3L, 0);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     TagInterpreter areaDecider = new FakeTagInterpreterAreaNever();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -109,21 +106,21 @@ public class OSHDBGeometryBuilderTest {
     assertEquals(2, result.getNumPoints());
 
     // single noded way
-    entity = testData.ways().get(4L).get(0);
+    entity = ways(4L, 0);
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals("Point", result.getGeometryType());
     assertFalse(result.isEmpty());
 
     // zero noded way
-    entity = testData.ways().get(5L).get(0);
+    entity = ways(5L, 0);
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertTrue(result.isEmpty());
   }
 
   @Test
-  public void testRelationGetGeometry() {
+  void testRelationGetGeometry() {
     // simplest multipolygon
-    OSMEntity entity = testData.relations().get(1L).get(0);
+    OSMEntity entity = relations(1L, 0);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     TagInterpreter areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -139,9 +136,9 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testRelationGetGeometryIncomplete() {
+  void testRelationGetGeometryIncomplete() {
     // multipolygon, missing ring
-    OSMEntity entity = testData.relations().get(2L).get(0);
+    OSMEntity entity = relations(2L, 0);
     OSHDBTimestamp timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     TagInterpreter areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
     Geometry result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
@@ -149,7 +146,7 @@ public class OSHDBGeometryBuilderTest {
     assertEquals(1, result.getNumGeometries());
 
     // multipolygon, incomplete ring
-    entity = testData.relations().get(3L).get(0);
+    entity = relations(3L, 0);
     result = OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
     assertEquals("GeometryCollection", result.getGeometryType());
     assertEquals(1, result.getNumGeometries());
@@ -162,7 +159,7 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testBoundingGetGeometry() throws ParseException {
+  void testBoundingGetGeometry() throws ParseException {
     Polygon clipPoly =
         OSHDBGeometryBuilder.getGeometry(bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0));
     Geometry expectedPolygon = new WKTReader().read(
@@ -172,13 +169,13 @@ public class OSHDBGeometryBuilderTest {
   }
 
   @Test
-  public void testBoundingBoxOf() {
+  void testBoundingBoxOf() {
     OSHDBBoundingBox bbox = OSHDBGeometryBuilder.boundingBoxOf(new Envelope(-180, 180, -90, 90));
     assertEquals("(-180.0000000,-90.0000000,180.0000000,90.0000000)", bbox.toString());
   }
 
   @Test
-  public void testBoundingBoxGetGeometry() {
+  void testBoundingBoxGetGeometry() {
     // regular bbox
     OSHDBBoundingBox bbox = bboxWgs84Coordinates(0.0, 0.0, 1.0, 1.0);
     Polygon geometry = OSHDBGeometryBuilder.getGeometry(bbox);
@@ -188,7 +185,7 @@ public class OSHDBGeometryBuilderTest {
       new Coordinate(1, 1),
       new Coordinate(0, 1),
       new Coordinate(0, 0)};
-    Assert.assertArrayEquals(test, geometry.getCoordinates());
+    assertArrayEquals(test, geometry.getCoordinates());
 
     // degenerate bbox: point
     bbox = bboxWgs84Coordinates(0.0, 0.0, 0.0, 0.0);
@@ -199,7 +196,7 @@ public class OSHDBGeometryBuilderTest {
       new Coordinate(0, 0),
       new Coordinate(0, 0),
       new Coordinate(0, 0)};
-    Assert.assertArrayEquals(test, geometry.getCoordinates());
+    assertArrayEquals(test, geometry.getCoordinates());
 
     // degenerate bbox: line
     bbox = bboxWgs84Coordinates(0.0, 0.0, 0.0, 1.0);
@@ -210,6 +207,6 @@ public class OSHDBGeometryBuilderTest {
       new Coordinate(0, 1),
       new Coordinate(0, 1),
       new Coordinate(0, 0)};
-    Assert.assertArrayEquals(test, geometry.getCoordinates());
+    assertArrayEquals(test, geometry.getCoordinates());
   }
 }

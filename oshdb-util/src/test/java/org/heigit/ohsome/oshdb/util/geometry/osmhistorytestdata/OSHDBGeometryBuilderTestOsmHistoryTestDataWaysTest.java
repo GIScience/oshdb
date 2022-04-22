@@ -1,17 +1,12 @@
 package org.heigit.ohsome.oshdb.util.geometry.osmhistorytestdata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
-import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
-import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
-import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
-import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryTest;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
@@ -19,14 +14,12 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link OSHDBGeometryBuilder} class on OSM ways.
  */
-public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
-  private final OSMXmlReader testData = new OSMXmlReader();
-  TagInterpreter areaDecider;
+class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest extends OSHDBGeometryTest {
+
   private static final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest() {
-    testData.add("./src/test/resources/different-timestamps/way.osm");
-    areaDecider = new OSMXmlReaderTagInterpreter(testData);
+  OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest() {
+    super("./src/test/resources/different-timestamps/way.osm");
   }
 
   private static void checkLineString(double[][] expectedCoordinates, Geometry result,
@@ -40,194 +33,154 @@ public class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest {
   }
 
   @Test
-  public void testGeometryChange() {
+  void testGeometryChange() {
     // Way getting more nodes, one disappears
     // first appearance
-    OSMEntity entity1 = testData.ways().get(100L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity1);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    double[][] expectedCoordinates1 = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25}};
-    checkLineString(expectedCoordinates1, result1, 4);
+    Geometry result = buildGeometry(ways(100L, 0));
+    double[][] expectedCoordinates = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25}};
+    checkLineString(expectedCoordinates, result, 4);
+
     // second appearance
-    OSMEntity entity2 = testData.ways().get(100L).get(1);
-    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    double[][] expectedCoordinates2 = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
+    result = buildGeometry(ways(100L, 1));
+    expectedCoordinates = new double[][]{{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
         {1.42, 1.26}, {1.42, 1.27}, {1.42, 1.28}, {1.43, 1.29}};
-    checkLineString(expectedCoordinates2, result2, 8);
+    checkLineString(expectedCoordinates, result, 8);
+
     // last appearance
-    OSMEntity entity3 = testData.ways().get(100L).get(2);
-    OSHDBTimestamp timestamp3 = new OSHDBTimestamp(entity3);
-    Geometry result3 = OSHDBGeometryBuilder.getGeometry(entity3, timestamp3, areaDecider);
-    double[][] expectedCoordinates3 = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
+    result = buildGeometry(ways(100L, 2));
+    expectedCoordinates = new double[][]{{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
         {1.42, 1.26}, {1.42, 1.28}, {1.43, 1.29}, {1.43, 1.30}, {1.43, 1.31}};
-    checkLineString(expectedCoordinates3, result3, 9);
+    checkLineString(expectedCoordinates, result, 9);
+
     // timestamp after last one
-    OSMEntity entityAfter = testData.ways().get(100L).get(2);
-    OSHDBTimestamp timestampAfter =  TimestampParser.toOSHDBTimestamp("2012-01-01T00:00:00Z");
-    Geometry resultAfter = OSHDBGeometryBuilder.getGeometry(entityAfter, timestampAfter,
-        areaDecider);
-    double[][] expectedCoordinatesAfter = {{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
+    result = buildGeometry(ways(100L, 2), "2012-01-01T00:00:00Z");
+    expectedCoordinates = new double[][]{{1.42, 1.22}, {1.42, 1.23}, {1.42, 1.24}, {1.42, 1.25},
         {1.42, 1.26}, {1.42, 1.28}, {1.43, 1.29}, {1.43, 1.30}, {1.43, 1.31}};
-    checkLineString(expectedCoordinatesAfter, resultAfter, 9);
+    checkLineString(expectedCoordinates, result, 9);
   }
 
   @Test
-  public void testGeometryChangeOfNodeInWay() {
+  void testGeometryChangeOfNodeInWay() {
     // Way with two then three nodes, changing lat lon
     // first appearance
-    OSMEntity entity1 = testData.ways().get(101L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity1);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    double[][] expectedCoordinates1 = {{1.42, 1.22}, {1.44, 1.22}};
-    checkLineString(expectedCoordinates1, result1, 2);
+    Geometry result = buildGeometry(ways(101L, 0));
+    double[][] expectedCoordinates = {{1.42, 1.22}, {1.44, 1.22}};
+    checkLineString(expectedCoordinates, result, 2);
+
     // last appearance
-    OSMEntity entity2 = testData.ways().get(101L).get(1);
-    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    double[][] expectedCoordinates2 = {{1.425, 1.23}, {1.44, 1.23}, {1.43, 1.30}};
-    checkLineString(expectedCoordinates2, result2, 3);
+    result = buildGeometry(ways(101L, 1));
+    expectedCoordinates = new double[][]{{1.425, 1.23}, {1.44, 1.23}, {1.43, 1.30}};
+    checkLineString(expectedCoordinates, result, 3);
+
     // timestamp in between
-    OSHDBTimestamp timestampBetween =  TimestampParser.toOSHDBTimestamp("2009-02-01T00:00:00Z");
-    OSMEntity entityBetween = testData.ways().get(101L).get(0);
-    Geometry resultBetween = OSHDBGeometryBuilder.getGeometry(entityBetween, timestampBetween,
-        areaDecider);
-    double[][] expectedCoordinatesBetween = {{1.42, 1.225}, {1.445, 1.225}};
-    checkLineString(expectedCoordinatesBetween, resultBetween, 2);
+    result = buildGeometry(ways(101L, 0), "2009-02-01T00:00:00Z");
+    expectedCoordinates = new double[][]{{1.42, 1.225}, {1.445, 1.225}};
+    checkLineString(expectedCoordinates, result, 2);
   }
 
   @Test
-  public void testVisibleChange() {
+  void testVisibleChange() {
     // Way visible changed
     // first appearance
-    OSMEntity entity1 = testData.ways().get(102L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity1);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertEquals(3, result1.getNumPoints());
+    Geometry result = buildGeometry(ways(102L, 0));
+    assertTrue(result instanceof LineString);
+    assertEquals(3, result.getNumPoints());
 
     // last appearance
-    OSMEntity entity2 = testData.ways().get(102L).get(1);
-    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2.isEmpty());
+    result = buildGeometry(ways(102L, 1));
+    assertTrue(result.isEmpty());
   }
 
   @Test
-  public void testTagChange() {
+  void testTagChange() {
     // Way tags changed
     // first appearance
-    OSMEntity entity1 = testData.ways().get(103L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity1);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertEquals(3, result1.getNumPoints());
-    // second appearance
-    OSMEntity entity2 = testData.ways().get(103L).get(1);
-    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2 instanceof LineString);
-    assertEquals(5, result2.getNumPoints());
-    // last appearance
-    OSMEntity entity3 = testData.ways().get(103L).get(1);
-    OSHDBTimestamp timestamp3 = new OSHDBTimestamp(entity3);
-    Geometry result3 = OSHDBGeometryBuilder.getGeometry(entity3, timestamp3, areaDecider);
-    assertTrue(result3 instanceof LineString);
-    assertEquals(5, result3.getNumPoints());
+    Geometry result = buildGeometry(ways(103L, 0));
+    assertTrue(result instanceof LineString);
+    assertEquals(3, result.getNumPoints());
 
+    // second appearance
+    result = buildGeometry(ways(103L, 1));
+    assertTrue(result instanceof LineString);
+    assertEquals(5, result.getNumPoints());
+
+    // last appearance
+    result = buildGeometry(ways(103L, 2));
+    assertTrue(result instanceof LineString);
+    assertEquals(5, result.getNumPoints());
   }
 
   @Test
-  public void testMultipleChangesOnNodesOfWay() {
+  void testMultipleChangesOnNodesOfWay() {
     // Way various things changed
     // first appearance
-    OSMEntity entity1 = testData.ways().get(104L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity1);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertEquals(2, result1.getNumPoints());
+    Geometry result = buildGeometry(ways(104L, 0));
+    assertTrue(result instanceof LineString);
+    assertEquals(2, result.getNumPoints());
 
     // last appearance
-    OSMEntity entity2 = testData.ways().get(104L).get(1);
-    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2 instanceof LineString);
-    assertEquals(3, result2.getNumPoints());
+    result = buildGeometry(ways(104L, 1));
+    assertTrue(result instanceof LineString);
+    assertEquals(3, result.getNumPoints());
   }
 
   @Test
-  public void testMultipleChangesOnNodesAndWays() {
+  void testMultipleChangesOnNodesAndWays() {
     // way and nodes have different changes
     // first appearance
-    OSMEntity entity1 = testData.ways().get(105L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity1);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof LineString);
-    assertEquals(2, result1.getNumPoints());
-    // second appearance
-    OSMEntity entity2 = testData.ways().get(105L).get(1);
-    OSHDBTimestamp timestamp2 = new OSHDBTimestamp(entity2);
-    Geometry result2 = OSHDBGeometryBuilder.getGeometry(entity2, timestamp2, areaDecider);
-    assertTrue(result2 instanceof LineString);
-    assertEquals(2, result2.getNumPoints());
-    // third appearance
-    OSMEntity entity3 = testData.ways().get(105L).get(2);
-    OSHDBTimestamp timestamp3 = new OSHDBTimestamp(entity3);
-    Geometry result3 = OSHDBGeometryBuilder.getGeometry(entity3, timestamp3, areaDecider);
-    assertTrue(result3.isEmpty());
-    // last appearance
-    OSMEntity entity4 = testData.ways().get(105L).get(3);
-    OSHDBTimestamp timestamp4 = new OSHDBTimestamp(entity4);
-    Geometry result4 = OSHDBGeometryBuilder.getGeometry(entity4, timestamp4, areaDecider);
-    assertTrue(result4 instanceof LineString);
-    assertEquals(4, result4.getNumPoints());
+    Geometry result = buildGeometry(ways(105L, 0));
+    assertTrue(result instanceof LineString);
+    assertEquals(2, result.getNumPoints());
 
+    // second appearance
+    result = buildGeometry(ways(105L, 1));
+    assertTrue(result instanceof LineString);
+    assertEquals(2, result.getNumPoints());
+
+    // third appearance
+    result = buildGeometry(ways(105L, 2));
+    assertTrue(result.isEmpty());
+
+    // last appearance
+    result = buildGeometry(ways(105L, 3));
+    assertTrue(result instanceof LineString);
+    assertEquals(4, result.getNumPoints());
   }
 
   // MULTIPOLYGON(((1.45 1.45, 1.46 1.45, 1.46 1.44, 1.45 1.44)))
   @Test
-  public void testPolygonAreaYesTagDisappears() {
+  void testPolygonAreaYesTagDisappears() {
     // way seems to be polygon with area=yes, later linestring because area=yes deleted
     // first appearance
-    OSMEntity entity1 = testData.ways().get(106L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity1);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof Polygon);
-    assertEquals(5, result1.getNumPoints());
+    Geometry result = buildGeometry(ways(106L, 0));
+    assertTrue(result instanceof Polygon);
+    assertEquals(5, result.getNumPoints());
 
     // last appearance
-    OSMEntity entity4 = testData.ways().get(106L).get(1);
-    OSHDBTimestamp timestamp4 = new OSHDBTimestamp(entity4);
-    Geometry result4 = OSHDBGeometryBuilder.getGeometry(entity4, timestamp4, areaDecider);
-    assertTrue(result4 instanceof LineString);
-    assertEquals(5, result4.getNumPoints());
-  }
-
-
-  @Test
-  public void testPolygonAreaYesNodeDisappears() {
-    // way seems to be polygon with area=yes, later linestring because area=yes deleted
-    // first appearance
-    OSMEntity entity1 = testData.ways().get(107L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(entity1);
-    Geometry result1 = OSHDBGeometryBuilder.getGeometry(entity1, timestamp, areaDecider);
-    assertTrue(result1 instanceof Polygon);
-    assertEquals(5, result1.getNumPoints());
-
-    // last appearance
-    OSMEntity entity4 = testData.ways().get(107L).get(1);
-    OSHDBTimestamp timestamp4 = new OSHDBTimestamp(entity4);
-    Geometry result4 = OSHDBGeometryBuilder.getGeometry(entity4, timestamp4, areaDecider);
-    assertTrue(result4 instanceof LineString);
-    assertEquals(4, result4.getNumPoints());
+    result = buildGeometry(ways(106L, 1));
+    assertTrue(result instanceof LineString);
+    assertEquals(5, result.getNumPoints());
   }
 
   @Test
-  public void testNullRefEntities() {
+  void testPolygonAreaYesNodeDisappears() {
+    // way seems to be polygon with area=yes, later linestring because area=yes deleted
+    // first appearance
+    Geometry result = buildGeometry(ways(107L, 0));
+    assertTrue(result instanceof Polygon);
+    assertEquals(5, result.getNumPoints());
+
+    // last appearance
+    result = buildGeometry(ways(107L, 1));
+    assertTrue(result instanceof LineString);
+    assertEquals(4, result.getNumPoints());
+  }
+
+  @Test
+  void testNullRefEntities() {
     // broken way references (=invalid OSM data) can occur after "partial" data redactions
-    OSMWay way = testData.ways().get(177974941L).get(0);
-    OSHDBTimestamp timestamp = new OSHDBTimestamp(way);
-    Geometry result = OSHDBGeometryBuilder.getGeometry(way, timestamp, areaDecider);
+    OSMWay way = ways(177974941L, 0);
+    Geometry result = buildGeometry(way);
     // no exception should have been thrown at this point
     assertTrue(result.getCoordinates().length < way.getMembers().length);
   }

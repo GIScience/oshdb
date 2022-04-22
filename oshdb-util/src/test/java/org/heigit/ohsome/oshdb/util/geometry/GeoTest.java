@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -18,7 +18,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link Geo} class.
  */
-public class GeoTest {
+class GeoTest {
   private final GeometryFactory gf = new GeometryFactory();
 
   private Coordinate[] constructCoordinates(double...coordValues) {
@@ -36,7 +36,7 @@ public class GeoTest {
   // Geo.areaOf
 
   @Test
-  public void testAreaPolygon() {
+  void testAreaPolygon() {
     LinearRing outer = constructRing(
         0, 0,
         0, 1,
@@ -61,7 +61,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testAreaMultiPolygon() {
+  void testAreaMultiPolygon() {
     Polygon poly1 = gf.createPolygon(constructRing(
         0, 0,
         0, 1,
@@ -82,7 +82,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testAreaGeometryCollection() {
+  void testAreaGeometryCollection() {
     Polygon poly1 = gf.createPolygon(constructRing(
         0, 0,
         0, 1,
@@ -110,7 +110,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testAreaOther() {
+  void testAreaOther() {
     // other geometry types: area should be returned as zero
     // point
     assertEquals(0.0, Geo.areaOf(gf.createPoint(new Coordinate(0, 0))), 1E-22);
@@ -131,7 +131,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testAreaRealFeatures() {
+  void testAreaRealFeatures() {
     final double relativeDelta = 1E-5; // max 0.001 % error
     // use https://www.openstreetmap.org/way/25316219 state 2020-10-29
     double expectedResult = 5797.767; // calculated with QGIS
@@ -155,7 +155,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testAreaNotNegative() {
+  void testAreaNotNegative() {
     Polygon poly = gf.createPolygon(constructRing(
         0, 0,
         0, 1,
@@ -177,7 +177,7 @@ public class GeoTest {
   // Geo.lengthOf
 
   @Test
-  public void testLengthLineString() {
+  void testLengthLineString() {
     LineString line = gf.createLineString(constructCoordinates(
         0, 0,
         1, 1
@@ -188,7 +188,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testLengthMultiLineString() {
+  void testLengthMultiLineString() {
     LineString line1 = gf.createLineString(constructCoordinates(
         0, 0,
         1, 1
@@ -203,7 +203,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testLengthGeometryCollection() {
+  void testLengthGeometryCollection() {
     LineString line1 = gf.createLineString(constructCoordinates(
         0, 0,
         1, 1
@@ -232,7 +232,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testLengthOther() {
+  void testLengthOther() {
     // other geometry types: area should be returned as zero
     // point
     assertEquals(0.0, Geo.lengthOf(gf.createPoint(new Coordinate(0, 0))), 1E-22);
@@ -253,7 +253,7 @@ public class GeoTest {
   }
 
   @Test
-  public void testLengthRealFeatures() {
+  void testLengthRealFeatures() {
     final double relativeDelta = 1E-3; // max 0.1 % error
     // use https://www.openstreetmap.org/way/25316219 state 2020-10-29
     double expectedResult = 330.201; // calculated with QGIS

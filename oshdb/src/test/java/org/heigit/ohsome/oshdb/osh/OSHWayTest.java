@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.osh;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -18,10 +18,9 @@ import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("javadoc")
-public class OSHWayTest {
+class OSHWayTest {
 
   OSHNode node100 = OSHNodeTest.buildOSHNode(OSM.node(
       100L, 1, 1L, 0L, 123, new int[]{1, 2}, 494094984, 86809727));
@@ -30,10 +29,10 @@ public class OSHWayTest {
   OSHNode node104 = OSHNodeTest.buildOSHNode(OSM.node(
       104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094984, 86809727));
 
-  public OSHWayTest() throws IOException {}
+  OSHWayTest() throws IOException {}
 
   @Test
-  public void testGetNodes() throws IOException, ClassNotFoundException {
+  void testGetNodes() throws IOException, ClassNotFoundException {
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
         OSM.way(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
@@ -64,7 +63,7 @@ public class OSHWayTest {
   }
 
   @Test
-  public void testWithMissingNode() throws IOException {
+  void testWithMissingNode() throws IOException {
     OSHWay hway = OSHWayImpl.build(Lists.newArrayList(
         OSM.way(123, 3, 3333L, 4444L, 23, new int[]{1, 1, 2, 2},
             new OSMMember[]{
@@ -98,7 +97,7 @@ public class OSHWayTest {
   }
 
   @Test
-  public void testToString() throws IOException {
+  void testToString() throws IOException {
     OSHWay instance = OSHWayImpl.build(Lists.newArrayList(
         OSM.way(123, 1, 3333L, 4444L, 23, new int[]{1, 1, 2, 1},
             new OSMMember[]{
@@ -117,7 +116,7 @@ public class OSHWayTest {
   }
 
   @Test
-  public void testHashCodeEquals() throws IOException {
+  void testHashCodeEquals() throws IOException {
     var expected = OSHWayImpl.build(Lists.newArrayList(
         OSM.way(123L, 1, 3333L, 4444L, 23, new int[]{},
             new OSMMember[]{})), Arrays.asList());

@@ -20,8 +20,8 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Tests the parsing of filters and the application to OSM entities.
@@ -30,8 +30,8 @@ abstract class FilterTest {
   protected FilterParser parser;
   protected TagTranslator tagTranslator;
 
-  @Before
-  public void setup() throws SQLException, ClassNotFoundException, OSHDBKeytablesNotFoundException {
+  @BeforeEach
+  void setup() throws SQLException, ClassNotFoundException, OSHDBKeytablesNotFoundException {
     Class.forName("org.h2.Driver");
     this.tagTranslator = new TagTranslator(DriverManager.getConnection(
         "jdbc:h2:./src/test/resources/keytables;ACCESS_MODE_DATA=r",
@@ -40,8 +40,8 @@ abstract class FilterTest {
     this.parser = new FilterParser(this.tagTranslator);
   }
 
-  @After
-  public void teardown() throws SQLException {
+  @AfterEach
+  void teardown() throws SQLException {
     this.tagTranslator.getConnection().close();
   }
 

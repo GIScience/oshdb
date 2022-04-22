@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,12 +18,12 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test aggregate by custom index method of the OSHDB API.
  */
-public class TestMapAggregateByIndex {
+class TestMapAggregateByIndex {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -34,7 +34,7 @@ public class TestMapAggregateByIndex {
 
   private static final double DELTA = 1e-8;
 
-  public TestMapAggregateByIndex() throws Exception {
+  TestMapAggregateByIndex() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
@@ -55,7 +55,7 @@ public class TestMapAggregateByIndex {
   }
 
   @Test
-  public void testOSMContribution() throws Exception {
+  void testOSMContribution() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps2)
         .osmEntityFilter(entity -> entity.getId() == 617308093)
@@ -81,7 +81,7 @@ public class TestMapAggregateByIndex {
   }
 
   @Test
-  public void testOSMEntitySnapshot() throws Exception {
+  void testOSMEntitySnapshot() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
         .osmEntityFilter(entity -> entity.getId() == 617308093)
@@ -107,7 +107,7 @@ public class TestMapAggregateByIndex {
   }
 
   @Test
-  public void testZerofill() throws Exception {
+  void testZerofill() throws Exception {
     // partially empty result
     SortedMap<Long, Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -139,7 +139,7 @@ public class TestMapAggregateByIndex {
   }
 
   @Test
-  public void testMultiple2() throws Exception {
+  void testMultiple2() throws Exception {
     SortedMap<OSHDBCombinedIndex<Long, OSMType>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
@@ -155,7 +155,7 @@ public class TestMapAggregateByIndex {
   }
 
   @Test
-  public void testMultiple3() throws Exception {
+  void testMultiple3() throws Exception {
     SortedMap<OSHDBCombinedIndex<OSHDBCombinedIndex<Long, OSMType>, Integer>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)

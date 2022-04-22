@@ -1,8 +1,8 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Base class for testing the map-reducer backend implementations of the OSHDB API.
@@ -54,7 +54,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMContributionView() throws Exception {
+  void testOSMContributionView() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -89,7 +89,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMEntitySnapshotView() throws Exception {
+  void testOSMEntitySnapshotView() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
@@ -120,7 +120,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMContributionViewStream() throws Exception {
+  void testOSMContributionViewStream() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
@@ -159,7 +159,7 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMEntitySnapshotViewStream() throws Exception {
+  void testOSMEntitySnapshotViewStream() throws Exception {
     // simple stream query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
@@ -193,40 +193,56 @@ abstract class TestMapReduce {
     );
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
-  @Test(expected = OSHDBTimeoutException.class)
-  public void testTimeoutMapReduce() throws Exception {
-    // set short timeout -> query should fail
-    oshdb.timeoutInMilliseconds(30);
-
-    // simple query with a sleep. would take about ~500ms (1 entity for ~5 timestamp)
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
-        .map(delay(100))
-        .count();
-
-    // reset timeout
-    oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+  @Test
+  void testTimeoutMapReduce() throws Exception {
+    assertThrows(OSHDBTimeoutException.class, () -> {
+      timeoutMapReduce();
+    });
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
-  @Test(expected = OSHDBTimeoutException.class)
-  public void testTimeoutStream() throws Exception {
+  protected void timeoutMapReduce() throws Exception {
+    // set short timeout -> query should fail
+    oshdb.timeoutInMilliseconds(30);
+
+    try {
+      // simple query with a sleep. would take about ~500ms (1 entity for ~5 timestamp)
+      createMapReducerOSMEntitySnapshot()
+          .timestamps(timestamps6)
+          .osmEntityFilter(entity -> entity.getId() == 617308093)
+          .map(delay(100))
+          .count();
+    } finally {
+      // reset timeout
+      oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    }
+  }
+
+  @Test
+  void testTimeoutStream() throws Exception {
+    assertThrows(OSHDBTimeoutException.class, () -> {
+      timeoutStream();
+    });
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
+  protected void timeoutStream() throws Exception {
     // set super short timeout -> all queries should fail
     oshdb.timeoutInMilliseconds(30);
 
-    // simple query
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
-        .map(snapshot -> snapshot.getEntity().getId())
-        .map(delay(100))
-        .stream()
-        .count();
-
-    // reset timeout
-    oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    try {
+      // simple query
+      createMapReducerOSMEntitySnapshot()
+          .timestamps(timestamps6)
+          .osmEntityFilter(entity -> entity.getId() == 617308093)
+          .map(snapshot -> snapshot.getEntity().getId())
+          .map(delay(100))
+          .stream()
+          .count();
+    } finally {
+      // reset timeout
+      oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    }
   }
 
   private static <T> SerializableFunction<T, T> delay(int ms) {

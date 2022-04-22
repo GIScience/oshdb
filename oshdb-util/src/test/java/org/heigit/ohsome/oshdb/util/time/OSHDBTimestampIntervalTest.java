@@ -1,21 +1,21 @@
 package org.heigit.ohsome.oshdb.util.time;
 
 import static java.lang.Integer.signum;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test Suite for {@code OSHDBTimestampInterval}.
  */
-public class OSHDBTimestampIntervalTest {
+class OSHDBTimestampIntervalTest {
 
   /**
    * Test for the contract of {@code Comparable.compareTo}.
    */
   @Test
-  public void testCompareTo() {
+  void testCompareTo() {
     var x = new OSHDBTimestampInterval(new OSHDBTimestamp(0), new OSHDBTimestamp(1));
     var y = new OSHDBTimestampInterval(new OSHDBTimestamp(0), new OSHDBTimestamp(2));
 
