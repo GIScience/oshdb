@@ -25,7 +25,7 @@ class ApplyOSMEntitySnapshotTest extends FilterTest {
     private final OSMEntity entity;
     private final Geometry geometry;
 
-    public TestOSMEntitySnapshot(OSMEntity entity, Geometry geometry) {
+    TestOSMEntitySnapshot(OSMEntity entity, Geometry geometry) {
       this.entity = entity;
       this.geometry = geometry;
     }

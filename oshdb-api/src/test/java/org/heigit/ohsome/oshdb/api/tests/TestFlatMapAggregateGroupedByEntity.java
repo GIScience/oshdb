@@ -31,7 +31,7 @@ class TestFlatMapAggregateGroupedByEntity {
 
   private static final double DELTA = 1e-8;
 
-  public TestFlatMapAggregateGroupedByEntity() throws Exception {
+  TestFlatMapAggregateGroupedByEntity() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 

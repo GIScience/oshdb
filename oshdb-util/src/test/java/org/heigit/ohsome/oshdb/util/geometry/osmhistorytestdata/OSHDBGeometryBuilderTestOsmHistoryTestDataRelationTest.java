@@ -23,7 +23,7 @@ import org.locationtech.jts.io.WKTReader;
 class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest extends OSHDBGeometryTest {
   private static final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest() {
+  OSHDBGeometryBuilderTestOsmHistoryTestDataRelationTest() {
     super("./src/test/resources/different-timestamps/polygon.osm");
   }
 

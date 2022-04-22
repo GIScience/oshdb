@@ -12,12 +12,12 @@ import org.locationtech.jts.geom.GeometryFactory;
 /**
  * Tests helper methods for creating filters from lambda functions.
  */
-public class FilterByTest extends FilterTest {
+class FilterByTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
   private final OSMNode testOSMEntity = createTestOSMEntityNode();
   private final OSHNode testOSHEntity = createTestOSHEntityNode(testOSMEntity);
 
-  public FilterByTest() throws IOException {
+  FilterByTest() throws IOException {
   }
 
   @Test

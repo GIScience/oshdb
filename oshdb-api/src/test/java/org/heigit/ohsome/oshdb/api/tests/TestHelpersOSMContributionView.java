@@ -33,7 +33,7 @@ class TestHelpersOSMContributionView {
 
   private static final double DELTA = 1e-8;
 
-  public TestHelpersOSMContributionView() throws Exception {
+  TestHelpersOSMContributionView() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 

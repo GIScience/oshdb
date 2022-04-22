@@ -46,7 +46,7 @@ abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
     ignite = Ignition.start(cfg);
   }
 
-  public TestMapReduceOSHDBIgnite(OSHDBIgnite oshdb) throws Exception {
+  TestMapReduceOSHDBIgnite(OSHDBIgnite oshdb) throws Exception {
     super(oshdb);
 
     final String prefix = "tests";

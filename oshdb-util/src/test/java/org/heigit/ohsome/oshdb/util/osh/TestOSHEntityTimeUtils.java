@@ -24,9 +24,9 @@ import org.junit.jupiter.api.Test;
  * Tests the {@link OSHEntityTimeUtils} class.
  */
 @SuppressWarnings("javadoc")
-public class TestOSHEntityTimeUtils {
+class TestOSHEntityTimeUtils {
   @Test
-  public void testGetModificationTimestampsNode() throws IOException {
+  void testGetModificationTimestampsNode() throws IOException {
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(123L, 2, 2L, 0L, 1, new int[] {1, 1},
             86756350, 494186210),
@@ -47,7 +47,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetModificationTimestampsNodeWithFilter() throws IOException {
+  void testGetModificationTimestampsNodeWithFilter() throws IOException {
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(123L, 3, 3L, 3L, 1, new int[] {1, 2},
             86756350, 494186210),
@@ -72,7 +72,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetModificationTimestampsWay() throws IOException {
+  void testGetModificationTimestampsWay() throws IOException {
     OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(123L, -3, 14L, 13L, 0, new int[]{}, 0, 0),
         OSM.node(123L, 2, 2L, 12L, 0, new int[]{}, 0, 0),
@@ -123,7 +123,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetModificationTimestampsWayWithFilter() throws IOException {
+  void testGetModificationTimestampsWayWithFilter() throws IOException {
     OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(123L, 2, 2L, 12L, 0, new int[]{}, 0, 0),
         OSM.node(123L, 1, 1L, 11L, 0, new int[]{}, 0, 0)
@@ -188,7 +188,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetModificationTimestampsRelation() throws IOException {
+  void testGetModificationTimestampsRelation() throws IOException {
     OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(123L, 2, 2L, 12L, 0, new int[]{}, 0, 0),
         OSM.node(123L, 1, 1L, 11L, 0, new int[]{}, 0, 0)
@@ -259,7 +259,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetModificationTimestampsRelationWithFilter() throws IOException {
+  void testGetModificationTimestampsRelationWithFilter() throws IOException {
     OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(123L, 7, 17L, 17L, 0, new int[]{}, 0, 0),
         OSM.node(123L, 6, 6L, 16L, 0, new int[]{}, 0, 0),
@@ -295,7 +295,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testIssue325() throws IOException {
+  void testIssue325() throws IOException {
     // tests that the bug reported in https://github.com/GIScience/oshdb/issues/325 is fixed:
     // relations referencing redacted ways caused a crash in the OSHEntities utility class
     // when calculating the relation's modification timestamps
@@ -330,7 +330,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetChangesetTimestampsNode() throws IOException {
+  void testGetChangesetTimestampsNode() throws IOException {
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(123L, 2, 2L, 8L, 1, new int[] {1, 1},
             86756350, 494186210),
@@ -346,7 +346,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetChangesetTimestampsWay() throws IOException {
+  void testGetChangesetTimestampsWay() throws IOException {
     OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(1L, 3, 5L, 5L, 1, new int[] {},
             86756340, 494186210),
@@ -397,7 +397,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetChangesetTimestampsRelation() throws IOException {
+  void testGetChangesetTimestampsRelation() throws IOException {
     OSHNode hnode1 = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(1L, 2, 3L, 3L, 1, new int[] {},
             86756340, 494186210),
@@ -474,7 +474,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetModificationTimestampsBrokenData() throws IOException {
+  void testGetModificationTimestampsBrokenData() throws IOException {
     // missing way node reference
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(1L, 1, 1L, 1L, 1, new int[] {},
@@ -514,7 +514,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetChangesetTimestampsBrokenData() throws IOException {
+  void testGetChangesetTimestampsBrokenData() throws IOException {
     // missing way node reference
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(1L, 1, 1L, 1L, 1, new int[] {},
@@ -548,7 +548,7 @@ public class TestOSHEntityTimeUtils {
   }
 
   @Test
-  public void testGetModificationTimestampsNestedRelations() throws IOException {
+  void testGetModificationTimestampsNestedRelations() throws IOException {
     OSHNode hnode = OSHNodeImpl.build(Lists.newArrayList(
         OSM.node(1L, 1, 1L, 1L, 1, new int[] {},
             86756380, 494186210)

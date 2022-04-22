@@ -30,7 +30,7 @@ class OSHDBGeometryBuilderTestOsmTestData7xxTest extends OSHDBGeometryTest {
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private static final double DELTA = 1E-8;
 
-  public OSHDBGeometryBuilderTestOsmTestData7xxTest() {
+  OSHDBGeometryBuilderTestOsmTestData7xxTest() {
     super("./src/test/resources/osm-testdata/all.osm");
   }
 

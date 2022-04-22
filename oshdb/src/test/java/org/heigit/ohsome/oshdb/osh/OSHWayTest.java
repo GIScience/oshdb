@@ -29,7 +29,7 @@ class OSHWayTest {
   OSHNode node104 = OSHNodeTest.buildOSHNode(OSM.node(
       104L, 1, 1L, 0L, 123, new int[]{2, 4}, 494094984, 86809727));
 
-  public OSHWayTest() throws IOException {}
+  OSHWayTest() throws IOException {}
 
   @Test
   void testGetNodes() throws IOException, ClassNotFoundException {

@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the parsing of filters and the application to OSM entities.
  */
-public class ParseTest extends FilterTest {
+class ParseTest extends FilterTest {
   @Test
   void testTagFilterEquals() {
     FilterExpression expression = parser.parse("highway=residential");

@@ -19,7 +19,7 @@ import org.locationtech.jts.geom.Point;
 class OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest extends OSHDBGeometryTest {
   private static final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest() {
+  OSHDBGeometryBuilderTestOsmHistoryTestDataNodesTest() {
     super("./src/test/resources/different-timestamps/node.osm");
   }
 

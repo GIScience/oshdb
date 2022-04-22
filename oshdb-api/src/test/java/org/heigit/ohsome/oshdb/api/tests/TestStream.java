@@ -24,7 +24,7 @@ class TestStream {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  public TestStream() throws Exception {
+  TestStream() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(false);
   }
 

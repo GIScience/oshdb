@@ -27,7 +27,7 @@ class OSHDBGeometryBuilderRelationOuterDirectionsTest {
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private static final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderRelationOuterDirectionsTest() {
+  OSHDBGeometryBuilderRelationOuterDirectionsTest() {
     testData.add("./src/test/resources/relations/outer-directions.osm");
     tagInterpreter = new OSMXmlReaderTagInterpreter(testData);
   }

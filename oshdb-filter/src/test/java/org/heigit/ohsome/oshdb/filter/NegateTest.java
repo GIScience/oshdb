@@ -18,7 +18,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 /**
  * Tests for negation of filters.
  */
-public class NegateTest extends FilterTest {
+class NegateTest extends FilterTest {
   @Test
   void testTagFilterEquals() {
     FilterExpression expression = TagFilter.fromSelector(

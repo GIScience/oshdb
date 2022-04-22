@@ -10,19 +10,19 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Runs the tests using the "scan query" Ignite backend.</p>
  */
-public class TestMapReduceOSHDBIgniteScanQuery extends TestMapReduceOSHDBIgnite {
+class TestMapReduceOSHDBIgniteScanQuery extends TestMapReduceOSHDBIgnite {
   /**
    * Creates the test runner using the ignite scanquery backend.
    *
    * @throws Exception if something goes wrong
    */
-  public TestMapReduceOSHDBIgniteScanQuery() throws Exception {
+  TestMapReduceOSHDBIgniteScanQuery() throws Exception {
     super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.SCAN_QUERY));
   }
 
   @Override
   @Test
-  public void testTimeoutStream() throws Exception {
+  void testTimeoutStream() throws Exception {
     // ignore this test -> scanquery backend currently doesn't support timeouts for stream()
     assertTrue(true);
   }

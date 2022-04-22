@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the {@link IsoDateTimeParser} class.
  */
-public class IsoDateTimeParserTest {
+class IsoDateTimeParserTest {
 
   @Test
-  public void testParseIsoDateTime() {
+  void testParseIsoDateTime() {
     // test allowed variants
 
     //Basic Dates
@@ -71,7 +71,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsNegativeDateParseIsoDateTime() {
+  void throwsNegativeDateParseIsoDateTime() {
     //Negative Dates
     String nyyyy = "-0333";
     assertThrows(OSHDBTimestampException.class, () -> {
@@ -80,7 +80,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsShortYearParseIsoDateTime() {
+  void throwsShortYearParseIsoDateTime() {
     //Short Year
     String yy = "12";
     assertThrows(OSHDBTimestampException.class, () -> {
@@ -89,7 +89,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsPosTimezoneHhParseIsoDateTime() {
+  void throwsPosTimezoneHhParseIsoDateTime() {
     String posTimezoneHh = "2020-02-17T23:55+02";
     assertThrows(OSHDBTimestampException.class, () -> {
       IsoDateTimeParser.parseIsoDateTime(posTimezoneHh);
@@ -97,7 +97,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsPosTimezoneHhMmParseIsoDateTime() {
+  void throwsPosTimezoneHhMmParseIsoDateTime() {
     String posTimezoneHhmm = "2020-02-17T23:55+0230";
     assertThrows(OSHDBTimestampException.class, () -> {
       IsoDateTimeParser.parseIsoDateTime(posTimezoneHhmm);
@@ -105,7 +105,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsPosTimezoneHh_MmParseIsoDateTime() {
+  void throwsPosTimezoneHh_MmParseIsoDateTime() {
     String posTimezoneHhMm = "2020-02-17T23:55+02:30";
     assertThrows(OSHDBTimestampException.class, () -> {
       IsoDateTimeParser.parseIsoDateTime(posTimezoneHhMm);
@@ -113,7 +113,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsNegTimezoneHhParseIsoDateTime() {
+  void throwsNegTimezoneHhParseIsoDateTime() {
     String negTimezoneHh = "2020-02-17T23:55-02";
     assertThrows(OSHDBTimestampException.class, () -> {
       IsoDateTimeParser.parseIsoDateTime(negTimezoneHh);
@@ -121,7 +121,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsNegTimezoneHhMmParseIsoDateTime() {
+  void throwsNegTimezoneHhMmParseIsoDateTime() {
     String negTimezoneHhMm = "2020-02-17T23:55-0230";
     assertThrows(OSHDBTimestampException.class, () -> {
       IsoDateTimeParser.parseIsoDateTime(negTimezoneHhMm);
@@ -129,7 +129,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsNegTimezoneHh_MmParseIsoDateTime() {
+  void throwsNegTimezoneHh_MmParseIsoDateTime() {
     String negTimezoneHhMm = "2020-02-17T23:55-02:30";
     assertThrows(OSHDBTimestampException.class, () -> {
       IsoDateTimeParser.parseIsoDateTime(negTimezoneHhMm);
@@ -137,7 +137,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsWrongDateParseIsoDateTime() {
+  void throwsWrongDateParseIsoDateTime() {
     //Wrong Date
     String wrongDateTime = "2020-13-01T00:00";
     assertThrows(DateTimeException.class, () -> {
@@ -147,7 +147,7 @@ public class IsoDateTimeParserTest {
 
 
   @Test
-  public void testParseIsoPeriod() {
+  void testParseIsoPeriod() {
     // test allowed variants
 
     //    Full DateTime Period: PnYnMnDTnHnMnS,
@@ -199,7 +199,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsFormatParseIsoPeriod() {
+  void throwsFormatParseIsoPeriod() {
     assertThrows(OSHDBTimestampException.class, () -> {
       // test throw exeption for unsupported formats
       IsoDateTimeParser.parseIsoPeriod("PT1Y2M");
@@ -207,7 +207,7 @@ public class IsoDateTimeParserTest {
   }
 
   @Test()
-  public void throwsZeroLengthParseIsoPeriod() {
+  void throwsZeroLengthParseIsoPeriod() {
     assertThrows(OSHDBTimestampException.class, () -> {
       //test for zero length ISOPeriod
       IsoDateTimeParser.parseIsoPeriod("PT0S");

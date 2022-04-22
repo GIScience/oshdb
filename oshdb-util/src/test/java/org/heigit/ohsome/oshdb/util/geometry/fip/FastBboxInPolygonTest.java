@@ -13,11 +13,11 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link FastBboxInPolygon} class.
  */
-public class FastBboxInPolygonTest {
+class FastBboxInPolygonTest {
   /**
    * Returns a {@link MultiPolygon} of four small squares arranged in a square.
    */
-  public static MultiPolygon createSquareSquareMultiPolygon() {
+  static MultiPolygon createSquareSquareMultiPolygon() {
     GeometryFactory gf = new GeometryFactory();
     Polygon poly1 = getGeometry(bboxWgs84Coordinates(-1.5, -1.5, -0.5, -0.5));
     Polygon poly2 = getGeometry(bboxWgs84Coordinates(0.5, -1.5, 1.5, -0.5));
@@ -27,7 +27,7 @@ public class FastBboxInPolygonTest {
   }
 
   @Test
-  public void testBboxInPolygon() {
+  void testBboxInPolygon() {
     Polygon p = FastPointInPolygonTest.createPolygon();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
 
@@ -52,7 +52,7 @@ public class FastBboxInPolygonTest {
 
   @Test
   @SuppressWarnings("java:S5961" /* has to test all cases how bbox and polygon can be aligned */)
-  public void testBboxInPolygonWithHole() {
+  void testBboxInPolygonWithHole() {
     Polygon p = FastPointInPolygonTest.createPolygonWithHole();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
 
@@ -86,7 +86,7 @@ public class FastBboxInPolygonTest {
 
   @Test
   @SuppressWarnings("java:S5961" /* has to test all cases how bbox and polygon can be aligned */)
-  public void testBboxInMultiPolygon() {
+  void testBboxInMultiPolygon() {
     MultiPolygon p = FastPointInPolygonTest.createMultiPolygon();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
 
@@ -139,7 +139,7 @@ public class FastBboxInPolygonTest {
   }
 
   @Test
-  public void testBboxInSquareSquareMultiPolygon() {
+  void testBboxInSquareSquareMultiPolygon() {
     MultiPolygon p = createSquareSquareMultiPolygon();
     FastBboxInPolygon bip = new FastBboxInPolygon(p);
 

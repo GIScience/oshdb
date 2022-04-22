@@ -35,7 +35,7 @@ class ApplyOSMContributionTest extends FilterTest {
     private final int contributorUserId;
     private final Set<ContributionType> contributionTypes;
 
-    public TestOSMContribution(
+    TestOSMContribution(
         OSMEntity entityBefore, Geometry geometryBefore,
         OSMEntity entityAfter, Geometry geometryAfter,
         long changesetId, int contributorUserId, Set<ContributionType> contributionTypes) {

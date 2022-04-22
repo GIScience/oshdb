@@ -30,7 +30,7 @@ class TestHelpersOSMEntitySnapshotView {
 
   private static final double DELTA = 1e-8;
 
-  public TestHelpersOSMEntitySnapshotView() throws Exception {
+  TestHelpersOSMEntitySnapshotView() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 

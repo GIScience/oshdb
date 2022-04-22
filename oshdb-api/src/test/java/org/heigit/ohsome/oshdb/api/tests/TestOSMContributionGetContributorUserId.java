@@ -27,8 +27,7 @@ import org.junit.jupiter.api.Test;
  * Tests the get contributor user id method of the OSHDB API.
  */
 class TestOSMContributionGetContributorUserId {
-  public TestOSMContributionGetContributorUserId() throws Exception {
-  }
+  TestOSMContributionGetContributorUserId() throws Exception {}
 
   private final OSHEntity dummyOshEntity = OSHNodeImpl.build(Collections.singletonList(
       OSM.node(-1L, 1, 0L, 1L, 1, new int[]{}, 0, 0)

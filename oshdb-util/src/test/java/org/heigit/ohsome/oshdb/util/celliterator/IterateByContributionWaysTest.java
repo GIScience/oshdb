@@ -25,7 +25,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on ways.
  */
-public class IterateByContributionWaysTest {
+class IterateByContributionWaysTest {
   private GridOSHWays oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
@@ -34,14 +34,14 @@ public class IterateByContributionWaysTest {
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * {@link GridOSHWays}.
    */
-  public IterateByContributionWaysTest() throws IOException {
+  IterateByContributionWaysTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     oshdbDataGridCell = GridOSHFactory.getGridOSHWays(osmXmlTestData);
   }
 
   @Test
-  public void testGeometryChange() {
+  void testGeometryChange() {
     // way: creation and two geometry changes, but no tag changes
     // way getting more nodes, one disappears
     List<IterateAllEntry> result = (new CellIterator(
@@ -90,7 +90,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testGeometryChangeOfNodeInWay() {
+  void testGeometryChangeOfNodeInWay() {
     // way: creation and geometry change of nodes, but no tag changes
     // way with two then 3 nodes, first two nodes changed lat lon
     List<IterateAllEntry> result = (new CellIterator(
@@ -141,7 +141,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testVisibleChange() {
+  void testVisibleChange() {
     // way: creation and 2 visible changes, but no geometry and no tag changes
     // way visible tag changed
     List<IterateAllEntry> result = (new CellIterator(
@@ -175,7 +175,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testTagChange() {
+  void testTagChange() {
     // way: creation and two tag changes, one geometry change
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -223,7 +223,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testMultipleChangesOnNodesOfWay() {
+  void testMultipleChangesOnNodesOfWay() {
     // way: nodes have different changes
     // node 12: tag change
     // node 13: visible change
@@ -270,7 +270,7 @@ public class IterateByContributionWaysTest {
 
 
   @Test
-  public void testMultipleChanges() {
+  void testMultipleChanges() {
     // way and nodes have different changes
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -317,7 +317,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testPolygonAreaYesTagDisappears() {
+  void testPolygonAreaYesTagDisappears() {
     // way seems to be polygon with area=yes, later linestring because area=yes deleted
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -357,7 +357,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testPolygonAreaYesNodeDisappears() {
+  void testPolygonAreaYesNodeDisappears() {
     // way seems to be polygon with area=yes, later linestring because one node deleted
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -397,7 +397,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testTimestampInclusion() {
+  void testTimestampInclusion() {
     // rule for contributions that fall exactly at time interval limits:
     // start timestamp: included, end timestamp: excluded
     List<IterateAllEntry> result = (new CellIterator(
@@ -419,7 +419,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testTwoNodesChangedAtSameTimeDifferentChangesets() {
+  void testTwoNodesChangedAtSameTimeDifferentChangesets() {
     // way with two nodes, nodes changed lat lon, both at same time, different changesets
     // which changeset is shown in result.get(1).changeset? -> from node 20, not 21
     List<IterateAllEntry> result = (new CellIterator(
@@ -450,7 +450,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testNodeChangeOutsideBboxIsNotGeometryChange() {
+  void testNodeChangeOutsideBboxIsNotGeometryChange() {
     // way: creation and one geometry change, but no tag changes
     // node 23 outside bbox with lon lat change
     List<IterateAllEntry> result = (new CellIterator(
@@ -477,7 +477,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testNodeChangeOutsideBboxAffectsPartOfLineStringInBbox() {
+  void testNodeChangeOutsideBboxAffectsPartOfLineStringInBbox() {
     // way: creation and one geometry change, but no tag changes
     // node 23 outside bbox with lon lat change, way between 24 and 25 intersects bbox
     // Node 25 outside bbox with lonlat change, way between 24 and 25 changes
@@ -509,7 +509,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testTagChangeOfNodeInWay() {
+  void testTagChangeOfNodeInWay() {
     // way: creation and geometry change of nodes, but no tag changes
     // way with two then 3 nodes, first two nodes changed lat lon
     List<IterateAllEntry> result = (new CellIterator(
@@ -536,7 +536,7 @@ public class IterateByContributionWaysTest {
   }
 
   @Test
-  public void testNodeRefsDeletedInVersion2() {
+  void testNodeRefsDeletedInVersion2() {
     // way with three nodes,  node refs deleted in version 2
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(

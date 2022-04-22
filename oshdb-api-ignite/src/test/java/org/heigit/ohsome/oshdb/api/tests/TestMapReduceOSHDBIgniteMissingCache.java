@@ -9,20 +9,20 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for proper error messages is caches are not pnt on ignite.
  */
-public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
+class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
   /**
    * Creates the test runner using an Ignite backend.
    *
    * @throws Exception if something goes wrong
    */
-  public TestMapReduceOSHDBIgniteMissingCache() throws Exception {
+  TestMapReduceOSHDBIgniteMissingCache() throws Exception {
     super(new OSHDBIgnite(ignite));
     this.oshdb.prefix("<test caches not present>");
   }
 
   @Override
   @Test()
-  public void testOSMContributionView() throws Exception {
+  void testOSMContributionView() throws Exception {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       super.testOSMContributionView();
     });
@@ -30,7 +30,7 @@ public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgni
 
   @Override
   @Test()
-  public void testOSMEntitySnapshotView() throws Exception {
+  void testOSMEntitySnapshotView() throws Exception {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       super.testOSMEntitySnapshotView();
     });
@@ -38,7 +38,7 @@ public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgni
 
   @Override
   @Test()
-  public void testOSMContributionViewStream() throws Exception {
+  void testOSMContributionViewStream() throws Exception {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       super.testOSMEntitySnapshotView();
     });
@@ -46,7 +46,7 @@ public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgni
 
   @Override
   @Test()
-  public void testOSMEntitySnapshotViewStream() throws Exception {
+  void testOSMEntitySnapshotViewStream() throws Exception {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       super.testOSMEntitySnapshotView();
     });
@@ -54,7 +54,7 @@ public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgni
 
   @Override
   @Test()
-  public void testTimeoutMapReduce() throws Exception {
+  void testTimeoutMapReduce() throws Exception {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       timeoutMapReduce();
     });
@@ -62,7 +62,7 @@ public class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgni
 
   @Override
   @Test()
-  public void testTimeoutStream() {
+  void testTimeoutStream() {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
       timeoutStream();
     });

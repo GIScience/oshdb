@@ -22,7 +22,7 @@ class OSHDBGeometryBuilderTestPolygonIncompleteDataTest extends OSHDBGeometryTes
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
   private static final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestPolygonIncompleteDataTest() {
+  OSHDBGeometryBuilderTestPolygonIncompleteDataTest() {
     super("./src/test/resources/incomplete-osm/polygon.osm");
   }
 

@@ -44,7 +44,7 @@ class OSHRelationTest {
           new OSMMember(102, OSMType.NODE, 0)})
   ), List.of(node100, node102));
 
-  public OSHRelationTest() throws IOException {}
+  OSHRelationTest() throws IOException {}
 
   @Test
   void testGetNodes() throws IOException {

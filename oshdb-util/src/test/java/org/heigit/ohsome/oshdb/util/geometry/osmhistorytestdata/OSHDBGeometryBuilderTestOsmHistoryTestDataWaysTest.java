@@ -18,7 +18,7 @@ class OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest extends OSHDBGeometryTe
 
   private static final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest() {
+  OSHDBGeometryBuilderTestOsmHistoryTestDataWaysTest() {
     super("./src/test/resources/different-timestamps/way.osm");
   }
 

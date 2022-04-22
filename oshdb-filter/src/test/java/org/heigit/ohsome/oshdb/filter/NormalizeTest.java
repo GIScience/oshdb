@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for normalization of filters.
  */
-public class NormalizeTest {
+class NormalizeTest {
   @Test
   void testAndOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);

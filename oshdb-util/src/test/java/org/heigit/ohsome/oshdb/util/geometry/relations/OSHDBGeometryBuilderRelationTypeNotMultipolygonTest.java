@@ -27,7 +27,7 @@ class OSHDBGeometryBuilderRelationTypeNotMultipolygonTest {
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
 
-  public OSHDBGeometryBuilderRelationTypeNotMultipolygonTest() {
+  OSHDBGeometryBuilderRelationTypeNotMultipolygonTest() {
     testData.add("./src/test/resources/relations/relationTypeNotMultipolygon.osm");
     tagInterpreter = new OSMXmlReaderTagInterpreter(testData);
   }

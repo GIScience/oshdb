@@ -40,7 +40,7 @@ class TestMapAggregateByGeometry {
 
   private static final double DELTA = 1e-4;
 
-  public TestMapAggregateByGeometry() throws Exception {
+  TestMapAggregateByGeometry() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 

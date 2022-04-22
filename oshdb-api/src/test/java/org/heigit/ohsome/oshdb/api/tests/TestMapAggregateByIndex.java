@@ -34,7 +34,7 @@ class TestMapAggregateByIndex {
 
   private static final double DELTA = 1e-8;
 
-  public TestMapAggregateByIndex() throws Exception {
+  TestMapAggregateByIndex() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 

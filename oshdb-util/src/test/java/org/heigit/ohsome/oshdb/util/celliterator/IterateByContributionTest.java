@@ -27,14 +27,14 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method.
  */
-public class IterateByContributionTest {
+class IterateByContributionTest {
   private static Connection conn;
 
   /**
    * Set up of test framework, loading H2 driver and connection via jdbc.
    */
   @BeforeAll
-  public static void setUpClass() throws ClassNotFoundException, SQLException {
+  static void setUpClass() throws ClassNotFoundException, SQLException {
     // load H2-support
     Class.forName("org.h2.Driver");
 
@@ -47,16 +47,15 @@ public class IterateByContributionTest {
   }
 
   @AfterAll
-  public static void breakDownClass() throws SQLException {
+  static void breakDownClass() throws SQLException {
     IterateByContributionTest.conn.close();
   }
 
-  public IterateByContributionTest() {
-  }
+  IterateByContributionTest() {}
 
   @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
   @Test
-  public void testIssue108() throws SQLException, IOException, ClassNotFoundException,
+  void testIssue108() throws SQLException, IOException, ClassNotFoundException,
       ParseException, OSHDBKeytablesNotFoundException {
     ResultSet oshCellsRawData = conn.prepareStatement(
         "select data from " + TableNames.T_NODES).executeQuery();

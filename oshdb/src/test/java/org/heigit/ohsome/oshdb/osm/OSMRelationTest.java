@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 
 class OSMRelationTest {
 
-  public OSMRelationTest() {
-  }
+  OSMRelationTest() {}
 
   @Test
   void testGetMembers() {

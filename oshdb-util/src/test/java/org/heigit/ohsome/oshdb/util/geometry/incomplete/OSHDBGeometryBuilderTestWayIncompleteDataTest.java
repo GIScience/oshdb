@@ -18,7 +18,7 @@ class OSHDBGeometryBuilderTestWayIncompleteDataTest extends OSHDBGeometryTest {
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
 
-  public OSHDBGeometryBuilderTestWayIncompleteDataTest() {
+  OSHDBGeometryBuilderTestWayIncompleteDataTest() {
     super("./src/test/resources/incomplete-osm/way.osm");
   }
 

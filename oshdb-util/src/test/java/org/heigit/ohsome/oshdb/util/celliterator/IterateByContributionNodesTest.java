@@ -29,7 +29,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on nodes.
  */
-public class IterateByContributionNodesTest {
+class IterateByContributionNodesTest {
   private final GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
@@ -38,14 +38,14 @@ public class IterateByContributionNodesTest {
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * {@link GridOSHNodes}.
    */
-  public IterateByContributionNodesTest() throws IOException {
+  IterateByContributionNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     oshdbDataGridCell = GridOSHFactory.getGridOSHNodes(osmXmlTestData);
   }
 
   @Test
-  public void testGeometryChange() {
+  void testGeometryChange() {
     // node 1: creation and two geometry changes, but no tag changes
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -85,7 +85,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagChange() {
+  void testTagChange() {
     // node 2: creation and two tag changes, but no geometry changes
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -121,7 +121,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testVisibleChange() {
+  void testVisibleChange() {
     // node 3: creation and 4 visible changes, but no geometry and no tag changes
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -163,7 +163,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testMultipleChanges() {
+  void testMultipleChanges() {
     // node 4: creation and 5 changes:
     // tag and geometry,
     // visible = false,
@@ -218,7 +218,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testBboxMinAndMaxNotCorrect() {
+  void testBboxMinAndMaxNotCorrect() {
     // node 1: creation and two geometry changes, but no tag changes
     // OSHDBBoundingBox: MinLon and MinLat as well as MaxLon and MaxLat incorrect
     List<IterateAllEntry> result = (new CellIterator(
@@ -238,7 +238,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testBboxMinExactlyAtDataMinMaxExcluded() {
+  void testBboxMinExactlyAtDataMinMaxExcluded() {
     // node 1: creation and two geometry changes, but no tag changes
     // OSHDBBoundingBox: MinLon and MinLat like Version 1, MaxLon and MaxLat incorrect
     List<IterateAllEntry> result = (new CellIterator(
@@ -258,7 +258,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testBboxMaxExactlyAtDataMaxMinExcluded() {
+  void testBboxMaxExactlyAtDataMaxMinExcluded() {
     // node 1: creation and two geometry changes, but no tag changes
     // OSHDBBoundingBox: MinLon and MinLat incorrect, MaxLon and MaxLat like Version 3
     List<IterateAllEntry> result = (new CellIterator(
@@ -278,7 +278,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testBboxMinMaxExactlyAtDataMinMax() {
+  void testBboxMinMaxExactlyAtDataMinMax() {
     // node 1: creation and two geometry changes, but no tag changes
     // OSHDBBoundingBox: MinLon and MinLat like Version 1, MaxLon and MaxLat like Version 3
     List<IterateAllEntry> result = (new CellIterator(
@@ -298,7 +298,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagChangeTagFilterWithSuccess() {
+  void testTagChangeTagFilterWithSuccess() {
     // node: creation then tag changes, but no geometry changes
     // check if results are correct if we filter for a special tag
     List<IterateAllEntry> result = (new CellIterator(
@@ -335,7 +335,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagChangeTagFilterDisused() {
+  void testTagChangeTagFilterDisused() {
     // check if results are correct if we filter for a special tag
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -367,7 +367,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testMoreComplicatedFilter() {
+  void testMoreComplicatedFilter() {
     // check if results are correct if we filter for a special tag
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -399,7 +399,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagChangeTagFilterWithoutSuccess() {
+  void testTagChangeTagFilterWithoutSuccess() {
     // check if results are correct if we filter for a special tag
     // tag not in data
     List<IterateAllEntry> result = (new CellIterator(
@@ -419,7 +419,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testPolygonIntersectingDataPartly() {
+  void testPolygonIntersectingDataPartly() {
     // lon lat changes, so that node in v2 is outside bbox
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -447,7 +447,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagFilterAndPolygonIntersectingDataPartly() {
+  void testTagFilterAndPolygonIntersectingDataPartly() {
     // lon lat changes, so that node in v2 is outside bbox
     final GeometryFactory geometryFactory = new GeometryFactory();
     // create clipping polygon for area of interest
@@ -478,7 +478,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testCoordinatesRelativeToPolygon() throws IOException {
+  void testCoordinatesRelativeToPolygon() throws IOException {
     // different cases of relative position between node coordinate(s) and cell bbox / query polygon
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[4];

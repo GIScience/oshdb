@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 class OSMMemberTest {
 
-  public OSMMemberTest() {}
+  OSMMemberTest() {}
 
   @Test
   void testGetId() {

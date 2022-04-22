@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 class OSMNodeTest {
 
-  public OSMNodeTest() {}
+  OSMNodeTest() {}
 
   @Test
   void testGetLongitude() {

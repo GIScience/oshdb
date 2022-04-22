@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 class OSMWayTest {
 
-  public OSMWayTest() {}
+  OSMWayTest() {}
 
   @Test
   void testGetRefs() {

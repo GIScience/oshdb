@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 /**
  * Test Suite for {@code OSHDBTimestampInterval}.
  */
-public class OSHDBTimestampIntervalTest {
+class OSHDBTimestampIntervalTest {
 
   /**
    * Test for the contract of {@code Comparable.compareTo}.
    */
   @Test
-  public void testCompareTo() {
+  void testCompareTo() {
     var x = new OSHDBTimestampInterval(new OSHDBTimestamp(0), new OSHDBTimestamp(1));
     var y = new OSHDBTimestampInterval(new OSHDBTimestamp(0), new OSHDBTimestamp(2));
 

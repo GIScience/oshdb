@@ -37,7 +37,7 @@ import org.locationtech.jts.geom.Polygon;
  * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on special situations
  * which are related to OSHDB grid cells.
  */
-public class IterateByTimestampNotOsmTypeSpecificTest {
+class IterateByTimestampNotOsmTypeSpecificTest {
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
   private final List<OSHRelation> oshRelations = new ArrayList<>();
@@ -46,7 +46,7 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * a list of {@link OSHRelation OSHRelations}.
    */
-  public IterateByTimestampNotOsmTypeSpecificTest() throws IOException {
+  IterateByTimestampNotOsmTypeSpecificTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/not-osm-type-specific.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     Map<Long, OSHNode> oshNodes = new TreeMap<>();
@@ -82,7 +82,7 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
   }
 
   @Test
-  public void testCellOutsidePolygon() throws IOException {
+  void testCellOutsidePolygon() throws IOException {
     // GridOSHRelations cell-bbox is not covering query polygon
     final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0,
         oshRelations);
@@ -113,7 +113,7 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
   }
 
   @Test
-  public void testCellCoveringPolygon() throws IOException {
+  void testCellCoveringPolygon() throws IOException {
     // GridOSHRelations cell-bbox is completely covering query polygon
     final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(0, 0, 0, 0, 0, 0,
         oshRelations);
@@ -143,7 +143,7 @@ public class IterateByTimestampNotOsmTypeSpecificTest {
   }
 
   @Test
-  public void testCellFullyInsidePolygon() throws IOException {
+  void testCellFullyInsidePolygon() throws IOException {
     // GridOSHRelations cell-bbox is inside query polygon
     final GridOSHRelations oshdbDataGridCell = GridOSHRelations.compact(69120, 12, 0, 0, 0, 0,
         oshRelations);

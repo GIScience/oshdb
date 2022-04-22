@@ -22,7 +22,7 @@ class OSHDBGeometryBuilderTestOsmTestData3xxTest extends OSHDBGeometryTest {
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
 
-  public OSHDBGeometryBuilderTestOsmTestData3xxTest() {
+  OSHDBGeometryBuilderTestOsmTestData3xxTest() {
     super("./src/test/resources/osm-testdata/all.osm");
   }
 

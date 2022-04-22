@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on OSM nodes.
  */
-public class IterateByTimestampsNodesTest {
+class IterateByTimestampsNodesTest {
   private final GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
@@ -35,7 +35,7 @@ public class IterateByTimestampsNodesTest {
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * {@link GridOSHNodes}.
    */
-  public IterateByTimestampsNodesTest() throws IOException {
+  IterateByTimestampsNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     oshdbDataGridCell = GridOSHFactory.getGridOSHNodes(osmXmlTestData);
@@ -43,7 +43,7 @@ public class IterateByTimestampsNodesTest {
 
 
   @Test
-  public void testGeometryChange() {
+  void testGeometryChange() {
     // node 1: creation and two geometry changes, but no tag changes
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -69,7 +69,7 @@ public class IterateByTimestampsNodesTest {
   }
 
   @Test
-  public void testTagChange() {
+  void testTagChange() {
     // node 2: creation and two tag changes, but no geometry changes
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -101,7 +101,7 @@ public class IterateByTimestampsNodesTest {
   }
 
   @Test
-  public void testVisibleChange() {
+  void testVisibleChange() {
     // node 3: creation and 4 visible changes, but no geometry and no tag changes
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -122,7 +122,7 @@ public class IterateByTimestampsNodesTest {
   }
 
   @Test
-  public void testMultipleChanges() {
+  void testMultipleChanges() {
     // node 4: creation and 5 changes:
     // tag and geometry,
     // visible = false,
@@ -171,7 +171,7 @@ public class IterateByTimestampsNodesTest {
   }
 
   @Test
-  public void testTagChangeTagFilterWithSuccess() {
+  void testTagChangeTagFilterWithSuccess() {
     // node: creation then tag changes, but no geometry changes
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -191,7 +191,7 @@ public class IterateByTimestampsNodesTest {
   }
 
   @Test
-  public void testTagChangeTagFilterWithoutSuccess() {
+  void testTagChangeTagFilterWithoutSuccess() {
     // node: creation then tag changes, but no geometry changes
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -211,7 +211,7 @@ public class IterateByTimestampsNodesTest {
   }
 
   @Test
-  public void testTagFilterAndPolygonIntersectingDataPartly() {
+  void testTagFilterAndPolygonIntersectingDataPartly() {
     // lon lat changes, so that node in v2 is outside bbox
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -240,7 +240,7 @@ public class IterateByTimestampsNodesTest {
   }
 
   @Test
-  public void testCoordinatesRelativeToPolygon() throws IOException {
+  void testCoordinatesRelativeToPolygon() throws IOException {
     //different cases of relative position between node coordinate(s) and cell bbox / query polygon
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[4];

@@ -32,7 +32,7 @@ class OSHDBGeometryBuilderTest {
   private final OSMXmlReader testData = new OSMXmlReader();
   private static final double DELTA = 1E-6;
 
-  public OSHDBGeometryBuilderTest() {
+  OSHDBGeometryBuilderTest() {
     testData.add("./src/test/resources/geometryBuilder.osh");
   }
 

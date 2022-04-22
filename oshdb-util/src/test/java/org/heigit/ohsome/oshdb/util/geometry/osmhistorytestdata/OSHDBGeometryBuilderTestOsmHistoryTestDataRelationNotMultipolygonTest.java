@@ -20,7 +20,7 @@ import org.locationtech.jts.geom.Polygonal;
 class OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTest
     extends OSHDBGeometryTest {
 
-  public OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTest() {
+  OSHDBGeometryBuilderTestOsmHistoryTestDataRelationNotMultipolygonTest() {
     super("./src/test/resources/different-timestamps/type-not-multipolygon.osm");
   }
 

@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the {@link OSHDBTimestamps} class.
  */
-public class OSHDBTimestampsTest {
+class OSHDBTimestampsTest {
 
   @Test
-  public void testTimeIntervals() {
+  void testTimeIntervals() {
     final List<String> startList = new ArrayList<>();
     final List<String> endList = new ArrayList<>();
     final List<Interval> intervalList = new ArrayList<>();
@@ -87,7 +87,7 @@ public class OSHDBTimestampsTest {
   }
 
   @Test()
-  public void testInvalidTimestamp() {
+  void testInvalidTimestamp() {
     assertThrows(RuntimeException.class, () -> {
       new OSHDBTimestamps("test123");
     });

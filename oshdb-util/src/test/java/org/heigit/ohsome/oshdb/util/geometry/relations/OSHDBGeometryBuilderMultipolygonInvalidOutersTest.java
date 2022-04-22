@@ -23,7 +23,7 @@ class OSHDBGeometryBuilderMultipolygonInvalidOutersTest {
   private final OSHDBTimestamp timestamp =
       TimestampParser.toOSHDBTimestamp("2014-01-01T00:00:00Z");
 
-  public OSHDBGeometryBuilderMultipolygonInvalidOutersTest() {
+  OSHDBGeometryBuilderMultipolygonInvalidOutersTest() {
     testData.add("./src/test/resources/relations/invalid-outer-ring.osm");
     tagInterpreter = new OSMXmlReaderTagInterpreter(testData);
   }
