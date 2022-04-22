@@ -22,7 +22,7 @@ import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test aggregate by timestamp method of the OSHDB API.
+ * Test aggregateByTimestamp method of the OSHDB API.
  */
 class TestMapAggregateByTimestamp {
   private final OSHDBDatabase oshdb;
