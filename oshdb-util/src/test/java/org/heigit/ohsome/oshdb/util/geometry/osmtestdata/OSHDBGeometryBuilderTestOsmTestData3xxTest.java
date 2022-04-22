@@ -52,7 +52,7 @@ class OSHDBGeometryBuilderTestOsmTestData3xxTest extends OSHDBGeometryTest {
   void test302() {
     // No uid and no user name means user is anonymous
     // user name is not priority
-    int entityUid = testData.nodes().get(202000L).get(0).getUserId();
+    int entityUid = nodes(202000L, 0).getUserId();
     assertTrue(entityUid < 1);
   }
 
