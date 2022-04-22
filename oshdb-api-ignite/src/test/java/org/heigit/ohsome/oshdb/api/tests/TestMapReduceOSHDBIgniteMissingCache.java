@@ -23,48 +23,36 @@ class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
   @Override
   @Test()
   void testOSMContributionView() throws Exception {
-    assertThrows(OSHDBTableNotFoundException.class, () -> {
-      super.testOSMContributionView();
-    });
+    assertThrows(OSHDBTableNotFoundException.class, super::testOSMContributionView);
   }
 
   @Override
   @Test()
   void testOSMEntitySnapshotView() throws Exception {
-    assertThrows(OSHDBTableNotFoundException.class, () -> {
-      super.testOSMEntitySnapshotView();
-    });
+    assertThrows(OSHDBTableNotFoundException.class, super::testOSMEntitySnapshotView);
   }
 
   @Override
   @Test()
   void testOSMContributionViewStream() throws Exception {
-    assertThrows(OSHDBTableNotFoundException.class, () -> {
-      super.testOSMContributionViewStream();
-    });
+    assertThrows(OSHDBTableNotFoundException.class, super::testOSMContributionViewStream);
   }
 
   @Override
   @Test()
   void testOSMEntitySnapshotViewStream() throws Exception {
-    assertThrows(OSHDBTableNotFoundException.class, () -> {
-      super.testOSMEntitySnapshotViewStream();
-    });
+    assertThrows(OSHDBTableNotFoundException.class, super::testOSMEntitySnapshotViewStream);
   }
 
   @Override
   @Test()
   void testTimeoutMapReduce() throws Exception {
-    assertThrows(OSHDBTableNotFoundException.class, () -> {
-      timeoutMapReduce();
-    });
+    assertThrows(OSHDBTableNotFoundException.class, this::timeoutMapReduce);
   }
 
   @Override
   @Test()
   void testTimeoutStream() {
-    assertThrows(OSHDBTableNotFoundException.class, () -> {
-      timeoutStream();
-    });
+    assertThrows(OSHDBTableNotFoundException.class, this::timeoutStream);
   }
 }
