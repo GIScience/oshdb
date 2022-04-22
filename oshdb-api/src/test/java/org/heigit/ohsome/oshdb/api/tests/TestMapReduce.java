@@ -204,7 +204,7 @@ abstract class TestMapReduce {
   @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
   protected void timeoutMapReduce() throws Exception {
     // set short timeout -> query should fail
-    oshdb.timeoutInMilliseconds(30);
+    oshdb.timeoutInMilliseconds(1);
 
     try {
       // simple query with a sleep. would take about ~500ms (1 entity for ~5 timestamp)
@@ -227,7 +227,7 @@ abstract class TestMapReduce {
   @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
   protected void timeoutStream() throws Exception {
     // set super short timeout -> all queries should fail
-    oshdb.timeoutInMilliseconds(30);
+    oshdb.timeoutInMilliseconds(1);
 
     try {
       // simple query
