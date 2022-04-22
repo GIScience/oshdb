@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Test aggregate by geometry method of the OSHDB API.
+ * Test aggregateByGeometry method of the OSHDB API.
  */
 class TestMapAggregateByGeometry {
   private final OSHDBDatabase oshdb;
