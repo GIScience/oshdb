@@ -27,8 +27,7 @@ class OSHDBGeometryBuilderTestOsmTestData3xxTest extends OSHDBGeometryTest {
   }
 
   private Geometry buildEntityGeometry(long id) {
-    OSMEntity entity = nodes(id, 0);
-    return OSHDBGeometryBuilder.getGeometry(entity, timestamp, areaDecider);
+    return buildGeometry(nodes(id, 0), timestamp);
   }
 
   @Test
