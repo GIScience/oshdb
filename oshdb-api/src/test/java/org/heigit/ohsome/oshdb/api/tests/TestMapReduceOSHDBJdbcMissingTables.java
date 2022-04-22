@@ -41,7 +41,7 @@ class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
   @Test()
   void testOSMContributionViewStream() {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
-      super.testOSMEntitySnapshotView();
+      super.testOSMContributionViewStream();
     });
   }
 
@@ -49,7 +49,7 @@ class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
   @Test()
   void testOSMEntitySnapshotViewStream() {
     assertThrows(OSHDBTableNotFoundException.class, () -> {
-      super.testOSMEntitySnapshotView();
+      super.testOSMEntitySnapshotViewStream();
     });
   }
 
