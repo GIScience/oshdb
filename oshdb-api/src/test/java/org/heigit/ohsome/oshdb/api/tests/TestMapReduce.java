@@ -195,9 +195,7 @@ abstract class TestMapReduce {
 
   @Test
   void testTimeoutMapReduce() throws Exception {
-    assertThrows(OSHDBTimeoutException.class, () -> {
-      timeoutMapReduce();
-    });
+    assertThrows(OSHDBTimeoutException.class, this::timeoutMapReduce);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
@@ -220,9 +218,7 @@ abstract class TestMapReduce {
 
   @Test
   void testTimeoutStream() throws Exception {
-    assertThrows(OSHDBTimeoutException.class, () -> {
-      timeoutStream();
-    });
+    assertThrows(OSHDBTimeoutException.class, this::timeoutStream);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
