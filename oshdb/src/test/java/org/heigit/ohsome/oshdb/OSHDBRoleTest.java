@@ -16,7 +16,7 @@ class OSHDBRoleTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = {-1, 0, 1, 3, 5, 15, 256, 525, Integer.MAX_VALUE})
+  @ValueSource(ints = {-2, -1, 0, 1, 3, 5, 15, 256, 525, Integer.MAX_VALUE})
   void testHashCodeAndEquals(int id) {
     var expected = OSHDBRole.of(id);
     var role = OSHDBRole.of(id);
