@@ -16,14 +16,17 @@ class OSHDBRoleTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = {-1, 0, 1, 3, 5, -3, 15, Integer.MAX_VALUE})
+  @ValueSource(ints = {-1, 0, 1, 3, 5, 15, 256, 525, Integer.MAX_VALUE})
   void testHashCodeAndEquals(int id) {
-    var role = OSHDBRole.of(1);
+    var expected = OSHDBRole.of(id);
+    var role = OSHDBRole.of(id);
     assertEquals(role, role);
-    assertEquals(role, OSHDBRole.of(1));
-    assertEquals(role.hashCode(), OSHDBRole.of(1).hashCode());
-    assertNotEquals(role, OSHDBRole.of(2));
-    assertNotEquals(role, "string");
+    assertEquals(expected, role);
+    assertEquals(expected.hashCode(), role.hashCode());
+
+    var unexpect = OSHDBRole.of(2);
+    assertNotEquals(unexpect, role);
+    assertFalse(role.equals("string"));
   }
 
 }
