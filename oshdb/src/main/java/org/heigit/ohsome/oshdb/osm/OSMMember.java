@@ -2,8 +2,8 @@ package org.heigit.ohsome.oshdb.osm;
 
 import java.io.Serializable;
 import java.util.Objects;
+import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
-import org.heigit.ohsome.oshdb.util.OSHDBRole;
 
 /**
  * Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.

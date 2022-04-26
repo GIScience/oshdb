@@ -1,4 +1,4 @@
-package org.heigit.ohsome.oshdb.util;
+package org.heigit.ohsome.oshdb;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -27,10 +27,10 @@ public class OSHDBRole implements Serializable {
    * @return OSHDBRole instance.
    */
   public static OSHDBRole of(int id) {
-    if (id < 0) {
+    if (id == -1) {
       return EMPTY;
     }
-    if (id < CACHE_SIZE) {
+    if (id >= 0 && id < CACHE_SIZE) {
       return cache[id];
     }
     return new OSHDBRole(id);
