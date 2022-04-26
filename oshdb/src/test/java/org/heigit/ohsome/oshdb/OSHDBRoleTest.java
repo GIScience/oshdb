@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,7 +27,12 @@ class OSHDBRoleTest {
 
     var unexpect = OSHDBRole.of(2);
     assertNotEquals(unexpect, role);
-    assertFalse(role.equals("string"));
+  }
+
+  @Test
+  void testNotEqualsOtherType() {
+    var unexpect = OSHDBRole.of(2);
+    assertNotEquals(unexpect, unexpect.toString());
   }
 
 }
