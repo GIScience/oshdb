@@ -18,7 +18,8 @@ Changelog
 
 * remove deprecated method `OSHEntity.getRawTagKeys` ([#441])
 * remove deprecated method `OSMEntity.getRawTags` ([#443])
-* remove "OSMMember.getRawRoleId" ([#453])
+* remove `OSMMember.getRawRoleId` ([#453])
+* refactor `OSHDBRole` and move to oshdb-core ([#453])
 * update jts dependency to version 1.18.2
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
