@@ -9,11 +9,10 @@ import org.heigit.ohsome.oshdb.util.OSHDBRole;
  * Holds an OSH-Object that belongs to the Way or Relation this Member is contained in.
  */
 public class OSMMember implements Serializable {
-
   private final long id;
   private final OSMType type;
-  private final int roleId;
-  private final OSHEntity entity;
+  private final OSHDBRole role;
+  private final transient OSHEntity entity;
 
   public OSMMember(final long id, final OSMType type, final int roleId) {
     this(id, type, roleId, null);
@@ -26,7 +25,7 @@ public class OSMMember implements Serializable {
       OSHEntity entity) {
     this.id = id;
     this.type = type;
-    this.roleId = roleId;
+    this.role = OSHDBRole.of(roleId);
     this.entity = entity;
   }
 
@@ -38,12 +37,8 @@ public class OSMMember implements Serializable {
     return type;
   }
 
-  public int getRawRoleId() {
-    return roleId;
-  }
-
-  public OSHDBRole getRoleId() {
-    return new OSHDBRole(roleId);
+  public OSHDBRole getRole() {
+    return role;
   }
 
   public OSHEntity getEntity() {
@@ -52,12 +47,12 @@ public class OSMMember implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("T:%s ID:%d R:%d", type, id, roleId);
+    return String.format("T:%s ID:%d R:%d", type, id, role.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, id, roleId);
+    return Objects.hash(type, id, role.getId());
   }
 
   @Override
@@ -69,7 +64,7 @@ public class OSMMember implements Serializable {
       return false;
     }
     OSMMember other = (OSMMember) obj;
-    return type == other.type && id == other.id && roleId == other.roleId;
+    return type == other.type && id == other.id && role.equals(other.role);
   }
 
 }

@@ -150,9 +150,9 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     this.areaNoTagKeyId = tagTranslator.getOSHDBTagOf("area", "no").getKey();
     this.areaNoTagValueId = tagTranslator.getOSHDBTagOf("area", "no").getValue();
 
-    this.outerRoleId = tagTranslator.getOSHDBRoleOf("outer").toInt();
-    this.innerRoleId = tagTranslator.getOSHDBRoleOf("inner").toInt();
-    this.emptyRoleId = tagTranslator.getOSHDBRoleOf("").toInt();
+    this.outerRoleId = tagTranslator.getOSHDBRoleOf("outer").getId();
+    this.innerRoleId = tagTranslator.getOSHDBRoleOf("inner").getId();
+    this.emptyRoleId = tagTranslator.getOSHDBRoleOf("").getId();
   }
 
   @Override

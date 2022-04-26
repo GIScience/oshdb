@@ -330,9 +330,9 @@ public class TagTranslator implements AutoCloseable {
         try (ResultSet roles = roleIdQuery.executeQuery()) {
           if (!roles.next()) {
             LOG.info("Unable to find role {} in keytables.", role);
-            roleInt = new OSHDBRole(getFakeId(role.toString()));
+            roleInt = OSHDBRole.of(getFakeId(role.toString()));
           } else {
-            roleInt = new OSHDBRole(roles.getInt("ID"));
+            roleInt = OSHDBRole.of(roles.getInt("ID"));
           }
         }
       }
@@ -353,7 +353,7 @@ public class TagTranslator implements AutoCloseable {
    * @throws OSHDBTagOrRoleNotFoundException if the given role cannot be found
    */
   public OSMRole getOSMRoleOf(int role) {
-    return this.getOSMRoleOf(new OSHDBRole(role));
+    return this.getOSMRoleOf(OSHDBRole.of(role));
   }
 
   /**
@@ -370,11 +370,11 @@ public class TagTranslator implements AutoCloseable {
     OSMRole roleString;
     try {
       synchronized (roleTxtQuery) {
-        roleTxtQuery.setInt(1, role.toInt());
+        roleTxtQuery.setInt(1, role.getId());
         try (ResultSet roles = roleTxtQuery.executeQuery()) {
           if (!roles.next()) {
             throw new OSHDBTagOrRoleNotFoundException(format(
-                "Unable to find role id %d in keytables.", role.toInt()
+                "Unable to find role id %d in keytables.", role.getId()
             ));
           } else {
             roleString = new OSMRole(roles.getString("TXT"));

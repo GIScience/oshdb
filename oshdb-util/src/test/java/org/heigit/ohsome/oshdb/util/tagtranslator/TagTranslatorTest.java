@@ -83,14 +83,14 @@ class TagTranslatorTest {
   void testRole2Int() throws OSHDBKeytablesNotFoundException {
     OSMRole role = new OSMRole("from");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    OSHDBRole expResult = new OSHDBRole(4);
+    OSHDBRole expResult = OSHDBRole.of(4);
     OSHDBRole result = instance.getOSHDBRoleOf(role);
     assertEquals(expResult, result);
   }
 
   @Test
   void testRole2String() throws OSHDBKeytablesNotFoundException {
-    OSHDBRole role = new OSHDBRole(1);
+    OSHDBRole role = OSHDBRole.of(1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSMRole expResult = new OSMRole("inner");
     OSMRole result = instance.getOSMRoleOf(role);

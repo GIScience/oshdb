@@ -111,7 +111,7 @@ class BaseTagInterpreter implements TagInterpreter {
     int outerWayCount = 0;
     OSMMember[] members = osmRelation.getMembers();
     for (int i = 0; i < members.length; i++) {
-      if (members[i].getType() == OSMType.WAY && members[i].getRawRoleId() == outerRoleId) {
+      if (members[i].getType() == OSMType.WAY && members[i].getRole().getId() == outerRoleId) {
         if (++outerWayCount > 1) {
           // exit early if two outer ways were already found
           return false;
@@ -139,7 +139,7 @@ class BaseTagInterpreter implements TagInterpreter {
     if (!(osmMember.getEntity() instanceof OSHWay)) {
       return false;
     }
-    int roleId = osmMember.getRawRoleId();
+    int roleId = osmMember.getRole().getId();
     // some historic osm data may still be mapped without roles set
     // -> assume empty role to mean outer. see
     // https://wiki.openstreetmap.org/w/index.php?title=Relation:multipolygon&oldid=366967#Members
@@ -153,7 +153,7 @@ class BaseTagInterpreter implements TagInterpreter {
     if (!(osmMember.getEntity() instanceof OSHWay)) {
       return false;
     }
-    return osmMember.getRawRoleId() == this.innerRoleId;
+    return osmMember.getRole().getId() == this.innerRoleId;
   }
 
 }

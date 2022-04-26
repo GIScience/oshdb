@@ -49,11 +49,11 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
   @Override
   public boolean isMultipolygonOuterMember(OSMMember osmMember) {
     return osmMember.getType() == OSMType.WAY
-        && (osmMember.getRawRoleId() == outer || osmMember.getRawRoleId() == emptyRole);
+        && (osmMember.getRole().getId() == outer || osmMember.getRole().getId() == emptyRole);
   }
 
   @Override
   public boolean isMultipolygonInnerMember(OSMMember osmMember) {
-    return osmMember.getType() == OSMType.WAY && osmMember.getRawRoleId() == inner;
+    return osmMember.getType() == OSMType.WAY && osmMember.getRole().getId() == inner;
   }
 }
