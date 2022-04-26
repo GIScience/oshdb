@@ -1,8 +1,13 @@
 package org.heigit.ohsome.oshdb.osm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class OSMMemberTest {
 
@@ -28,7 +33,7 @@ class OSMMemberTest {
   void testGetRoleId() {
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
     int expResult = 1;
-    int result = instance.getRawRoleId();
+    int result = instance.getRole().getId();
     assertEquals(expResult, result);
   }
 
@@ -57,4 +62,32 @@ class OSMMemberTest {
     String result = instance.toString();
     assertEquals(expResult, result);
   }
+
+  @Test
+  void testEqualsAndEquals() {
+    var member = new OSMMember(1234L, OSMType.NODE, 1);
+    assertEquals(member, member);
+    assertEquals(member, new OSMMember(1234L, OSMType.NODE, 1));
+    assertEquals(member.hashCode(), new OSMMember(1234L, OSMType.NODE, 1).hashCode());
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideMembersForNotEqualsAndHash")
+  void testNotEquals(long id, OSMType type, int role) {
+    var member = new OSMMember(1234L, OSMType.NODE, 1);
+    assertNotEquals(member, new OSMMember(id, type, role));
+  }
+
+  private static Stream<Arguments> provideMembersForNotEqualsAndHash() {
+    return Stream.of(
+        // different types
+        Arguments.of(1234L, OSMType.WAY, 1),
+        Arguments.of(1234L, OSMType.RELATION, 1),
+        // different role
+        Arguments.of(1234L, OSMType.NODE, 2),
+        // diffrent id
+        Arguments.of(23, OSMType.NODE, 1)
+      );
+  }
+
 }

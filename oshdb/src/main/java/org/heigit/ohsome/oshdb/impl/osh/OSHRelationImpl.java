@@ -303,7 +303,7 @@ public class OSHRelationImpl extends OSHEntityImpl
               break;
             }
           }
-          output.writeU32(member.getRawRoleId());
+          output.writeU32(member.getRole().getId());
           lastMemberId = member.getId();
         }
       }

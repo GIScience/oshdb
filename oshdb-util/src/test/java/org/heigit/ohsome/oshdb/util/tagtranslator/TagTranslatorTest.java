@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.OSHDBTag;
-import org.heigit.ohsome.oshdb.util.OSHDBRole;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.junit.jupiter.api.AfterAll;
@@ -83,14 +83,14 @@ class TagTranslatorTest {
   void testRole2Int() throws OSHDBKeytablesNotFoundException {
     OSMRole role = new OSMRole("from");
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
-    OSHDBRole expResult = new OSHDBRole(4);
+    OSHDBRole expResult = OSHDBRole.of(4);
     OSHDBRole result = instance.getOSHDBRoleOf(role);
     assertEquals(expResult, result);
   }
 
   @Test
   void testRole2String() throws OSHDBKeytablesNotFoundException {
-    OSHDBRole role = new OSHDBRole(1);
+    OSHDBRole role = OSHDBRole.of(1);
     TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
     OSMRole expResult = new OSMRole("inner");
     OSMRole result = instance.getOSMRoleOf(role);
