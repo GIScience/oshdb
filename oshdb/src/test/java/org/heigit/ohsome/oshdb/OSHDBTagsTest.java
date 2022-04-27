@@ -79,4 +79,6 @@ class OSHDBTagsTest {
     assertNotEquals(tags, OSHDBTags.of(new int[] {1, 1, 4, 4}));
     assertNotEquals(tags, List.of(new OSHDBTag(2, 2), new OSHDBTag(4, 4)));
   }
+
+
 }

@@ -1,9 +1,13 @@
 package org.heigit.ohsome.oshdb;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Objects;
 
-public class OSHDBTag implements Serializable {
+public class OSHDBTag implements Comparable<OSHDBTag>, Serializable {
+  public static final Comparator<OSHDBTag> ORDER_BY_ID = Comparator
+      .comparingInt(OSHDBTag::getKey)
+      .thenComparingInt(OSHDBTag::getValue);
 
   private static final long serialVersionUID = 1L;
   private final int key;
@@ -24,6 +28,11 @@ public class OSHDBTag implements Serializable {
 
   public boolean isPresentInKeytables() {
     return this.value >= 0 && this.key >= 0;
+  }
+
+  @Override
+  public int compareTo(OSHDBTag o) {
+    return ORDER_BY_ID.compare(this, o);
   }
 
   @Override
