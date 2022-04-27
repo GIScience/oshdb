@@ -33,7 +33,6 @@ public class OSHDBTag implements Comparable<OSHDBTag>, Serializable {
     return this.value;
   }
 
-  @Deprecated
   public boolean isPresentInKeytables() {
     return this.value >= 0 && this.key >= 0;
   }
