@@ -21,6 +21,7 @@ Changelog
 * remove `OSMMember.getRawRoleId` ([#453])
 * refactor `OSHDBRole` and move to oshdb-core ([#453])
 * update jts dependency to version 1.18.2
+* add natural order to `OSHDBTag` ([#454])
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#433]: https://github.com/GIScience/oshdb/issues/433
@@ -30,6 +31,7 @@ Changelog
 [#447]: https://github.com/GIScience/oshdb/pull/447
 [#449]: https://github.com/GIScience/oshdb/pull/449
 [#453]: https://github.com/GIScience/oshdb/pull/453
+[#454]: https://github.com/GIScience/oshdb/pull/454
 
 ## 0.7.2
 
