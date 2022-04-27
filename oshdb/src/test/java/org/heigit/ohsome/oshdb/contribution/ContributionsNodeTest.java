@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.contribution;
 
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.CREATION;
+import static org.heigit.ohsome.oshdb.contribution.ContributionType.DELETION;
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.GEOMETRY_CHANGE;
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.TAG_CHANGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,12 +13,46 @@ import org.heigit.ohsome.oshdb.OSHDBTest;
 import org.junit.jupiter.api.Test;
 
 class ContributionsNodeTest extends OSHDBTest {
+
+  void testReviveDeletedCreated() {
+    var versions = nodes(1,
+        node(3, 3000, 303, 3, tags(tag(1, 1)), 1, 0), //revive
+        node(-2, 2000, 202, 2, tags(), 0, 0), // deleted
+        node(1, 1000, 101, 1, tags(tag(1, 1)), 1, 0)); //created
+    var osh = osh(versions);
+    var contribs = Contributions.of(osh);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(3000, contrib.getEpochSecond());
+    assertEquals(303, contrib.getChangeset());
+    assertEquals(3, contrib.getUser());
+    assertEquals(versions.get(0), contrib.getEntity());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertEquals(2000, contrib.getEpochSecond());
+    assertEquals(202, contrib.getChangeset());
+    assertEquals(2, contrib.getUser());
+    assertEquals(versions.get(1), contrib.getEntity());
+    assertEquals(EnumSet.of(DELETION), contrib.getTypes());
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(101, contrib.getChangeset());
+    assertEquals(1, contrib.getUser());
+    assertEquals(versions.get(2), contrib.getEntity());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+  }
+
   @Test
   void test() {
     var versions = nodes(1,
-        node(3, 3000, 303, 3, tags(tag(1, 1)), 1, 0),
-        node(2, 2000, 202, 2, tags(tag(1, 1)), 0, 0),
-        node(1, 1000, 101, 1, tags(), 0, 0));
+        node(3, 3000, 303, 3, tags(tag(1, 1)), 1, 0), // geom-change
+        node(2, 2000, 202, 2, tags(tag(1, 1)), 0, 0), // tag-change
+        node(1, 1000, 101, 1, tags(), 0, 0)); // creation
     var osh = osh(versions);
     var contribs = Contributions.of(osh);
 
