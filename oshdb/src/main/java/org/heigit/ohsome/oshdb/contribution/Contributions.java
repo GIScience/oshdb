@@ -169,6 +169,7 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
           queue.add(minorContribs);
         }
         minorTypes = EnumSet.copyOf(minorContrib.getTypes());
+        minorTypes.addAll(minorContrib.getMinorTypes());
         // squash changeset
         squashChangesetMinor(queue, changeset, major, minorTypes);
         if (changeset != cs(major)) {
@@ -380,6 +381,7 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
       var contribs = queue.poll();
       var contrib = contribs.next(); // skip
       types.addAll(contrib.getTypes());
+      types.addAll(contrib.getMinorTypes());
       if (contribs.hasNext()) {
         queue.add(contribs);
       }

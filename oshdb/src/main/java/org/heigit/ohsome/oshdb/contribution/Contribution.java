@@ -66,6 +66,7 @@ public abstract class Contribution implements OSHDBTemporal {
     return entity.getType();
   }
 
+  @SuppressWarnings("unchecked")
   public <T extends OSMEntity> T getEntity() {
     return (T) entity;
   }
@@ -86,6 +87,7 @@ public abstract class Contribution implements OSHDBTemporal {
     private NodeContribution(OSMNode entity, Set<ContributionType> types) {
       super(entity, types);
     }
+
   }
 
   private static class EntityContribution extends Contribution {
@@ -129,5 +131,13 @@ public abstract class Contribution implements OSHDBTemporal {
     public List<Contribution> getMembers() {
       return members;
     }
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Contrib %s:"
+        + " [timestamp=%s, changeset=%s, user=%s, types=%s, minorTypes=%s, members=%s, entity=%s]",
+        getType(), getEpochSecond(), getChangeset(), getUser(), getTypes(), getMinorTypes(),
+        getMembers(), getEntity());
   }
 }
