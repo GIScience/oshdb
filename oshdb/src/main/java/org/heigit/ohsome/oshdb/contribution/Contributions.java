@@ -39,6 +39,10 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
   private static final EnumSet<ContributionType> CREATION = EnumSet.of(ContributionType.CREATION);
 
 
+  public static Contributions of(OSHEntity osh) {
+    return of(osh, Long.MAX_VALUE, x -> true);
+  }
+
   public static Contributions of(OSHEntity osh, long maxTimestamp) {
     return of(osh, maxTimestamp, x -> true);
   }
@@ -200,7 +204,7 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
     protected Contribution nextContribution() {
       var prev = getPrevMajor();
       var types = checkTypes(major, prev);
-      if (checkGeomChange(major, prev)) {
+      if (types != CREATION && checkGeomChange(major, prev)) {
         types.add(ContributionType.GEOMETRY_CHANGE);
       }
       var contrib = Contribution.node(major, types);

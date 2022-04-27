@@ -18,8 +18,6 @@ public abstract class OSHDBIterator<T> implements Iterator<T> {
 
   private T next;
 
-  protected OSHDBIterator() {}
-
   @Override
   public boolean hasNext() {
     return next != null || (next = getNext()) != null;

@@ -25,5 +25,4 @@ class OSHDBIteratorTest {
     assertThrows(NoSuchElementException.class, () -> itr.peek());
     assertThrows(NoSuchElementException.class, () -> itr.next());
   }
-
 }
