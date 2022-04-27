@@ -4,7 +4,14 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 
+/**
+ * Key/Value id base OSM Tag class.
+ *
+ */
 public class OSHDBTag implements Comparable<OSHDBTag>, Serializable {
+  /**
+   * Order by keyId/valueId, default Comparator for OSHDBTag.
+   */
   public static final Comparator<OSHDBTag> ORDER_BY_ID = Comparator
       .comparingInt(OSHDBTag::getKey)
       .thenComparingInt(OSHDBTag::getValue);
@@ -26,6 +33,7 @@ public class OSHDBTag implements Comparable<OSHDBTag>, Serializable {
     return this.value;
   }
 
+  @Deprecated
   public boolean isPresentInKeytables() {
     return this.value >= 0 && this.key >= 0;
   }
