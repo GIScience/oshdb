@@ -19,10 +19,10 @@ class OSHDBTagTest {
     var tag = new OSHDBTag(10, 10);
 
     assertEquals(0, tag.compareTo(new OSHDBTag(10, 10)));
-    assertEquals(1, tag.compareTo(new OSHDBTag(5, 10)));
-    assertEquals(1, tag.compareTo(new OSHDBTag(10, 5)));
-    assertEquals(-1, tag.compareTo(new OSHDBTag(20, 10)));
-    assertEquals(-1, tag.compareTo(new OSHDBTag(10, 15)));
+    assertTrue(tag.compareTo(new OSHDBTag(5, 10)) > 0);
+    assertTrue(tag.compareTo(new OSHDBTag(10, 5)) > 0);
+    assertTrue(tag.compareTo(new OSHDBTag(20, 10)) < 0);
+    assertTrue(tag.compareTo(new OSHDBTag(10, 15)) < 0);
   }
 
   @Test
