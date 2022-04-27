@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 class ContributionsNodeTest extends OSHDBTest {
 
+  @Test
   void testReviveDeletedCreated() {
     var versions = nodes(1,
         node(3, 3000, 303, 3, tags(tag(1, 1)), 1, 0), //revive
