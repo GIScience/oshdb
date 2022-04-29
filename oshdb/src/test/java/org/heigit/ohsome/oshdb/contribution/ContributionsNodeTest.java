@@ -103,4 +103,23 @@ class ContributionsNodeTest extends OSHDBTest {
 
     assertFalse(contribs.hasNext());
   }
+
+  @Test
+  void testSquashed() {
+    var versions = nodes(1,
+        node(2, 2000, 101, 1, tags(), 0, 0),
+        node(1, 1000, 101, 1, tags(), 0, 0));
+    var osh = osh(versions);
+    var contribs = Contributions.of(osh);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(2000, contrib.getEpochSecond());
+    assertEquals(101, contrib.getChangeset());
+    assertEquals(1, contrib.getUser());
+    assertEquals(versions.get(0), contrib.getEntity());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertFalse(contribs.hasNext());
+  }
 }

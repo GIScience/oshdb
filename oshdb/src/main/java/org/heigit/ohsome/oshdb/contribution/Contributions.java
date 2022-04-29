@@ -95,8 +95,7 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
       visible = true;
       if (!test(osm)) {
         visible = false;
-        while (majorVersions.hasNext()
-            && (!test(majorVersions.peek()) || cs(osm) == cs(majorVersions.peek()))) {
+        while (majorVersions.hasNext() && !test(majorVersions.peek())) {
           osm = majorVersions.next();
         }
         if (!majorVersions.hasNext()) {
@@ -114,12 +113,16 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
       if (!majorVersions.hasNext()) {
         return null;
       }
-      var osm = majorVersions.next();
-      osm = testOrAdvance(osm);
       // squash changeset
-      while (majorVersions.hasNext() && cs(majorVersions.peek()) == cs(osm)) {
+      while (majorVersions.hasNext() && cs(majorVersions.peek()) == cs(major)) {
         majorVersions.next(); // skip
       }
+      if (!majorVersions.hasNext()) {
+        return null;
+      }
+
+      var osm = majorVersions.next();
+      osm = testOrAdvance(osm);
       return osm;
     }
 
