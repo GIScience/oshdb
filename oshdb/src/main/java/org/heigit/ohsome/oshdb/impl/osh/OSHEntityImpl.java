@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
@@ -21,7 +22,8 @@ import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayOutputWrapper;
 import org.heigit.ohsome.oshdb.util.bytearray.ByteArrayWrapper;
 
-public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>, Serializable {
+public abstract class OSHEntityImpl
+    implements OSHEntity, OSHDBBoundable, Comparable<OSHEntity>, Serializable {
 
   protected static final int CHANGED_USER_ID = 1 << 0;
   protected static final int CHANGED_TAGS = 1 << 1;
@@ -384,6 +386,11 @@ public abstract class OSHEntityImpl implements OSHEntity, Comparable<OSHEntity>,
   @Override
   public long getId() {
     return id;
+  }
+
+  @Override
+  public OSHDBBoundable getBounce() {
+    return this;
   }
 
   public int getLength() {

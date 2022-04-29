@@ -93,4 +93,14 @@ public interface OSHDBBoundable {
         Math.min(getMaxLongitude(), other.getMaxLongitude()),
         Math.min(getMaxLatitude(), other.getMaxLatitude()));
   }
+
+  /**
+   * Creates a new OSHDBBoundingBox object.
+   *
+   * @return new OSHDBBoudingBox object.
+   */
+  default OSHDBBoundingBox getBoundingBox() {
+    return OSHDBBoundingBox.bboxWgs84Coordinates(getMinLongitude(), getMinLatitude(),
+        getMaxLongitude(), getMaxLatitude());
+  }
 }

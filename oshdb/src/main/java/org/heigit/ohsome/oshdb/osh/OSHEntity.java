@@ -7,11 +7,13 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
-public interface OSHEntity extends OSHDBBoundable {
+public interface OSHEntity {
 
   long getId();
 
   OSMType getType();
+
+  OSHDBBoundable getBounce();
 
   Iterable<OSHDBTagKey> getTagKeys();
 

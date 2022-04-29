@@ -279,8 +279,8 @@ public class CellIterator implements Serializable {
     return Streams.stream(cellData).flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
-              !oshEntity.intersects(boundingBox)
-              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity))
+              !oshEntity.getBounce().intersects(boundingBox)
+              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBounce()))
           )) {
         // this osh entity doesn't match the prefilter or is fully outside the requested
         // area of interest -> skip it
@@ -290,7 +290,7 @@ public class CellIterator implements Serializable {
         // none of this osh entity's versions matches the filter -> skip it
         return Stream.empty();
       }
-      boolean fullyInside = allFullyInside || fullyInside(oshEntity);
+      boolean fullyInside = allFullyInside || fullyInside(oshEntity.getBounce());
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
@@ -561,12 +561,12 @@ public class CellIterator implements Serializable {
       throw new UnsupportedOperationException("this is not yet properly implemented (probably)");
     }
     return Streams.stream(cellData)
-        .filter(oshEntity -> allFullyInside || oshEntity.intersects(boundingBox))
+        .filter(oshEntity -> allFullyInside || oshEntity.getBounce().intersects(boundingBox))
         .filter(oshEntityPreFilter)
-        .filter(
-            oshEntity -> allFullyInside || !isBoundByPolygon || !bboxOutsidePolygon.test(oshEntity))
+        .filter(oshEntity -> allFullyInside || !isBoundByPolygon
+            || !bboxOutsidePolygon.test(oshEntity.getBounce()))
         .flatMap(oshEntity -> {
-          var fullyInside = allFullyInside || fullyInside(oshEntity);
+          var fullyInside = allFullyInside || fullyInside(oshEntity.getBounce());
           var contribs = new ContributionIterator(oshEntity, fullyInside);
           return Streams.stream(contribs);
         });
