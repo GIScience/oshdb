@@ -139,4 +139,8 @@ public abstract class OSHDBTags extends AbstractSet<OSHDBTag> implements Seriali
       return false;
     }
   }
+
+  public OSHDBTags view(int[] readTags) {
+    return null;
+  }
 }
