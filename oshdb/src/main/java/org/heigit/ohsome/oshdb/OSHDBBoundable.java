@@ -97,7 +97,7 @@ public interface OSHDBBoundable {
   /**
    * Creates a new OSHDBBoundingBox object.
    *
-   * @return new OSHDBBoudingBox object.
+   * @return new OSHDBBoundingBox object.
    */
   default OSHDBBoundingBox getBoundingBox() {
     return OSHDBBoundingBox.bboxWgs84Coordinates(getMinLongitude(), getMinLatitude(),
