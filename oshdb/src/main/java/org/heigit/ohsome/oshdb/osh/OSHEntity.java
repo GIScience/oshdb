@@ -13,7 +13,7 @@ public interface OSHEntity {
 
   OSMType getType();
 
-  OSHDBBoundable getBounce();
+  OSHDBBoundable getBoundable();
 
   Iterable<OSHDBTagKey> getTagKeys();
 

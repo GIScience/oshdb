@@ -389,7 +389,7 @@ public abstract class OSHEntityImpl
   }
 
   @Override
-  public OSHDBBoundable getBounce() {
+  public OSHDBBoundable getBoundable() {
     return this;
   }
 

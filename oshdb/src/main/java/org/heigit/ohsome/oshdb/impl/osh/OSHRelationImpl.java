@@ -206,7 +206,7 @@ public class OSHRelationImpl extends OSHEntityImpl
     int idx = 0;
     int offset = 0;
     for (OSHNode node : nodes) {
-      OSHDBBoundable bbox = node.getBounce();
+      OSHDBBoundable bbox = node.getBoundable();
       if (bbox.isValid()) {
         minLon = Math.min(minLon, bbox.getMinLongitude());
         maxLon = Math.max(maxLon, bbox.getMaxLongitude());
@@ -241,7 +241,7 @@ public class OSHRelationImpl extends OSHEntityImpl
     idx = 0;
     offset = 0;
     for (OSHWay way : ways) {
-      OSHDBBoundable bbox = way.getBounce();
+      OSHDBBoundable bbox = way.getBoundable();
       minLon = Math.min(minLon, bbox.getMinLongitude());
       maxLon = Math.max(maxLon, bbox.getMaxLongitude());
       minLat = Math.min(minLat, bbox.getMinLatitude());
