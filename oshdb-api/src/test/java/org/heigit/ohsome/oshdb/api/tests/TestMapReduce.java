@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.api.tests;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
