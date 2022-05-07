@@ -221,4 +221,42 @@ class ContributionsRelationTest extends OSHDBTest {
 
     assertFalse(contribs.hasNext());
   }
+
+  @Test
+  void testDifferentWayAndNode() {
+    var nodes = List.of(
+        osh(1,
+            node(1, 1000, 101, 1, tags(), 0, 0)),
+        osh(2,
+            node(1, 1000, 101, 1, tags(), 0, 0)),
+        osh(3,
+            node(1, 1000, 101, 1, tags(), 0, 0)));
+    var ways = List.of(
+        osh(1, List.of(
+            osh(1,
+                node(1, 1000, 101, 1, tags(), 0, 0))),
+            way(1, 1000, 101, 1, tags(), mems(1))),
+        osh(2, List.of(
+            osh(1,
+                node(1, 1000, 101, 1, tags(), 0, 0))),
+            way(1, 1000, 101, 1, tags(), mems(1))),
+        osh(3, List.of(
+            osh(1,
+                node(1, 1000, 101, 1, tags(), 0, 0))),
+            way(1, 1000, 101, 1, tags(), mems(1))));
+
+    var versions = relations(1,
+        relation(2, 2000, 202, 2, tags(), mems(w(1, 0), n(1, 0), w(2, 0), n(2, 0))),
+        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0), w(3,0),n(3,0))));
+
+    var osh = osh(versions, nodes, ways);
+    var contribs = Contributions.of(osh);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertFalse(contribs.hasNext());
+  }
 }
