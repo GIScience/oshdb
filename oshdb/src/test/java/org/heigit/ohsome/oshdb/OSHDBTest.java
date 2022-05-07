@@ -24,6 +24,7 @@ import org.heigit.ohsome.oshdb.osm.OSMWay;
  */
 
 public abstract class OSHDBTest {
+  private static final OSMMember[] NO_MEMBERS = new OSMMember[0];
 
   @SafeVarargs
   protected static OSHNode osh(long id, LongFunction<OSMNode>... versions) {
@@ -96,6 +97,9 @@ public abstract class OSHDBTest {
       kvs[i * 2 + 1] = tags[i].getValue();
     }
     return kvs;
+  }
+  protected static OSMMember[] mems() {
+    return NO_MEMBERS;
   }
 
   protected static OSMMember[] mems(long... ids) {

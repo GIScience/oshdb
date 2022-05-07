@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 class ContributionsRelationTest extends OSHDBTest {
 
   @Test
-  void test() {
+  void testMemberTagChanges() {
     var nodes = List.of(
         osh(1,
             node(1, 1000, 101, 1, tags(), 0, 0)));
@@ -28,7 +28,7 @@ class ContributionsRelationTest extends OSHDBTest {
             osh(1,
                 node(3, 3500, 253, 3, tags(), 1, 1),
                 node(2, 2500, 253, 3, tags(), 1, 1), // squash
-                node(1, 2000, 202, 2, tags(), 0, 0))),
+                node(1, 1100, 101, 1, tags(), 0, 0))), // minor-major change
             way(1, 1000, 101, 1, tags(), mems(1))));
 
     var versions = relations(1,
@@ -55,7 +55,7 @@ class ContributionsRelationTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(1100, contrib.getEpochSecond());
     assertEquals(101, contrib.getChangeset());
     assertEquals(1, contrib.getUser());
     assertEquals(versions.get(1), contrib.getEntity());

@@ -7,6 +7,7 @@ import static org.heigit.ohsome.oshdb.osm.OSMType.WAY;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -89,6 +90,9 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
         major = majorVersions.next();
       }
       major = testOrAdvance(major);
+      if (!filter.test(major)) {
+        major = null;
+      }
     }
 
     private T testOrAdvance(T osm) {
@@ -97,9 +101,6 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
         visible = false;
         while (majorVersions.hasNext() && !test(majorVersions.peek())) {
           osm = majorVersions.next();
-        }
-        if (!majorVersions.hasNext()) {
-          return null;
         }
       }
       return osm;
@@ -146,8 +147,12 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
         timestamp = ts(major);
         changeset = cs(major);
         var contrib = Contribution.deletion(major);
-        major = majorVersions.next(); // there is always a valid next version!
-        initQueue(major);
+        if (majorVersions.hasNext()) {
+          major = majorVersions.next();
+          initQueue(major);
+        } else {
+          major = null;
+        }
         return contrib;
       }
       return nextContribution();
@@ -226,8 +231,9 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
     }
   }
 
+  private static final Queue<Contributions> EMPTY_QUEUE = new ArrayDeque<>(0);
   private static class Ways extends Entities<OSMWay> {
-    private Queue<Contributions> queue;
+    private Queue<Contributions> queue = EMPTY_QUEUE;
     private List<Contributions> activeMembers;
 
     private Map<Long, Contributions> oshMembers;
@@ -237,10 +243,13 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
       super(OSHDBIterator.peeking(osh.getVersions()), maxTimestamp, filter);
       if (major != null) {
         this.oshMembers = members(osh.getNodes(), timestamp);
-        queue = new PriorityQueue<>(oshMembers.size(), QUEUE_ORDER);
+        if (!oshMembers.isEmpty()) {
+          queue = new PriorityQueue<>(oshMembers.size(), QUEUE_ORDER);
+        }
         if (visible) {
           initQueue(major);
         }
+
       }
     }
 

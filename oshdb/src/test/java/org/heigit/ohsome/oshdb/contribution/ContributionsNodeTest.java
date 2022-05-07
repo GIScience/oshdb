@@ -76,7 +76,7 @@ class ContributionsNodeTest extends OSHDBTest {
   }
 
   @Test
-  void test() {
+  void testGeomTagCreation() {
     var versions = nodes(1,
         node(3, 3000, 303, 3, tags(tag(1, 1)), 1, 0), // geom-change
         node(2, 2000, 202, 2, tags(tag(1, 1)), 0, 0), // tag-change
