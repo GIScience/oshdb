@@ -65,6 +65,25 @@ class ContributionsRelationTest extends OSHDBTest {
   }
 
   @Test
+  void testOutsideMax() {
+    var nodes = List.of(
+        osh(1,
+            node(1, 1000, 101, 1, tags(), 0, 0)));
+    var ways = List.of(
+        osh(1, List.of(
+            osh(1,
+                node(1, 1000, 101, 1, tags(), 0, 0))),
+            way(1, 1000, 101, 1, tags(), mems(1))));
+
+    var versions = relations(1,
+        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0))));
+    var osh = osh(versions, nodes, ways);
+    var contribs = Contributions.of(osh, 500);
+
+    assertFalse(contribs.hasNext());
+  }
+
+  @Test
   void testDeletionCreation() {
     var nodes = List.of(
         osh(1,
