@@ -250,4 +250,25 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertFalse(contribs.hasNext());
   }
+
+  @Test
+  void testMinorContribOutsideMax() {
+    var nodes = List.of(
+        osh(1,
+            node(2, 2000, 202, 2, tags(), 0, 0),
+            node(1, 1000, 101, 1, tags(), 0, 0)));
+
+    var versions = ways(1,
+        way(1, 1000, 101, 1, tags(), mems(1)));
+    var osh = osh(versions, nodes);
+    var contribs = Contributions.of(osh, 1500);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertFalse(contribs.hasNext());
+  }
+
 }

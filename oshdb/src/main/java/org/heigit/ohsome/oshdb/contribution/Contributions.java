@@ -232,6 +232,7 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
   }
 
   private static final Queue<Contributions> EMPTY_QUEUE = new ArrayDeque<>(0);
+
   private static class Ways extends Entities<OSMWay> {
     private Queue<Contributions> queue = EMPTY_QUEUE;
     private List<Contributions> activeMembers;
@@ -287,7 +288,7 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
   }
 
   private static class Rels extends Entities<OSMRelation> {
-    private Queue<Contributions> queue;
+    private Queue<Contributions> queue = EMPTY_QUEUE;
     private List<Contributions> activeMembers;
 
     private Map<Long, Contributions> oshNodeMembers;
@@ -302,7 +303,10 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
       if (major != null) {
         this.oshNodeMembers = members(osh.getNodes(), timestamp);
         this.oshWayMembers = members(osh.getWays(), timestamp);
-        queue = new PriorityQueue<>(oshNodeMembers.size() + oshWayMembers.size(), QUEUE_ORDER);
+        var queueSize = oshNodeMembers.size() + oshWayMembers.size();
+        if (queueSize > 0) {
+          queue = new PriorityQueue<>(queueSize, QUEUE_ORDER);
+        }
         if (visible) {
           initQueue(major);
         }

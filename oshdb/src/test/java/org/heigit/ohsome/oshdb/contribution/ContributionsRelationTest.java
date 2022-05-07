@@ -182,6 +182,22 @@ class ContributionsRelationTest extends OSHDBTest {
   }
 
   @Test
+  void testNoMembers() {
+    var versions = relations(1,
+        relation(1, 1000, 101, 1, tags(), mems(n(1, 0))));
+
+    var osh = osh(versions, emptyList(), emptyList());
+    var contribs = Contributions.of(osh);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertFalse(contribs.hasNext());
+  }
+
+  @Test
   void testMissingMemberChanges() {
     var nodes = List.of(
         osh(1,
