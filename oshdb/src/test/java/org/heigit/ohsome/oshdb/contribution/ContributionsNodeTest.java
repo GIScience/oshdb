@@ -132,6 +132,27 @@ class ContributionsNodeTest extends OSHDBTest {
   }
 
   @Test
+  void testMultipleVersionFilterFail() {
+    var versions = nodes(1,
+        node(2, 2000, 202, 2, tags(), 0, 0),
+        node(1, 1000, 101, 1, tags(), 0, 0));
+    var osh = osh(versions);
+    var contribs = Contributions.of(osh, Long.MAX_VALUE, o -> false);
+
+    assertFalse(contribs.hasNext());
+  }
+
+  @Test
+  void testNoVersionBeforeMax() {
+    var versions = nodes(1,
+        node(1, 1000, 101, 1, tags(), 0, 0));
+    var osh = osh(versions);
+    var contribs = Contributions.of(osh, 500);
+
+    assertFalse(contribs.hasNext());
+  }
+
+  @Test
   void testSquashed() {
     var versions = nodes(1,
         node(2, 2000, 101, 1, tags(), 0, 0),

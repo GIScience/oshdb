@@ -102,4 +102,6 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertFalse(contribs.hasNext());
   }
+
+
 }

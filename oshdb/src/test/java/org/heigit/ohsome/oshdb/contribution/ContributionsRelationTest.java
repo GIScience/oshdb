@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.contribution;
 
 import static java.util.Collections.emptyList;
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.CREATION;
+import static org.heigit.ohsome.oshdb.contribution.ContributionType.DELETION;
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.GEOMETRY_CHANGE;
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.MEMBER_CHANGE;
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.ROLE_CHANGE;
@@ -58,7 +59,37 @@ class ContributionsRelationTest extends OSHDBTest {
     assertEquals(101, contrib.getChangeset());
     assertEquals(1, contrib.getUser());
     assertEquals(versions.get(1), contrib.getEntity());
-    assertEquals(EnumSet.of(ContributionType.CREATION), contrib.getTypes());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertFalse(contribs.hasNext());
+  }
+
+  @Test
+  void testDeletionCreation() {
+    var nodes = List.of(
+        osh(1,
+            node(1, 1000, 101, 1, tags(), 0, 0)));
+    var ways = List.of(
+        osh(1, List.of(
+            osh(1,
+                node(1, 1000, 101, 1, tags(), 0, 0))),
+            way(1, 1000, 101, 1, tags(), mems(1))));
+
+    var versions = relations(1,
+        relation(-2, 2000, 202, 2, tags(), mems(w(1, 0), n(1, 0))),
+        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0))));
+    var osh = osh(versions, nodes, ways);
+    var contribs = Contributions.of(osh);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(2000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(DELETION), contrib.getTypes());
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
   }

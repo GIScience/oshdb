@@ -260,6 +260,8 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
           }
         }
       }
+      // remove previous active from queue
+      queue.removeIf(contribs -> !newActive.contains(contribs.peek().getId()));
       active = newActive;
       activeMembers = newActiveMembers;
     }
@@ -309,18 +311,28 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
         var memId = member.getId();
 
         var contribs = memberContribs(memType, memId);
-        if (contribs != null) {
+        if (contribs != null && contribs.hasNext()) {
           newActiveMembers.add(contribs);
-
           // only add if not already in queue
-          if (NODE.equals(memType) && newActiveNodes.add(memId) && !activeNodes.remove(memId)) {
-            queue.add(contribs);
-          }
-          if (WAY.equals(memType) && newActiveWays.add(memId) && !activeWays.remove(memId)) {
+          if ((NODE == memType && newActiveNodes.add(memId) && !activeNodes.remove(memId))
+              || (WAY == memType && newActiveWays.add(memId) && !activeWays.remove(memId))) {
             queue.add(contribs);
           }
         }
       }
+      // remove previous active from queue
+      queue.removeIf(contribs -> {
+        var contrib = contribs.peek();
+        var memId = contrib.getId();
+        switch (contrib.getType()) {
+          case NODE:
+            return !newActiveNodes.contains(memId);
+          case WAY:
+            return !newActiveWays.contains(memId);
+          default:
+            return true;
+        }
+      });
       activeNodes = newActiveNodes;
       activeWays = newActiveWays;
       activeMembers = newActiveMembers;

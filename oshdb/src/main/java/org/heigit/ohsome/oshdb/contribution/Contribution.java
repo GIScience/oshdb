@@ -66,6 +66,10 @@ public abstract class Contribution implements OSHDBTemporal {
     return entity.getType();
   }
 
+  public long getId() {
+    return entity.getId();
+  }
+
   @SuppressWarnings("unchecked")
   public <T extends OSMEntity> T getEntity() {
     return (T) entity;
