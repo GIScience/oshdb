@@ -337,7 +337,7 @@ class ContributionsWayTest extends OSHDBTest {
             node(1, 1000, 101, 1, tags(), 0, 0)));
 
     var versions = ways(1,
-        way(2, 2000, 202, 2, tags(), mems(2, 3)),
+        way(2, 2000, 202, 2, tags(), mems(2, 3, 2)),
         way(1, 1000, 101, 1, tags(), mems(1, 2)));
     var osh = osh(versions, nodes);
     var contribs = Contributions.of(osh);

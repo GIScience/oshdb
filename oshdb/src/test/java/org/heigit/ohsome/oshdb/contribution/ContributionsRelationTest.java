@@ -265,7 +265,7 @@ class ContributionsRelationTest extends OSHDBTest {
             way(1, 1000, 101, 1, tags(), mems(1))));
 
     var versions = relations(1,
-        relation(2, 2000, 202, 2, tags(), mems(w(1, 0), n(1, 0), w(2, 0), n(2, 0))),
+        relation(2, 2000, 202, 2, tags(), mems(w(1, 0), n(1, 0), w(2, 0), n(2, 0), w(1, 0), n(1, 0))),
         relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0), w(3, 0), n(3, 0))));
 
     var osh = osh(versions, nodes, ways);

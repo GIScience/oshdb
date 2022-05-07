@@ -473,8 +473,4 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
   protected int user(Contribution contrib) {
     return contrib.getUser();
   }
-
-  protected int user(OSMEntity osm) {
-    return osm.getUserId();
-  }
 }
