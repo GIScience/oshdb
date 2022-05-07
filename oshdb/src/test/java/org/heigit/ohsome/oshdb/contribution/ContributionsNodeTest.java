@@ -171,4 +171,20 @@ class ContributionsNodeTest extends OSHDBTest {
 
     assertFalse(contribs.hasNext());
   }
+
+  @Test
+  void testCheckMembersEmpty() {
+    var versions = nodes(1,
+        node(1, 1000, 101, 1, tags(), 0, 0));
+    var osh = osh(versions);
+    var contribs = Contributions.of(osh);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+    assertTrue(contrib.getMembers().isEmpty());
+
+    assertFalse(contribs.hasNext());
+  }
 }
