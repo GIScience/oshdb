@@ -31,7 +31,7 @@ public abstract class Contribution implements OSHDBTemporal {
   public static Contribution minor(long timestamp, long changeset, int user, OSMEntity entity,
       Set<ContributionType> types, List<Contribution> members) {
     return new EntityContribution(timestamp, changeset, user, entity,
-        types, EMPTY_TYPES, members);
+        EMPTY_TYPES, types, members);
   }
 
   public static Contribution major(long timestamp, OSMEntity entity,

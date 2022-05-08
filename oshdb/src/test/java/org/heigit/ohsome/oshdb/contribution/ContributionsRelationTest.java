@@ -9,6 +9,8 @@ import static org.heigit.ohsome.oshdb.contribution.ContributionType.ROLE_CHANGE;
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.TAG_CHANGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.EnumSet;
@@ -43,7 +45,7 @@ class ContributionsRelationTest extends OSHDBTest {
     assertEquals(253, contrib.getChangeset());
     assertEquals(3, contrib.getUser());
     assertEquals(versions.get(0), contrib.getEntity());
-    assertEquals(EnumSet.of(GEOMETRY_CHANGE), contrib.getTypes());
+    assertEquals(EnumSet.of(GEOMETRY_CHANGE), contrib.getMinorTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
@@ -265,7 +267,8 @@ class ContributionsRelationTest extends OSHDBTest {
             way(1, 1000, 101, 1, tags(), mems(1))));
 
     var versions = relations(1,
-        relation(2, 2000, 202, 2, tags(), mems(w(1, 0), n(1, 0), w(2, 0), n(2, 0), w(1, 0), n(1, 0))),
+        relation(2, 2000, 202, 2, tags(),
+            mems(w(1, 0), n(1, 0), w(2, 0), n(2, 0), w(1, 0), n(1, 0))),
         relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0), w(3, 0), n(3, 0))));
 
     var osh = osh(versions, nodes, ways);
@@ -280,6 +283,44 @@ class ContributionsRelationTest extends OSHDBTest {
     contrib = contribs.next();
     assertEquals(1000, contrib.getEpochSecond());
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertFalse(contribs.hasNext());
+  }
+
+  @Test
+  void testEmptyMemberContribs() {
+    var nodes = List.of(
+        osh(1,
+            node(1, 3000, 303, 3, tags(), 0, 0)),
+        osh(2,
+            node(1, 2000, 202, 2, tags(), 0, 0)));
+
+    var versions = relations(1,
+        relation(3, 3000, 303, 3, tags(), mems(1, 2)),
+        relation(2, 2000, 202, 2, tags(), mems(2)),
+        relation(1, 1000, 101, 1, tags(), mems(1)));
+    var osh = osh(versions, nodes, emptyList());
+    var contribs = Contributions.of(osh);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(3000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
+    assertEquals(2, contrib.getMembers().size());
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertEquals(2000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
+    assertEquals(1, contrib.getMembers().size());
+    assertNotNull(contrib.getMembers().get(0));
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+    assertEquals(1, contrib.getMembers().size());
+    assertNull(contrib.getMembers().get(0));
 
     assertFalse(contribs.hasNext());
   }

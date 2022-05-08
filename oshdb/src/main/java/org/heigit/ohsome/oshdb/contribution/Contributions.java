@@ -250,7 +250,6 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
         if (visible) {
           initQueue(major);
         }
-
       }
     }
 
@@ -265,7 +264,7 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
         if (contribs != null) {
           newActiveMembers.add(contribs);
           // only add if not already in queue
-          if (newActive.add(memId) && !active.remove(memId)) {
+          if (newActive.add(memId) && !active.remove(memId) && contribs.hasNext()) {
             queue.add(contribs);
           }
         }
@@ -324,11 +323,12 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
         var memId = member.getId();
 
         var contribs = memberContribs(memType, memId);
-        if (contribs != null && contribs.hasNext()) {
+        if (contribs != null) {
           newActiveMembers.add(contribs);
           // only add if not already in queue
-          if ((NODE == memType && newActiveNodes.add(memId) && !activeNodes.remove(memId))
-              || (WAY == memType && newActiveWays.add(memId) && !activeWays.remove(memId))) {
+          if (((NODE == memType && newActiveNodes.add(memId) && !activeNodes.remove(memId))
+              || (WAY == memType && newActiveWays.add(memId) && !activeWays.remove(memId)))
+              && contribs.hasNext()) {
             queue.add(contribs);
           }
         }

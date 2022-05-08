@@ -8,6 +8,7 @@ import static org.heigit.ohsome.oshdb.contribution.ContributionType.MEMBER_CHANG
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.TAG_CHANGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.EnumSet;
@@ -145,7 +146,8 @@ class ContributionsWayTest extends OSHDBTest {
   void testSquashMembers() {
     var nodes = List.of(
         osh(1,
-            node(2, 2500, 250, 3, tags(), 0, 0), // squash
+            node(3, 2500, 250, 3, tags(), 0, 0), // squash
+            node(2, 1500, 200, 2, tags(), 0, 0), // squash major
             node(1, 1000, 100, 1, tags(), 0, 0)),
         osh(2,
             node(3, 3500, 250, 3, tags(), 1, 1),
@@ -164,7 +166,7 @@ class ContributionsWayTest extends OSHDBTest {
     assertEquals(250, contrib.getChangeset());
     assertEquals(3, contrib.getUser());
     assertEquals(versions.get(0), contrib.getEntity());
-    assertEquals(EnumSet.of(GEOMETRY_CHANGE), contrib.getTypes());
+    assertEquals(EnumSet.of(GEOMETRY_CHANGE), contrib.getMinorTypes());
 
 
     assertTrue(contribs.hasNext());
@@ -355,4 +357,39 @@ class ContributionsWayTest extends OSHDBTest {
     assertFalse(contribs.hasNext());
   }
 
+  @Test
+  void testEmptyMemberContribs() {
+    var nodes = List.of(
+        osh(1,
+            node(1, 3000, 303, 3, tags(), 0, 0)),
+        osh(2,
+            node(1, 2000, 202, 2, tags(), 0, 0)));
+
+    var versions = ways(1,
+        way(3, 3000, 303, 3, tags(), mems(1, 2)),
+        way(2, 2000, 202, 2, tags(), mems(2)),
+        way(1, 1000, 101, 1, tags(), mems(1)));
+    var osh = osh(versions, nodes);
+    var contribs = Contributions.of(osh);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertEquals(3000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
+
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertEquals(2000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertEquals(1000, contrib.getEpochSecond());
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+    assertEquals(1, contrib.getMembers().size());
+    assertNull(contrib.getMembers().get(0));
+
+    assertFalse(contribs.hasNext());
+  }
 }
