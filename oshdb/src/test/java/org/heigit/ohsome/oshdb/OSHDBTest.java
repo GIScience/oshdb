@@ -2,17 +2,24 @@ package org.heigit.ohsome.oshdb;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
+import static org.heigit.ohsome.oshdb.contribution.ContributionType.DELETION;
 import static org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl.build;
 import static org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl.build;
 import static org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl.build;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.LongFunction;
+import org.heigit.ohsome.oshdb.contribution.Contribution;
+import org.heigit.ohsome.oshdb.contribution.ContributionType;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
 import org.heigit.ohsome.oshdb.osm.OSM;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
@@ -24,7 +31,35 @@ import org.heigit.ohsome.oshdb.osm.OSMWay;
  */
 
 public abstract class OSHDBTest {
-  private static final OSMMember[] NO_MEMBERS = new OSMMember[0];
+  protected static final OSMMember[] NO_MEMBERS = new OSMMember[0];
+  protected static final Set<ContributionType> NO_TYPES = EnumSet.noneOf(ContributionType.class);
+
+
+  protected void assertContrib(long time, long cs, int user, OSMEntity entity,
+      Contribution contrib) {
+    assertEquals(time, contrib.getEpochSecond());
+    assertEquals(cs, contrib.getChangeset());
+    assertEquals(user, contrib.getUser());
+    assertEquals(entity, contrib.getEntity());
+    assertMembersSize(entity, contrib);
+  }
+
+
+
+  protected void assertMembersSize(OSMEntity entity, Contribution contrib) {
+    if (contrib.getTypes().contains(DELETION)) {
+      return;
+    }
+    var members = NO_MEMBERS;
+    if (OSMType.WAY == entity.getType()) {
+      members = ((OSMWay) entity).getMembers();
+    } else if (OSMType.RELATION == entity.getType()) {
+      members = ((OSMRelation) entity).getMembers();
+    }
+    assertEquals(members.length, contrib.getMembers().size());
+  }
+
+
 
   @SafeVarargs
   protected static OSHNode osh(long id, LongFunction<OSMNode>... versions) {
@@ -98,6 +133,7 @@ public abstract class OSHDBTest {
     }
     return kvs;
   }
+
   protected static OSMMember[] mems() {
     return NO_MEMBERS;
   }
@@ -115,7 +151,7 @@ public abstract class OSHDBTest {
   }
 
   protected static OSMMember m(OSMType type, long id, int role) {
-    return new OSMMember(id,type, role);
+    return new OSMMember(id, type, role);
   }
 
   protected static OSMMember n(long id) {

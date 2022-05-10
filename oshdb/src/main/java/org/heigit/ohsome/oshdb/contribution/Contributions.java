@@ -189,14 +189,14 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
       changeset = cs(major);
 
       var prev = getPrevMajor();
-      var types = checkTypes(major, prev);
-      if (types != CREATION) {
-        checkMemberChange(mems(major), mems(prev), types);
+      var majorTypes = checkTypes(major, prev);
+      if (majorTypes != CREATION) {
+        checkMemberChange(mems(major), mems(prev), majorTypes);
       }
-      if (types.contains(ContributionType.MEMBER_CHANGE)) {
+      if (majorTypes.contains(ContributionType.MEMBER_CHANGE)) {
         initQueue(prev);
       }
-      var contrib = major(timestamp, major, types, minorTypes, members);
+      var contrib = major(timestamp, major, majorTypes, minorTypes, members);
       major = prev;
       return contrib;
     }
@@ -261,12 +261,13 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
       for (var member : members) {
         var memId = member.getId();
         var contribs = oshMembers.get(memId);
-        if (contribs != null) {
-          newActiveMembers.add(contribs);
-          // only add if not already in queue
-          if (newActive.add(memId) && !active.remove(memId) && contribs.hasNext()) {
-            queue.add(contribs);
-          }
+        newActiveMembers.add(contribs);
+        // only add if not already in queue
+        if (contribs != null
+            && newActive.add(memId)
+            && !active.remove(memId)
+            && contribs.hasNext()) {
+          queue.add(contribs);
         }
       }
       // remove previous active from queue
@@ -321,16 +322,15 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
       for (var member : members) {
         var memType = member.getType();
         var memId = member.getId();
-
         var contribs = memberContribs(memType, memId);
-        if (contribs != null) {
-          newActiveMembers.add(contribs);
-          // only add if not already in queue
-          if (((NODE == memType && newActiveNodes.add(memId) && !activeNodes.remove(memId))
-              || (WAY == memType && newActiveWays.add(memId) && !activeWays.remove(memId)))
-              && contribs.hasNext()) {
-            queue.add(contribs);
-          }
+        newActiveMembers.add(contribs);
+
+        // only add if not already in queue
+        if (contribs != null
+            && ((NODE == memType && newActiveNodes.add(memId) && !activeNodes.remove(memId))
+             || (WAY == memType && newActiveWays.add(memId) && !activeWays.remove(memId)))
+            && contribs.hasNext()) {
+          queue.add(contribs);
         }
       }
       // remove previous active from queue
@@ -394,7 +394,7 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
   protected List<Contribution> initMembers(List<Contributions> activeMembers) {
     var members = new ArrayList<Contribution>(activeMembers.size());
     for (var m : activeMembers) {
-      if (m.hasNext()) {
+      if (m != null && m.hasNext()) {
         members.add(m.peek());
       } else {
         members.add(null);

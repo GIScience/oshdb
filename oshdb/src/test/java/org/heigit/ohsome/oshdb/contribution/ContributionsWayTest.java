@@ -8,7 +8,6 @@ import static org.heigit.ohsome.oshdb.contribution.ContributionType.MEMBER_CHANG
 import static org.heigit.ohsome.oshdb.contribution.ContributionType.TAG_CHANGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.EnumSet;
@@ -31,13 +30,9 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
-    assertEquals(101, contrib.getChangeset());
-    assertEquals(1, contrib.getUser());
-    assertEquals(versions.get(0), contrib.getEntity());
+    assertContrib(1000, 101, 1, versions.get(0), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
     var members = contrib.getMembers();
-    assertEquals(1, members.size());
     var member = members.get(0);
     assertEquals(OSMType.NODE, member.getType());
     assertEquals(1, member.getId());
@@ -49,16 +44,13 @@ class ContributionsWayTest extends OSHDBTest {
         osh(1,
             node(1, 1000, 101, 1, tags(), 0, 0)));
     var versions = ways(1,
-        way(-1, 1000, 101, 1, tags(), mems(1)));
+        way(-1, 1000, 101, 1, tags(), mems()));
     var osh = osh(versions, nodes);
     var contribs = Contributions.of(osh);
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
-    assertEquals(101, contrib.getChangeset());
-    assertEquals(1, contrib.getUser());
-    assertEquals(1, contrib.getEntity().getVersion());
+    assertContrib(1000, 101, 1, versions.get(0), contrib);
     assertEquals(EnumSet.of(DELETION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
@@ -70,29 +62,20 @@ class ContributionsWayTest extends OSHDBTest {
         osh(1,
             node(1, 1000, 101, 1, tags(), 0, 0)));
     var versions = ways(1,
-        way(-2, 2000, 202, 2, tags(), mems(1)),
+        way(-2, 2000, 202, 2, tags(), mems()),
         way(1, 1000, 101, 1, tags(), mems(1)));
     var osh = osh(versions, nodes);
     var contribs = Contributions.of(osh);
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(2000, contrib.getEpochSecond());
-    assertEquals(202, contrib.getChangeset());
-    assertEquals(2, contrib.getUser());
+    assertContrib(2000, 202, 2, versions.get(0), contrib);
     assertEquals(EnumSet.of(DELETION), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
-    assertEquals(101, contrib.getChangeset());
-    assertEquals(1, contrib.getUser());
+    assertContrib(1000, 101, 1, versions.get(1), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
-    var members = contrib.getMembers();
-    assertEquals(1, members.size());
-    var member = members.get(0);
-    assertEquals(OSMType.NODE, member.getType());
-    assertEquals(1, member.getId());
 
     assertFalse(contribs.hasNext());
   }
@@ -125,17 +108,17 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(3000, contrib.getEpochSecond());
+    assertContrib(3000, 303, 3, versions.get(0), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(2000, contrib.getEpochSecond());
+    assertContrib(2000, 202, 2, versions.get(1), contrib);
     assertEquals(EnumSet.of(DELETION), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertContrib(1000, 101, 1, versions.get(2), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
@@ -162,27 +145,18 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(3500, contrib.getEpochSecond());
-    assertEquals(250, contrib.getChangeset());
-    assertEquals(3, contrib.getUser());
-    assertEquals(versions.get(0), contrib.getEntity());
+    assertContrib(3500, 250, 3, versions.get(0), contrib);
     assertEquals(EnumSet.of(GEOMETRY_CHANGE), contrib.getMinorTypes());
 
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(2000, contrib.getEpochSecond());
-    assertEquals(200, contrib.getChangeset());
-    assertEquals(2, contrib.getUser());
-    assertEquals(versions.get(0), contrib.getEntity());
+    assertContrib(2000, 200, 2, versions.get(0), contrib);
     assertEquals(EnumSet.of(MEMBER_CHANGE, TAG_CHANGE), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
-    assertEquals(100, contrib.getChangeset());
-    assertEquals(1, contrib.getUser());
-    assertEquals(versions.get(1), contrib.getEntity());
+    assertContrib(1000, 100, 1, versions.get(1), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
@@ -210,27 +184,27 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(5000, contrib.getEpochSecond());
+    assertContrib(5000, 505, 5, versions.get(0), contrib);
     assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(4000, contrib.getEpochSecond());
+    assertContrib(4000, 404, 4, versions.get(1), contrib);
     assertEquals(EnumSet.noneOf(ContributionType.class), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(3000, contrib.getEpochSecond());
+    assertContrib(3000, 303, 3, versions.get(2), contrib);
     assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(2000, contrib.getEpochSecond());
+    assertContrib(2000, 202, 2, versions.get(3), contrib);
     assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertContrib(1000, 101, 1, versions.get(4), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
@@ -245,10 +219,8 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertContrib(1000, 101, 1, versions.get(0), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
-    var members = contrib.getMembers();
-    assertTrue(members.isEmpty());
 
     assertFalse(contribs.hasNext());
   }
@@ -267,7 +239,7 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertContrib(1000, 101, 1, versions.get(0), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
@@ -290,12 +262,12 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(2000, contrib.getEpochSecond());
+    assertContrib(2000, 202, 2, versions.get(0), contrib);
     assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertContrib(1000, 101, 1, versions.get(1), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
@@ -317,12 +289,12 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(2000, contrib.getEpochSecond());
+    assertContrib(2000, 202, 2, versions.get(0), contrib);
     assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertContrib(1000, 101, 1, versions.get(1), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
@@ -346,12 +318,12 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(2000, contrib.getEpochSecond());
+    assertContrib(2000, 202, 2, versions.get(0), contrib);
     assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertContrib(1000, 101, 1, versions.get(1), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
 
     assertFalse(contribs.hasNext());
@@ -374,21 +346,18 @@ class ContributionsWayTest extends OSHDBTest {
 
     assertTrue(contribs.hasNext());
     var contrib = contribs.next();
-    assertEquals(3000, contrib.getEpochSecond());
-    assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
-
-
-    assertTrue(contribs.hasNext());
-    contrib = contribs.next();
-    assertEquals(2000, contrib.getEpochSecond());
+    assertContrib(3000, 303, 3, versions.get(0), contrib);
     assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();
-    assertEquals(1000, contrib.getEpochSecond());
+    assertContrib(2000, 202, 2, versions.get(1), contrib);
+    assertEquals(EnumSet.of(MEMBER_CHANGE), contrib.getTypes());
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertContrib(1000, 101, 1, versions.get(2), contrib);
     assertEquals(EnumSet.of(CREATION), contrib.getTypes());
-    assertEquals(1, contrib.getMembers().size());
-    assertNull(contrib.getMembers().get(0));
 
     assertFalse(contribs.hasNext());
   }
