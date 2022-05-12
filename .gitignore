@@ -298,3 +298,6 @@ temp_*
 *.trace.db
 !oshdb-api/src/test/resources/test-data.mv.db
 !oshdb-util/src/test/resources/test-data.mv.db
+
+# jqwik
+.jqwik-database
