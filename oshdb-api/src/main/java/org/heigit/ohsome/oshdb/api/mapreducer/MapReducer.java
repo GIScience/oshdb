@@ -606,12 +606,12 @@ public abstract class MapReducer<X> implements
       // "rewind" them first, apply the grouping and then re-apply the map/flatMap functions
       // accordingly
       MapReducer<X> ret = this.copy();
-      List<MapFunction> mappers = new LinkedList<>(ret.mappers);
+      List<MapFunction> mapFunctions = new ArrayList<>(ret.mappers);
       ret.mappers.clear();
       ret.grouping = Grouping.BY_ID;
       @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of items
       MapReducer<List<?>> listMapReducer = (MapReducer<List<?>>) ret;
-      for (MapFunction action : mappers) {
+      for (MapFunction action : mapFunctions) {
         if (action.isFlatMapper()) {
           listMapReducer = listMapReducer.map(list -> list.stream()
               .flatMap(s -> Streams.stream((Iterable<?>) action.apply(s)))
@@ -716,11 +716,11 @@ public abstract class MapReducer<X> implements
       // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions
       // accordingly
       MapReducer<X> ret = this.copy();
-      List<MapFunction> mappers = new LinkedList<>(ret.mappers);
+      List<MapFunction> mapFunctions = new ArrayList<>(ret.mappers);
       ret.mappers.clear();
       MapAggregator<OSHDBTimestamp, ?> mapAggregator =
           new MapAggregator<>(ret, indexer, this.getZerofillTimestamps());
-      for (MapFunction action : mappers) {
+      for (MapFunction action : mapFunctions) {
         if (action.isFlatMapper()) {
           @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
           MapAggregator<OSHDBTimestamp, ?> flatMappedMapAggregator = mapAggregator.flatMap(action);
@@ -798,7 +798,7 @@ public abstract class MapReducer<X> implements
       // accordingly
       MapAggregator<U, ?> mapAgg;
       MapReducer<X> self = this.copy();
-      List<MapFunction> mappers = new LinkedList<>(self.mappers);
+      List<MapFunction> mapFunctions = new ArrayList<>(self.mappers);
       self.mappers.clear();
       if (isOSMContributionViewQuery()) {
         mapAgg = self.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
@@ -810,7 +810,7 @@ public abstract class MapReducer<X> implements
         throw new UnsupportedOperationException(String.format(
             UNIMPLEMENTED_DATA_VIEW, this.viewClass));
       }
-      for (MapFunction action : mappers) {
+      for (MapFunction action : mapFunctions) {
         if (action.isFlatMapper()) {
           @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
           MapAggregator<U, ?> flatMappedMapAggregator = mapAgg.flatMap(action);
