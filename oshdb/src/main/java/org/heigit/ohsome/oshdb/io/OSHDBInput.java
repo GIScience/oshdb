@@ -4,6 +4,10 @@ import java.nio.ByteBuffer;
 import org.heigit.ohsome.oshdb.util.BitUtil;
 import org.heigit.ohsome.oshdb.util.BytesUtil;
 
+/**
+ *
+ *
+ */
 public class OSHDBInput {
 
   public static OSHDBInput wrap(ByteBuffer buffer) {
@@ -89,45 +93,62 @@ public class OSHDBInput {
   }
 
   public int readUInt32() {
-    int i;
-    if ((i = readByte()) >= 0) {
+    var i = readByte();
+    if (i >= 0) {
       return i;
-    } else if ((i ^= readByte() << 7) < 0) {
-      return i ^ ~0 << 7;
-    } else if ((i ^= readByte() << 14) >= 0) {
-      return i ^ ~0 << 7 ^ ~0 << 14;
-    } else if ((i ^= readByte() << 21) < 0) {
-      return i ^ ~0 << 7 ^ ~0 << 14 ^ ~0 << 21;
-    } else {
-      i ^= readByte() << 28;
-      return i ^ ~0 << 7 ^ ~0 << 14 ^ ~0 << 21 ^ ~0 << 28;
     }
+    i ^= readByte() << 7;
+    if (i < 0) {
+      return i ^ ~0 << 7;
+    }
+    i ^= readByte() << 14;
+    if (i >= 0) {
+      return i ^ ~0 << 7 ^ ~0 << 14;
+    }
+    i ^= readByte() << 21;
+    if (i < 0) {
+      return i ^ ~0 << 7 ^ ~0 << 14 ^ ~0 << 21;
+    }
+    i ^= readByte() << 28;
+    return i ^ ~0 << 7 ^ ~0 << 14 ^ ~0 << 21 ^ ~0 << 28;
   }
 
   public long readUInt64() {
-    long l;
-    int i;
-    if ((i = readByte()) >= 0) {
+    var i = readByte();
+    if (i >= 0) {
       return i;
-    } else if ((i ^= readByte() << 7) < 0) {
-      return i ^ ~0 << 7;
-    } else if ((i ^= readByte() << 14) >= 0) {
-      return i ^ ~0 << 7 ^ ~0 << 14;
-    } else if ((i ^= readByte() << 21) < 0) {
-      return i ^ ~0 << 7 ^ ~0 << 14 ^ ~0 << 21;
-    } else if ((l = i ^ (long) readByte() << 28) >= 0L) {
-      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28;
-    } else if ((l ^= (long) readByte() << 35) < 0L) {
-      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35;
-    } else if ((l ^= (long) readByte() << 42) >= 0L) {
-      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42;
-    } else if ((l ^= (long) readByte() << 49) < 0L) {
-      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42 ^ ~0L << 49;
-    } else {
-      l ^= (long) readByte() << 56;
-      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42 ^ ~0L << 49
-          ^ ~0L << 56;
     }
+    i ^= readByte() << 7;
+    if (i < 0) {
+      return i ^ ~0 << 7;
+    }
+    i ^= readByte() << 14;
+    if (i >= 0) {
+      return i ^ ~0 << 7 ^ ~0 << 14;
+    }
+    i ^= readByte() << 21;
+    if (i < 0) {
+      return i ^ ~0 << 7 ^ ~0 << 14 ^ ~0 << 21;
+    }
+    var l = i ^ (long) readByte() << 28;
+    if (l >= 0L) {
+      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28;
+    }
+    l ^= (long) readByte() << 35;
+    if (l < 0L) {
+      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35;
+    }
+    l ^= (long) readByte() << 42;
+    if (l >= 0L) {
+      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42;
+    }
+    l ^= (long) readByte() << 49;
+    if (l < 0L) {
+      return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42 ^ ~0L << 49;
+    }
+    l ^= (long) readByte() << 56;
+    return l ^ ~0L << 7 ^ ~0L << 14 ^ ~0L << 21 ^ ~0L << 28 ^ ~0L << 35 ^ ~0L << 42 ^ ~0L << 49
+        ^ ~0L << 56;
   }
 
   public int readSInt32() {
