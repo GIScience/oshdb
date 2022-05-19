@@ -141,11 +141,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     return res;
   }
 
-  /**
-   * Some internal methods can also aggregate using the "root" object of the mapreducer's view.
-   */
+  // Some internal methods can also aggregate using the "root" object of the mapreducer's view.
   private <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
-  aggregateBy(SerializableBiFunction<X, Object, V> indexer, Collection<V> zerofill) {
+      aggregateBy(SerializableBiFunction<X, Object, V> indexer, Collection<V> zerofill) {
     MapAggregator<OSHDBCombinedIndex<U, V>, X> res = this
         .mapIndex((indexData, root) -> new OSHDBCombinedIndex<>(
             indexData.getKey(),
@@ -159,6 +157,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    * Sets up aggregation by another custom index.
    *
    * @param indexer a callback function that returns an index object for each given data.
+   * @param <V> the type of the values used to aggregate
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
   @Contract(pure = true)
@@ -235,6 +234,9 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    *
    * <p>Cannot be used together with the `groupByEntity()` setting enabled.</p>
    *
+   * @param geometries an associated list of polygons and identifiers
+   * @param <V> the type of the identifers used to aggregate
+   * @param <P> a polygonal geometry type
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
    * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has
@@ -741,9 +743,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   }
 
 
-  /**
-   * Some internal methods can also flatMap the "root" object of the mapreducer's view.
-   */
+  // Some internal methods can also flatMap the "root" object of the mapreducer's view.
   private <R> MapAggregator<U, R> flatMap(
       SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
     return this.copyTransform(this.mapReducer.flatMap((inData, root) -> {

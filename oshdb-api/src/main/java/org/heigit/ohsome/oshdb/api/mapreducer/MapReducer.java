@@ -462,9 +462,7 @@ public abstract class MapReducer<X> implements
     return result;
   }
 
-  /**
-   * Some internal methods can also map the "root" object of the mapreducer's view.
-   */
+  // Some internal methods can also map the "root" object of the mapreducer's view.
   @Contract(pure = true)
   protected  <R> MapReducer<R> map(SerializableBiFunction<X, Object, R> mapper) {
     MapReducer<?> ret = this.copy();
@@ -494,9 +492,7 @@ public abstract class MapReducer<X> implements
     return result;
   }
 
-  /**
-   * Some internal methods can also flatMap the "root" object of the mapreducer's view.
-   */
+  // Some internal methods can also flatMap the "root" object of the mapreducer's view.
   @Contract(pure = true)
   protected  <R> MapReducer<R> flatMap(SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
@@ -773,6 +769,9 @@ public abstract class MapReducer<X> implements
    *
    * <p>Cannot be used together with the `groupByEntity()` setting enabled.</p>
    *
+   * @param geometries an associated list of polygons and identifiers
+   * @param <U> the type of the identifers used to aggregate
+   * @param <P> a polygonal geometry type
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
    * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has
