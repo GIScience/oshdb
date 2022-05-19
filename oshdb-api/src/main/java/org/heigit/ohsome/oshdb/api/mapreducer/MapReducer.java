@@ -463,6 +463,18 @@ public abstract class MapReducer<X> implements
   }
 
   /**
+   * Some internal methods can also map the "root" object of the mapreducer's view.
+   */
+  @Contract(pure = true)
+  protected  <R> MapReducer<R> map(SerializableBiFunction<X, Object, R> mapper) {
+    MapReducer<?> ret = this.copy();
+    ret.mappers.add(new MapFunction(mapper, false));
+    @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
+    MapReducer<R> result = (MapReducer<R>) ret;
+    return result;
+  }
+
+  /**
    * Set an arbitrary `flatMap` transformation function, which returns list with an arbitrary number
    * of results per input data entry. The results of this function will be "flattened", meaning that
    * they can be for example transformed again by setting additional `map` functions.
@@ -475,6 +487,18 @@ public abstract class MapReducer<X> implements
   @Override
   @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
+    MapReducer<?> ret = this.copy();
+    ret.mappers.add(new MapFunction(flatMapper, true));
+    @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
+    MapReducer<R> result = (MapReducer<R>) ret;
+    return result;
+  }
+
+  /**
+   * Some internal methods can also flatMap the "root" object of the mapreducer's view.
+   */
+  @Contract(pure = true)
+  protected  <R> MapReducer<R> flatMap(SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
     ret.mappers.add(new MapFunction(flatMapper, true));
     @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
@@ -613,13 +637,13 @@ public abstract class MapReducer<X> implements
       MapReducer<List<?>> listMapReducer = (MapReducer<List<?>>) ret;
       for (MapFunction action : mapFunctions) {
         if (action.isFlatMapper()) {
-          listMapReducer = listMapReducer.map(list -> list.stream()
-              .flatMap(s -> Streams.stream((Iterable<?>) action.apply(s)))
+          listMapReducer = listMapReducer.map((list, root) -> list.stream()
+              .flatMap(s -> Streams.stream((Iterable<?>) action.apply(s, root)))
               .collect(Collectors.toList()));
         } else {
           @SuppressWarnings("StaticPseudoFunctionalStyleMethod")
-          MapReducer<List<?>> mappedResult = listMapReducer.map(list ->
-              Lists.transform(list, action::apply));
+          MapReducer<List<?>> mappedResult = listMapReducer.map((list, root) ->
+              Lists.transform(list, x -> action.apply(x, root)));
           listMapReducer = mappedResult;
         }
       }
@@ -651,7 +675,7 @@ public abstract class MapReducer<X> implements
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
   ) {
-    return new MapAggregator<>(this, indexer, zerofill);
+    return new MapAggregator<>(this, (data, ignored) -> indexer.apply(data), zerofill);
   }
 
   /**
@@ -697,12 +721,12 @@ public abstract class MapReducer<X> implements
     }
 
     // by timestamp indexing function -> for some views we need to match the input data to the list
-    SerializableFunction<X, OSHDBTimestamp> indexer;
+    SerializableBiFunction<X, Object, OSHDBTimestamp> indexer;
     if (isOSMContributionViewQuery()) {
       final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
-      indexer = data -> timestamps.floor(((OSMContribution) data).getTimestamp());
+      indexer = (ignored, root) -> timestamps.floor(((OSMContribution) root).getTimestamp());
     } else if (isOSMEntitySnapshotViewQuery()) {
-      indexer = data -> ((OSMEntitySnapshot) data).getTimestamp();
+      indexer = (ignored, root) -> ((OSMEntitySnapshot) root).getTimestamp();
     } else {
       throw new UnsupportedOperationException(
           "automatic aggregateByTimestamp() only implemented for OSMContribution and "
@@ -710,33 +734,7 @@ public abstract class MapReducer<X> implements
       );
     }
 
-    if (!this.mappers.isEmpty()) {
-      // for convenience, we allow one to set this function even after some map functions were set.
-      // if some map / flatMap functions were already set:
-      // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions
-      // accordingly
-      MapReducer<X> ret = this.copy();
-      List<MapFunction> mapFunctions = new ArrayList<>(ret.mappers);
-      ret.mappers.clear();
-      MapAggregator<OSHDBTimestamp, ?> mapAggregator =
-          new MapAggregator<>(ret, indexer, this.getZerofillTimestamps());
-      for (MapFunction action : mapFunctions) {
-        if (action.isFlatMapper()) {
-          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
-          MapAggregator<OSHDBTimestamp, ?> flatMappedMapAggregator = mapAggregator.flatMap(action);
-          mapAggregator = flatMappedMapAggregator;
-        } else {
-          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
-          MapAggregator<OSHDBTimestamp, ?> mappedMapAggregator = mapAggregator.map(action);
-          mapAggregator = mappedMapAggregator;
-        }
-      }
-      @SuppressWarnings("unchecked") // after applying all (flat)map functions the final type is X
-      MapAggregator<OSHDBTimestamp, X> result = (MapAggregator<OSHDBTimestamp, X>) mapAggregator;
-      return result;
-    } else {
-      return new MapAggregator<>(this, indexer, this.getZerofillTimestamps());
-    }
+    return new MapAggregator<>(this, indexer, this.getZerofillTimestamps());
   }
 
   /**
@@ -757,7 +755,7 @@ public abstract class MapReducer<X> implements
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
     final OSHDBTimestamp minTime = timestamps.first();
     final OSHDBTimestamp maxTime = timestamps.last();
-    return new MapAggregator<>(this, data -> {
+    return new MapAggregator<>(this, (data, ignored) -> {
       // match timestamps to the given timestamp list
       OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
       if (aggregationTimestamp == null
@@ -791,55 +789,24 @@ public abstract class MapReducer<X> implements
     }
 
     GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
-    if (!this.mappers.isEmpty()) {
-      // for convenience, we allow one to set this function even after some map functions were set.
-      // if some map / flatMap functions were already set:
-      // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions
-      // accordingly
-      MapAggregator<U, ?> mapAgg;
-      MapReducer<X> self = this.copy();
-      List<MapFunction> mapFunctions = new ArrayList<>(self.mappers);
-      self.mappers.clear();
-      if (isOSMContributionViewQuery()) {
-        mapAgg = self.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
-            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else if (isOSMEntitySnapshotViewQuery()) {
-        mapAgg = self.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
-            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else {
-        throw new UnsupportedOperationException(String.format(
-            UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-      }
-      for (MapFunction action : mapFunctions) {
-        if (action.isFlatMapper()) {
-          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
-          MapAggregator<U, ?> flatMappedMapAggregator = mapAgg.flatMap(action);
-          mapAgg = flatMappedMapAggregator;
-        } else {
-          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
-          MapAggregator<U, ?> mappedMapAggregator = mapAgg.map(action);
-          mapAgg = mappedMapAggregator;
-        }
-      }
-      @SuppressWarnings("unchecked") // after applying all (flat)map functions the final type is X
-      MapAggregator<U, X> result = (MapAggregator<U, X>) mapAgg;
-      return result;
+
+    MapReducer<? extends Entry<U, ? extends OSHDBMapReducible>> mapRed;
+    if (isOSMContributionViewQuery()) {
+      mapRed = this.flatMap((ignored, root) ->
+          gs.splitOSMContribution((OSMContribution) root).entrySet());
+    } else if (isOSMEntitySnapshotViewQuery()) {
+      mapRed = this.flatMap((ignored, root) ->
+          gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet());
     } else {
-      MapAggregator<U, ? extends OSHDBMapReducible> mapAgg;
-      if (isOSMContributionViewQuery()) {
-        mapAgg = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
-            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else if (isOSMEntitySnapshotViewQuery()) {
-        mapAgg = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
-            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else {
-        throw new UnsupportedOperationException(String.format(
-            UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-      }
-      @SuppressWarnings("unchecked") // no mapper functions have been applied so the type is still X
-      MapAggregator<U, X> result = (MapAggregator<U, X>) mapAgg;
-      return result;
+      throw new UnsupportedOperationException(String.format(
+          UNIMPLEMENTED_DATA_VIEW, this.viewClass));
     }
+    MapAggregator<U, ?> mapAgg = mapRed
+        .aggregateBy(Entry::getKey, geometries.keySet())
+        .map(Entry::getValue);
+    @SuppressWarnings("unchecked") // no mapper functions have been applied so the type is still X
+    MapAggregator<U, X> result = (MapAggregator<U, X>) mapAgg;
+    return result;
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -933,7 +900,7 @@ public abstract class MapReducer<X> implements
                 (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                      .map((SerializableFunction<Object, Iterable<X>>) flatMapper::apply)
                       .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
@@ -942,7 +909,7 @@ public abstract class MapReducer<X> implements
                 (List<OSMEntitySnapshot> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                      .map((SerializableFunction<Object, Iterable<X>>) flatMapper::apply)
                       .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
@@ -1805,7 +1772,7 @@ public abstract class MapReducer<X> implements
           assert false : "flatMap callback requested in getMapper";
           throw new UnsupportedOperationException("cannot flat map this");
         } else {
-          result = mapper.apply(result);
+          result = mapper.apply(result, data);
         }
       }
       @SuppressWarnings("unchecked")
@@ -1827,9 +1794,9 @@ public abstract class MapReducer<X> implements
         List<Object> newResults = new LinkedList<>();
         if (mapper.isFlatMapper()) {
           results.forEach(result ->
-              Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result)));
+              Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result, data)));
         } else {
-          results.forEach(result -> newResults.add(mapper.apply(result)));
+          results.forEach(result -> newResults.add(mapper.apply(result, data)));
         }
         results = newResults;
       }

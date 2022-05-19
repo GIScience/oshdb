@@ -136,11 +136,30 @@ class TestMapAggregateByGeometry {
 
   @Test
   void testCombinedWithAggregateByTimestamp() throws Exception {
+    SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, Integer> result =
+        createMapReducerOSMEntitySnapshot()
+            .timestamps(timestamps1)
+            .aggregateByTimestamp()
+            .aggregateByGeometry(getSubRegions())
+            .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
+
+    assertEquals(4, result.entrySet().size());
+    Set<String> keys = result.keySet().stream()
+        .map(OSHDBCombinedIndex::getSecondIndex)
+        .collect(Collectors.toSet());
+    assertTrue(keys.contains("left"));
+    assertTrue(keys.contains("right"));
+    assertTrue(keys.contains("total"));
+    assertTrue(keys.contains("null island"));
+  }
+
+  @Test
+  void testCombinedWithAggregateByTimestampReversed() throws Exception {
     SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
             .aggregateByGeometry(getSubRegions())
-            .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
+            .aggregateByTimestamp()
             .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
     assertEquals(4, result.entrySet().size());
@@ -182,19 +201,6 @@ class TestMapAggregateByGeometry {
           resultTimeGeom.get(new OSHDBCombinedIndex<>(idx.getSecondIndex(), idx.getFirstIndex()))
       );
     }
-  }
-
-  @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
-  @Test()
-  void testCombinedWithAggregateByTimestampUnsupportedOrder1() throws Exception {
-    assertThrows(UnsupportedOperationException.class, () -> {
-      createMapReducerOSMEntitySnapshot()
-          .timestamps(timestamps1)
-          .map(ignored -> null)
-          .aggregateByTimestamp()
-          .aggregateByGeometry(getSubRegions())
-          .collect();
-    });
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here

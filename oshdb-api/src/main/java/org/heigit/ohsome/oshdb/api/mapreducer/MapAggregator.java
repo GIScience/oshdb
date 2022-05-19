@@ -77,11 +77,11 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
    */
   MapAggregator(
       MapReducer<X> mapReducer,
-      SerializableFunction<X, U> indexer,
+      SerializableBiFunction<X, Object, U> indexer,
       Collection<U> zerofill
   ) {
-    this.mapReducer = mapReducer.map(data -> new IndexValuePair<>(
-        indexer.apply(data),
+    this.mapReducer = mapReducer.map((data, root) -> new IndexValuePair<>(
+        indexer.apply(data, root),
         data
     ));
     this.zerofill = new ArrayList<>(1);
@@ -133,9 +133,23 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
       aggregateBy(SerializableFunction<X, V> indexer, Collection<V> zerofill) {
     MapAggregator<OSHDBCombinedIndex<U, V>, X> res = this
-        .mapIndex((existingIndex, data) -> new OSHDBCombinedIndex<>(
-            existingIndex,
-            indexer.apply(data)
+        .mapIndex((indexData, ignored) -> new OSHDBCombinedIndex<>(
+            indexData.getKey(),
+            indexer.apply(indexData.getValue())
+        ));
+    res.zerofill.add(zerofill);
+    return res;
+  }
+
+  /**
+   * Some internal methods can also aggregate using the "root" object of the mapreducer's view.
+   */
+  private <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
+  aggregateBy(SerializableBiFunction<X, Object, V> indexer, Collection<V> zerofill) {
+    MapAggregator<OSHDBCombinedIndex<U, V>, X> res = this
+        .mapIndex((indexData, root) -> new OSHDBCombinedIndex<>(
+            indexData.getKey(),
+            indexer.apply(indexData.getValue(), root)
         ));
     res.zerofill.add(zerofill);
     return res;
@@ -151,6 +165,36 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X>
       aggregateBy(SerializableFunction<X, V> indexer) {
     return this.aggregateBy(indexer, Collections.emptyList());
+  }
+
+  /**
+   * Sets up automatic aggregation by timestamp.
+   *
+   * <p>In the OSMEntitySnapshotView, the snapshots' timestamp will be used directly to aggregate
+   * results into. In the OSMContributionView, the timestamps of the respective data modifications
+   * will be matched to corresponding time intervals (that are defined by the `timestamps` setting
+   * here).</p>
+   *
+   * @return a MapAggregatorByTimestampAndIndex object with the equivalent state (settings,
+   *         filters, map function, etc.) of the current MapReducer object
+   */
+  @Contract(pure = true)
+  public MapAggregator<OSHDBCombinedIndex<U, OSHDBTimestamp>, X> aggregateByTimestamp() {
+    // by timestamp indexing function -> for some views we need to match the input data to the list
+    SerializableBiFunction<X, Object, OSHDBTimestamp> indexer;
+    if (this.mapReducer.isOSMContributionViewQuery()) {
+      final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.mapReducer.tstamps.get());
+      indexer = (ignored, root) -> timestamps.floor(((OSMContribution) root).getTimestamp());
+    } else if (this.mapReducer.isOSMEntitySnapshotViewQuery()) {
+      indexer = (ignored, root) -> ((OSMEntitySnapshot) root).getTimestamp();
+    } else {
+      throw new UnsupportedOperationException(
+          "automatic aggregateByTimestamp() only implemented for OSMContribution and "
+              + "OSMEntitySnapshot -> try using aggregateByTimestamp(customTimestampIndex) instead"
+      );
+    }
+
+    return this.aggregateBy(indexer, this.mapReducer.getZerofillTimestamps());
   }
 
   /**
@@ -208,28 +252,24 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     }
 
     GeometrySplitter<V> gs = new GeometrySplitter<>(geometries);
-    if (this.mapReducer.mappers.size() > 1) {
-      throw new UnsupportedOperationException(
-          "please call aggregateByGeometry before setting any filter, map or flatMap function"
-              + " or alternatively before invoking any other aggregateBy* method"
-      );
+
+    MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
+    if (mapReducer.isOSMContributionViewQuery()) {
+      ret = this.flatMap((ignored, root) ->
+              gs.splitOSMContribution((OSMContribution) root).entrySet())
+          .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
+    } else if (mapReducer.isOSMEntitySnapshotViewQuery()) {
+      ret = this.flatMap((ignored, root) ->
+              gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet())
+          .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
     } else {
-      MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
-      if (mapReducer.isOSMContributionViewQuery()) {
-        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
-            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else if (mapReducer.isOSMEntitySnapshotViewQuery()) {
-        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
-            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else {
-        throw new UnsupportedOperationException(String.format(
-            MapReducer.UNIMPLEMENTED_DATA_VIEW, this.mapReducer.viewClass));
-      }
-      @SuppressWarnings("unchecked") // no mapper functions have been applied -> the type is still X
-      MapAggregator<OSHDBCombinedIndex<U, V>, X> result =
-          (MapAggregator<OSHDBCombinedIndex<U, V>, X>) ret;
-      return result;
+      throw new UnsupportedOperationException(String.format(
+          MapReducer.UNIMPLEMENTED_DATA_VIEW, this.mapReducer.viewClass));
     }
+    @SuppressWarnings("unchecked") // no mapper functions have been applied -> the type is still X
+    MapAggregator<OSHDBCombinedIndex<U, V>, X> result =
+        (MapAggregator<OSHDBCombinedIndex<U, V>, X>) ret;
+    return result;
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -700,6 +740,24 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     }));
   }
 
+
+  /**
+   * Some internal methods can also flatMap the "root" object of the mapreducer's view.
+   */
+  private <R> MapAggregator<U, R> flatMap(
+      SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
+    return this.copyTransform(this.mapReducer.flatMap((inData, root) -> {
+      List<IndexValuePair<U, R>> outData = new LinkedList<>();
+      flatMapper.apply(inData.getValue(), root).forEach(flatMappedData ->
+          outData.add(new IndexValuePair<>(
+              inData.getKey(),
+              flatMappedData
+          ))
+      );
+      return outData;
+    }));
+  }
+
   /**
    * Adds a custom arbitrary filter that gets executed in the current transformation chain.
    *
@@ -896,12 +954,13 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   // maps from one index type to a different one
   @Contract(pure = true)
   private <V extends Comparable<V> & Serializable> MapAggregator<V, X> mapIndex(
-      SerializableBiFunction<U, X, V> keyMapper) {
-    return this.copyTransformKey(this.mapReducer.map(inData -> new IndexValuePair<>(
-        keyMapper.apply(inData.getKey(), inData.getValue()),
+      SerializableBiFunction<IndexValuePair<U, X>, Object, V> keyMapper) {
+    return this.copyTransformKey(this.mapReducer.map((inData, root) -> new IndexValuePair<>(
+        keyMapper.apply(inData, root),
         inData.getValue()
     )));
   }
+
 
   // calculate complete set of indices to use for zerofilling
   @SuppressWarnings("rawtypes")
