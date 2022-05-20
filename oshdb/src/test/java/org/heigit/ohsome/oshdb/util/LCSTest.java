@@ -1,91 +1,61 @@
 package org.heigit.ohsome.oshdb.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Map;
-import org.heigit.ohsome.oshdb.util.LCS.Action;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import java.util.List;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.constraints.IntRange;
+import org.heigit.ohsome.oshdb.util.LCS.Sequence;
 
 class LCSTest {
 
-  @Test
-  void test() {
-    int[] prev = {1, 2, 3, 7, 8, 4, 5};
-    int[] next = {1, 2, 6, 7, 8, 9, 4, 5};
-    var actions = LCS.lcs(prev, prev.length, next, next.length);
-    System.out.println(actions);
-    assertEquals(5, actions.size());
-
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(0));
-    assertEquals(Map.entry(Action.UPDATE, 1), actions.get(1));
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(2));
-    assertEquals(Map.entry(Action.ADD, 1), actions.get(3));
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(4));
+  private int[] transform(Sequence actions, int[] a, int[] b) {
+    if (actions.isEmpty()) {
+      return b;
+    }
+    int[] result = new int[b.length];
+    int apos = 0;
+    int bpos = 0;
+    int pos = 0;
+    for (var action : actions) {
+      int size = action.getValue().intValue();
+      switch (action.getKey()) {
+        case ADD:
+          System.arraycopy(b, bpos, result, pos, size);
+          bpos += size;
+          pos += size;
+          break;
+        case SKIP:
+          apos += size;
+          break;
+        case TAKE:
+          System.arraycopy(a, apos, result, pos, size);
+          apos += size;
+          bpos += size;
+          pos += size;
+          break;
+        case UPDATE:
+          System.arraycopy(b, bpos, result, pos, size);
+          bpos += size;
+          apos += size;
+          pos += size;
+          break;
+        default:
+          break;
+      }
+    }
+    return result;
   }
 
-  @Test
-  void testSkipMiddle() {
-    int[] prev = {1, 2, 3, 4, 5};
-    int[] next = {1, 2, 4, 5};
-    var actions = LCS.lcs(prev, prev.length, next, next.length);
+  @Property
+  void test(
+      @ForAll List<@IntRange(min = 0, max = 100) Integer> a,
+      @ForAll List<@IntRange(min = 0, max = 100) Integer> b) {
+    int[] from = a.stream().mapToInt(Integer::intValue).toArray();
+    int[] expected = b.stream().mapToInt(Integer::intValue).toArray();
 
-
-    assertEquals(3, actions.size());
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(0));
-    assertEquals(Map.entry(Action.SKIP, 1), actions.get(1));
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(2));
+    var sequence = LCS.lcs(from, expected);
+    int[] actual = transform(sequence, from, expected);
+    assertArrayEquals(expected, actual);
   }
-
-  @Test
-  void testAppendOnly() {
-    int[] prev = {1, 2};
-    int[] next = {1, 2, 4, 5};
-    var actions = LCS.lcs(prev, prev.length, next, next.length);
-
-    assertEquals(2, actions.size());
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(0));
-    assertEquals(Map.entry(Action.ADD, 2), actions.get(1));
-  }
-
-  @Test
-  void testRemoveFront() {
-    int[] prev = {1, 2, 4, 5};
-    int[] next = {4, 5};
-    var actions = LCS.lcs(prev, prev.length, next, next.length);
-
-    assertEquals(2, actions.size());
-    assertEquals(Map.entry(Action.SKIP, 2), actions.get(0));
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(1));
-  }
-
-  @Test
-  void testRemoveBack() {
-    int[] prev = {1, 2, 4, 5};
-    int[] next = {1, 2};
-    var actions = LCS.lcs(prev, prev.length, next, next.length);
-
-    assertEquals(1, actions.size());
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(0));
-  }
-
-  @Test
-  void testEquals() {
-    int[] prev = {1, 2};
-    int[] next = {1, 2};
-    var actions = LCS.lcs(prev, prev.length, next, next.length);
-
-    assertEquals(0, actions.size());
-  }
-
-  @Test
-  void testUpdateBack() {
-    int[] prev = {1, 2, 3, 4};
-    int[] next = {1, 2, 5, 6};
-    var actions = LCS.lcs(prev, prev.length, next, next.length);
-
-    assertEquals(2, actions.size());
-    assertEquals(Map.entry(Action.TAKE, 2), actions.get(0));
-    assertEquals(Map.entry(Action.UPDATE, 2), actions.get(1));
-  }
-
 }

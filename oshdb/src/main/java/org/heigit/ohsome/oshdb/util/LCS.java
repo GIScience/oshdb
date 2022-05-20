@@ -14,6 +14,10 @@ public class LCS {
     }
   }
 
+  public static Sequence lcs(int[] prev, int[] next) {
+    return lcs(prev, prev.length, next, next.length);
+  }
+
   public static Sequence lcs(int[] prev, int prevSize, int[] next, int nextSize) {
     var commonPrefix = 0;
     var minSize = Math.min(prevSize, nextSize);
@@ -44,6 +48,7 @@ public class LCS {
     var commonSuffix = 0;
     var prevPos = prevSize - 1;
     var nextPos = nextSize - 1;
+
     while (prevPos >= commonPrefix && nextPos >= commonPrefix && prev[prevPos] == next[nextPos]) {
       commonSuffix++;
       prevPos--;
@@ -98,7 +103,6 @@ public class LCS {
           l += x;
         } else {
           add++;
-//          sequence.addDiffs(next[nextPos]);
           nextPos++;
           l += y;
         }
