@@ -1,17 +1,25 @@
 package org.heigit.ohsome.oshdb.contribution;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.*;
 
+import net.jqwik.api.domains.Domain;
 import org.heigit.ohsome.oshdb.*;
-import org.heigit.ohsome.oshdb.osh.*;
 
 import net.jqwik.api.*;
+import org.heigit.ohsome.oshdb.osm.OSMNode;
 
+@Domain(OSMDomain.class)
 class ContributionsNodeProperties extends OSHDBTest {
 
-	@Property
-	void testOshGeneration(@ForAll List<OSHNode> nodes) {
+	@Property(tries = 10)
+	@Report(Reporting.GENERATED)
+	void testOshGeneration(@ForAll List<OSMNode> versions) {
+		var osh = osh(versions);
+    var contribs = Contributions.of(osh);
 
+    assertTrue(contribs.hasNext());
 	}
 
 //  @Test

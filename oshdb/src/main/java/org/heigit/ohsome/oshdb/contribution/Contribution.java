@@ -24,7 +24,7 @@ public abstract class Contribution implements OSHDBTemporal {
         DELETION, EMPTY_TYPES, Collections.emptyList());
   }
 
-  public static Contribution node(OSMNode node, Set<ContributionType> types) {
+  protected static Contribution node(OSMNode node, Set<ContributionType> types) {
     return new NodeContribution(node, types);
   }
 
