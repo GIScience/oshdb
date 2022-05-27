@@ -27,15 +27,15 @@ class ContributionsRelationTest extends OSHDBTest {
             node(1, 1000, 101, 1, tags(), 0, 0)));
     var ways = List.of(
         osh(1, List.of(
-            osh(1,
-                node(3, 3500, 253, 3, tags(), 1, 1),
+            osh(2,
+                node(3, 3500, 253, 3, tags(), 2, 2),
                 node(2, 2500, 253, 3, tags(), 1, 1), // squash
                 node(1, 1100, 101, 1, tags(), 0, 0))), // minor-major change
-            way(1, 1000, 101, 1, tags(), mems(1))));
+            way(1, 1000, 101, 1, tags(), mems(2))));
 
     var versions = relations(1,
-        relation(2, 2000, 202, 2, tags(tag(1, 1)), mems(w(1, 0))),
-        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0))));
+        relation(2, 2000, 202, 2, tags(tag(1, 1)), mems(mw(1, 0))),
+        relation(1, 1000, 101, 1, tags(), mems(mw(1, 0), mn(1, 0))));
     var osh = osh(versions, nodes, ways);
     var contribs = Contributions.of(osh);
 
@@ -69,7 +69,7 @@ class ContributionsRelationTest extends OSHDBTest {
             way(1, 1000, 101, 1, tags(), mems(1))));
 
     var versions = relations(1,
-        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0))));
+        relation(1, 1000, 101, 1, tags(), mems(mw(1, 0), mn(1, 0))));
     var osh = osh(versions, nodes, ways);
     var contribs = Contributions.of(osh, 500);
 
@@ -89,7 +89,7 @@ class ContributionsRelationTest extends OSHDBTest {
 
     var versions = relations(1,
         relation(-2, 2000, 202, 2, tags(), mems()),
-        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0))));
+        relation(1, 1000, 101, 1, tags(), mems(mw(1, 0), mn(1, 0))));
     var osh = osh(versions, nodes, ways);
     var contribs = Contributions.of(osh);
 
@@ -120,10 +120,10 @@ class ContributionsRelationTest extends OSHDBTest {
             way(1, 1000, 101, 1, tags(), mems(1))));
 
     var versions = relations(1,
-        relation(4, 4000, 404, 4, tags(), mems(n(2, 0), w(1, 0))), // id change
-        relation(3, 3000, 303, 3, tags(), mems(n(1, 0), w(1, 0))), // type change
-        relation(2, 2000, 202, 2, tags(), mems(w(1, 0), n(1, 1))), // role change
-        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0))));
+        relation(4, 4000, 404, 4, tags(), mems(mn(2, 0), mw(1, 0))), // id change
+        relation(3, 3000, 303, 3, tags(), mems(mn(1, 0), mw(1, 0))), // type change
+        relation(2, 2000, 202, 2, tags(), mems(mw(1, 0), mn(1, 1))), // role change
+        relation(1, 1000, 101, 1, tags(), mems(mw(1, 0), mn(1, 0))));
 
     var osh = osh(versions, nodes, ways);
     var contribs = Contributions.of(osh);
@@ -160,7 +160,7 @@ class ContributionsRelationTest extends OSHDBTest {
             way(1, 1000, 101, 1, tags(), mems(1))));
 
     var versions = relations(1,
-        relation(1, 1000, 101, 1, tags(), mems(w(1, 0))));
+        relation(1, 1000, 101, 1, tags(), mems(mw(1, 0))));
 
     var osh = osh(versions, emptyList(), ways);
     var contribs = Contributions.of(osh);
@@ -180,7 +180,7 @@ class ContributionsRelationTest extends OSHDBTest {
             node(1, 1000, 101, 1, tags(), 0, 0)));
 
     var versions = relations(1,
-        relation(1, 1000, 101, 1, tags(), mems(n(1, 0))));
+        relation(1, 1000, 101, 1, tags(), mems(mn(1, 0))));
 
     var osh = osh(versions, nodes, emptyList());
     var contribs = Contributions.of(osh);
@@ -196,7 +196,7 @@ class ContributionsRelationTest extends OSHDBTest {
   @Test
   void testNoMembers() {
     var versions = relations(1,
-        relation(1, 1000, 101, 1, tags(), mems(n(1, 0))));
+        relation(1, 1000, 101, 1, tags(), mems(mn(1, 0))));
 
     var osh = osh(versions, emptyList(), emptyList());
     var contribs = Contributions.of(osh);
@@ -221,7 +221,7 @@ class ContributionsRelationTest extends OSHDBTest {
             way(1, 1000, 101, 1, tags(), mems(1))));
 
     var versions = relations(1,
-        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), r(1, 0))));
+        relation(1, 1000, 101, 1, tags(), mems(mw(1, 0), mr(1, 0))));
 
     var osh = osh(versions, nodes, ways);
     var contribs = Contributions.of(osh);
@@ -259,8 +259,8 @@ class ContributionsRelationTest extends OSHDBTest {
 
     var versions = relations(1,
         relation(2, 2000, 202, 2, tags(),
-            mems(w(1, 0), n(1, 0), w(2, 0), n(2, 0), w(1, 0), n(1, 0))),
-        relation(1, 1000, 101, 1, tags(), mems(w(1, 0), n(1, 0), w(3, 0), n(3, 0))));
+            mems(mw(1, 0), mn(1, 0), mw(2, 0), mn(2, 0), mw(1, 0), mn(1, 0))),
+        relation(1, 1000, 101, 1, tags(), mems(mw(1, 0), mn(1, 0), mw(3, 0), mn(3, 0))));
 
     var osh = osh(versions, nodes, ways);
     var contribs = Contributions.of(osh);

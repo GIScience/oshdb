@@ -44,18 +44,18 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
     return of(osh, Long.MAX_VALUE, x -> true);
   }
 
-  public static Contributions of(OSHEntity osh, long maxTimestamp) {
-    return of(osh, maxTimestamp, x -> true);
+  public static Contributions of(OSHEntity osh, long latestTimestamp) {
+    return of(osh, latestTimestamp, x -> true);
   }
 
-  public static Contributions of(OSHEntity osh, long maxTimestamp, Predicate<OSMEntity> filter) {
+  public static Contributions of(OSHEntity osh, long latestTimestamp, Predicate<OSMEntity> filter) {
     switch (osh.getType()) {
       case NODE:
-        return new Nodes((OSHNode) osh, maxTimestamp, filter);
+        return new Nodes((OSHNode) osh, latestTimestamp, filter);
       case WAY:
-        return new Ways((OSHWay) osh, maxTimestamp, filter);
+        return new Ways((OSHWay) osh, latestTimestamp, filter);
       case RELATION:
-        return new Rels((OSHRelation) osh, maxTimestamp, filter);
+        return new Rels((OSHRelation) osh, latestTimestamp, filter);
       default:
         throw new IllegalStateException();
     }
@@ -69,13 +69,13 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
     protected long changeset;
     protected boolean visible;
 
-    protected Entities(OSHDBIterator<T> majorVersions, long maxTimestamp,
+    protected Entities(OSHDBIterator<T> majorVersions, long latestTimestamp,
         Predicate<OSMEntity> filter) {
       this.majorVersions = majorVersions;
       this.filter = filter;
 
       this.major = majorVersions.next();
-      this.timestamp = maxTimestamp;
+      this.timestamp = latestTimestamp;
       this.changeset = -1;
 
       initMajor();
@@ -90,9 +90,6 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
         major = majorVersions.next();
       }
       major = testOrAdvance(major);
-      if (!filter.test(major)) {
-        major = null;
-      }
     }
 
     private T testOrAdvance(T osm) {
@@ -103,7 +100,11 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
           osm = majorVersions.next();
         }
       }
-      return osm;
+      if (test(osm) || majorVersions.hasNext() || !osm.isVisible()) {
+        return osm;
+      }
+
+      return null;
     }
 
     protected boolean test(OSMEntity osm) {
@@ -205,8 +206,8 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
   }
 
   private static class Nodes extends Entities<OSMNode> {
-    private Nodes(OSHNode osh, long maxTimestamp, Predicate<OSMEntity> filter) {
-      super(OSHDBIterator.peeking(osh.getVersions()), maxTimestamp, filter);
+    private Nodes(OSHNode osh, long latestTimestamp, Predicate<OSMEntity> filter) {
+      super(OSHDBIterator.peeking(osh.getVersions()), latestTimestamp, filter);
     }
 
     @Override
@@ -240,8 +241,8 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
     private Map<Long, Contributions> oshMembers;
     private Set<Long> active = Collections.emptySet();
 
-    protected Ways(OSHWay osh, long maxTimestamp, Predicate<OSMEntity> filter) {
-      super(OSHDBIterator.peeking(osh.getVersions()), maxTimestamp, filter);
+    protected Ways(OSHWay osh, long latestTimestamp, Predicate<OSMEntity> filter) {
+      super(OSHDBIterator.peeking(osh.getVersions()), latestTimestamp, filter);
       if (major != null) {
         this.oshMembers = members(osh.getNodes(), timestamp);
         if (!oshMembers.isEmpty()) {
@@ -297,8 +298,8 @@ public abstract class Contributions extends OSHDBIterator<Contribution> {
     private Set<Long> activeNodes = Collections.emptySet();
     private Set<Long> activeWays = Collections.emptySet();
 
-    protected Rels(OSHRelation osh, long maxTimestamp, Predicate<OSMEntity> filter) {
-      super(OSHDBIterator.peeking(osh.getVersions()), maxTimestamp, filter);
+    protected Rels(OSHRelation osh, long latestTimestamp, Predicate<OSMEntity> filter) {
+      super(OSHDBIterator.peeking(osh.getVersions()), latestTimestamp, filter);
 
       if (major != null) {
         this.oshNodeMembers = members(osh.getNodes(), timestamp);

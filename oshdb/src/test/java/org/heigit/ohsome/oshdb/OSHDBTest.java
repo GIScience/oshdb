@@ -44,8 +44,6 @@ public abstract class OSHDBTest {
     assertMembersSize(entity, contrib);
   }
 
-
-
   protected void assertMembersSize(OSMEntity entity, Contribution contrib) {
     if (contrib.getTypes().contains(DELETION)) {
       return;
@@ -128,7 +126,7 @@ public abstract class OSHDBTest {
   protected static int[] tags(OSHDBTag... tags) {
     var kvs = new int[tags.length * 2];
     for (int i = 0; i < tags.length; i++) {
-      kvs[i * 2 + 0] = tags[i].getKey();
+      kvs[i * 2] = tags[i].getKey();
       kvs[i * 2 + 1] = tags[i].getValue();
     }
     return kvs;
@@ -141,7 +139,7 @@ public abstract class OSHDBTest {
   protected static OSMMember[] mems(long... ids) {
     var members = new OSMMember[ids.length];
     for (int i = 0; i < ids.length; i++) {
-      members[i] = n(ids[i]);
+      members[i] = mn(ids[i]);
     }
     return members;
   }
@@ -150,23 +148,23 @@ public abstract class OSHDBTest {
     return members;
   }
 
-  protected static OSMMember m(OSMType type, long id, int role) {
+  protected static OSMMember me(OSMType type, long id, int role) {
     return new OSMMember(id, type, role);
   }
 
-  protected static OSMMember n(long id) {
-    return m(OSMType.NODE, id, -1);
+  protected static OSMMember mn(long id) {
+    return me(OSMType.NODE, id, -1);
   }
 
-  protected static OSMMember n(long id, int role) {
-    return m(OSMType.NODE, id, role);
+  protected static OSMMember mn(long id, int role) {
+    return me(OSMType.NODE, id, role);
   }
 
-  protected static OSMMember w(long id, int role) {
-    return m(OSMType.WAY, id, role);
+  protected static OSMMember mw(long id, int role) {
+    return me(OSMType.WAY, id, role);
   }
 
-  protected static OSMMember r(long id, int role) {
-    return m(OSMType.RELATION, id, role);
+  protected static OSMMember mr(long id, int role) {
+    return me(OSMType.RELATION, id, role);
   }
 }
