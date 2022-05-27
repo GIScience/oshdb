@@ -22,8 +22,8 @@ class OSHDBIteratorTest {
     assertEquals(obj, itr.next());
     assertFalse(itr.hasNext());
 
-    assertThrows(NoSuchElementException.class, () -> itr.peek());
-    assertThrows(NoSuchElementException.class, () -> itr.next());
+    assertThrows(NoSuchElementException.class, itr::peek);
+    assertThrows(NoSuchElementException.class, itr::next);
 
     var itr2 = OSHDBIterator.peeking(itr);
     assertEquals(itr, itr2);

@@ -95,7 +95,7 @@ class ContributionsWayTest extends OSHDBTest {
   }
 
   @Test
-  void testFilterFailInBetween() {
+  void testFilterFailOnceInBetween() {
     var nodes = List.of(
         osh(1,
             node(1, 1000, 101, 1, tags(), 0, 0)));
@@ -124,6 +124,65 @@ class ContributionsWayTest extends OSHDBTest {
     assertFalse(contribs.hasNext());
   }
 
+  @Test
+  void testFilterFailTwiceInBetween() {
+    var nodes = List.of(
+        osh(1,
+            node(1, 1000, 101, 1, tags(), 0, 0)));
+    var versions = ways(1,
+        way(4, 4000, 404, 4, tags(), mems(1)),
+        way(3, 3000, 302, 2, tags(), mems(1)),
+        way(2, 2000, 202, 2, tags(), mems(1)),
+        way(1, 1000, 101, 1, tags(), mems(1)));
+    var osh = osh(versions, nodes);
+    var contribs = Contributions.of(osh, Long.MAX_VALUE, x -> x.getUserId() != 2);
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertContrib(4000, 404, 4, versions.get(0), contrib);
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    // version 3 should be missing
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertContrib(2000, 202, 2, versions.get(2), contrib);
+    assertEquals(EnumSet.of(DELETION), contrib.getTypes());
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertContrib(1000, 101, 1, versions.get(3), contrib);
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertFalse(contribs.hasNext());
+  }
+
+  @Test
+  void testFilterFailAtBeginning() {
+    var nodes = List.of(
+        osh(1,
+            node(1, 1000, 101, 1, tags(), 0, 0)));
+    var versions = ways(1,
+        way(3, 3000, 302, 2, tags(), mems(1)),
+        way(2, 2000, 202, 2, tags(), mems(1)),
+        way(1, 1000, 101, 1, tags(), mems(1)));
+    var osh = osh(versions, nodes);
+    var contribs = Contributions.of(osh, Long.MAX_VALUE, x -> x.getUserId() != 2);
+
+    // version 3 should be missing
+
+    assertTrue(contribs.hasNext());
+    var contrib = contribs.next();
+    assertContrib(2000, 202, 2, versions.get(1), contrib);
+    assertEquals(EnumSet.of(DELETION), contrib.getTypes());
+
+    assertTrue(contribs.hasNext());
+    contrib = contribs.next();
+    assertContrib(1000, 101, 1, versions.get(2), contrib);
+    assertEquals(EnumSet.of(CREATION), contrib.getTypes());
+
+    assertFalse(contribs.hasNext());
+  }
 
   @Test
   void testSquashMembers() {
@@ -147,7 +206,6 @@ class ContributionsWayTest extends OSHDBTest {
     var contrib = contribs.next();
     assertContrib(3500, 250, 3, versions.get(0), contrib);
     assertEquals(EnumSet.of(GEOMETRY_CHANGE), contrib.getMinorTypes());
-
 
     assertTrue(contribs.hasNext());
     contrib = contribs.next();

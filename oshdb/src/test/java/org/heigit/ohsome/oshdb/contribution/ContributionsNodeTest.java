@@ -17,9 +17,9 @@ class ContributionsNodeTest extends OSHDBTest {
   @Test
   void testReviveDeletedCreated() {
     var versions = nodes(1,
-        node(3, 3000, 303, 3, tags(tag(1, 1)), 1, 0), //revive
+        node(3, 3000, 303, 3, tags(tag(1, 1)), 1, 0), // revive
         node(-2, 2000, 202, 2, tags(), 0, 0), // deleted
-        node(1, 1000, 101, 1, tags(tag(1, 1)), 1, 0)); //created
+        node(1, 1000, 101, 1, tags(tag(1, 1)), 1, 0)); // created
     var osh = osh(versions);
     var contribs = Contributions.of(osh);
 

@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class ContributionsRelationTest extends OSHDBTest {
 
   @Test
-  void testMemberTagChanges() {
+  void testMemberAndTagChanges() {
     var nodes = List.of(
         osh(1,
             node(1, 1000, 101, 1, tags(), 0, 0)));
