@@ -455,11 +455,7 @@ public abstract class MapReducer<X> implements
   @Override
   @Contract(pure = true)
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
-    MapReducer<?> ret = this.copy();
-    ret.mappers.add(new MapFunction(mapper, false));
-    @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
-    MapReducer<R> result = (MapReducer<R>) ret;
-    return result;
+    return map((o, ignored) -> mapper.apply(o));
   }
 
   // Some internal methods can also map the "root" object of the mapreducer's view.
@@ -485,11 +481,7 @@ public abstract class MapReducer<X> implements
   @Override
   @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
-    MapReducer<?> ret = this.copy();
-    ret.mappers.add(new MapFunction(flatMapper, true));
-    @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
-    MapReducer<R> result = (MapReducer<R>) ret;
-    return result;
+    return flatMap((o, ignored) -> flatMapper.apply(o));
   }
 
   // Some internal methods can also flatMap the "root" object of the mapreducer's view.

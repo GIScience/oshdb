@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
-import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 
 /**
  * A function that has a flag: <i>isFlatMapper</i>.
@@ -17,11 +16,6 @@ class MapFunction implements SerializableBiFunction {
 
   MapFunction(SerializableBiFunction mapper, boolean isFlatMapper) {
     this.mapper = mapper;
-    this.isFlatMapper = isFlatMapper;
-  }
-
-  MapFunction(SerializableFunction mapper, boolean isFlatMapper) {
-    this.mapper = (o, ignored) -> mapper.apply(o);
     this.isFlatMapper = isFlatMapper;
   }
 
