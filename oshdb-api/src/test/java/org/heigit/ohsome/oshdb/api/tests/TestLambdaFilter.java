@@ -10,7 +10,6 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -35,16 +34,15 @@ class TestLambdaFilter {
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.NODE)
-        .osmTag("highway")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   @Test
   void testFilter() throws Exception {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .filter(contribution -> contribution
             .getContributionTypes()
             .contains(ContributionType.GEOMETRY_CHANGE))
@@ -60,7 +58,7 @@ class TestLambdaFilter {
   void testAggregateFilter() throws Exception {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .filter(contribution -> contribution
             .getContributionTypes()

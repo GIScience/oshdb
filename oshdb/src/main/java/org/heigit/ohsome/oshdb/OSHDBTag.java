@@ -33,10 +33,6 @@ public class OSHDBTag implements Comparable<OSHDBTag>, Serializable {
     return this.value;
   }
 
-  public boolean isPresentInKeytables() {
-    return this.value >= 0 && this.key >= 0;
-  }
-
   @Override
   public int compareTo(OSHDBTag o) {
     return ORDER_BY_ID.compare(this, o);
@@ -55,6 +51,6 @@ public class OSHDBTag implements Comparable<OSHDBTag>, Serializable {
 
   @Override
   public String toString() {
-    return Integer.toString(this.key) + "=" + Integer.toString(this.value);
+    return key + "=" + value;
   }
 }

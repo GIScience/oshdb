@@ -29,7 +29,7 @@ class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgnite {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(
             new OSHDBTimestamps("2010-01-01", "2015-01-01", OSHDBTimestamps.Interval.YEARLY))
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .map(x -> (Integer) null)
         .stream()
