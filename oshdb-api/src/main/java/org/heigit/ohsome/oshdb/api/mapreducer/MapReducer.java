@@ -899,7 +899,7 @@ public abstract class MapReducer<X> implements
                 (List<OSMContribution> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                      .map((SerializableFunction<Object, Iterable<X>>) flatMapper::apply)
+                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
                       .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
@@ -908,7 +908,7 @@ public abstract class MapReducer<X> implements
                 (List<OSMEntitySnapshot> inputList) -> {
                   List<X> outputList = new LinkedList<>();
                   inputList.stream()
-                      .map((SerializableFunction<Object, Iterable<X>>) flatMapper::apply)
+                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
                       .forEach(data -> Iterables.addAll(outputList, data));
                   return outputList;
                 }, identitySupplier, accumulator, combiner);
