@@ -30,7 +30,7 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.MapReducerBase;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.OSHDBIgniteMapReduceComputeTask.CancelableIgniteMapReduceJob;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * global (or almost global) queries. In other situations it should not be used.
  * </p>
  */
-public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
+public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
   private static final int SCAN_QUERY_PAGE_SIZE = 16;
 
   public MapReducerIgniteScanQuery(OSHDBDatabase oshdb,
@@ -98,7 +98,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
   @NotNull
   @Override
-  protected MapReducer<X> copy() {
+  protected MapReducerBase<X> copy() {
     return new MapReducerIgniteScanQuery<>(this);
   }
 

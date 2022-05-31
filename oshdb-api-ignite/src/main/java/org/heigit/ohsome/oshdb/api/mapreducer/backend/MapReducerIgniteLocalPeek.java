@@ -24,7 +24,7 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.MapReducerBase;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.OSHDBIgniteMapReduceComputeTask.CancelableIgniteMapReduceJob;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * situations when running oshdb- analyses on ignite.
  * </p>
  */
-public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
+public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
   public MapReducerIgniteLocalPeek(OSHDBDatabase oshdb,
       Class<? extends OSHDBMapReducible> forClass) {
     super(oshdb, forClass);
@@ -71,7 +71,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
   @NotNull
   @Override
-  protected MapReducer<X> copy() {
+  protected MapReducerBase<X> copy() {
     return new MapReducerIgniteLocalPeek<>(this);
   }
 

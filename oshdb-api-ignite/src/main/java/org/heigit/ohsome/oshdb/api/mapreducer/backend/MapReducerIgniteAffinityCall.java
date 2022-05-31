@@ -31,7 +31,7 @@ import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.MapReducerBase;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
@@ -67,7 +67,7 @@ import org.json.simple.parser.ParseException;
  * the (~linear) inefficiency with this implementation.
  * </p>
  */
-public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
+public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
     implements CancelableProcessStatus {
 
   /**
@@ -88,7 +88,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
 
   @NotNull
   @Override
-  protected MapReducer<X> copy() {
+  protected MapReducerBase<X> copy() {
     return new MapReducerIgniteAffinityCall<X>(this);
   }
 

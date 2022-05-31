@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.MapReducerBase;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
@@ -40,7 +40,7 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
 
   @NotNull
   @Override
-  protected MapReducer<X> copy() {
+  protected MapReducerBase<X> copy() {
     return new MapReducerJdbcMultithread<X>(this);
   }
 

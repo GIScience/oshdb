@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.MapReducerBase;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
@@ -39,7 +39,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
   @NotNull
   @Override
-  protected MapReducer<X> copy() {
+  protected MapReducerBase<X> copy() {
     return new MapReducerJdbcSinglethread<X>(this);
   }
 
