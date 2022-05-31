@@ -56,6 +56,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
@@ -75,7 +76,6 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
-import org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.jetbrains.annotations.Contract;
@@ -229,7 +229,7 @@ public abstract class MapReducerBase<X> implements
         // this is the expected path -> the oshdb doesn't have the key tables
         oshdbContainsKeytables = false;
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        throw new OSHDBException(e);
       }
       if (oshdbContainsKeytables) {
         LOG.warn("It looks like as if the current OSHDB comes with keytables included. "
@@ -253,7 +253,6 @@ public abstract class MapReducerBase<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Override
-  @SuppressWarnings("unused")
   @Contract(pure = true)
   public MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter) {
     MapReducerBase<X> ret = this.copy();
@@ -294,7 +293,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public <P extends Geometry & Polygonal> MapReducerBase<X> areaOfInterest(@NotNull P polygonFilter) {
+  public <P extends Geometry & Polygonal> MapReducerBase<X> areaOfInterest(P polygonFilter) {
     MapReducerBase<X> ret = this.copy();
     if (this.polyFilter == null) {
       ret.polyFilter = Geo.clip(polygonFilter, ret.bboxFilter);
@@ -331,102 +330,7 @@ public abstract class MapReducerBase<X> implements
     return ret;
   }
 
-  /**
-   * Set the timestamps for which to perform the analysis in a regular interval between a start and
-   * end date.
-   *
-   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
-   *
-   * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
-   * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
-   * @param interval the interval between the timestamps to be used in the analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<X> timestamps(
-          String isoDateStart, String isoDateEnd, OSHDBTimestamps.Interval interval
-  ) {
-    return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
-  }
-
-  /**
-   * Sets a single timestamp for which to perform the analysis at.
-   *
-   * <p>Useful in combination with the OSMEntitySnapshotView when not performing further aggregation
-   * by timestamp.</p>
-   *
-   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
-   *
-   * @param isoDate an ISO 8601 date string representing the date of the analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<X> timestamps(String isoDate) {
-    if (isOSMContributionViewQuery()) {
-      LOG.warn("OSMContributionView requires two or more timestamps, but only one was supplied.");
-    }
-    return this.timestamps(isoDate, isoDate, new String[] {});
-  }
-
-  /**
-   * Sets two timestamps (start and end date) for which to perform the analysis.
-   *
-   * <p>Useful in combination with the OSMContributionView when not performing further aggregation
-   * by timestamp.</p>
-   *
-   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
-   *
-   * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
-   * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<X> timestamps(String isoDateStart, String isoDateEnd) {
-    return this.timestamps(isoDateStart, isoDateEnd, new String[] {});
-  }
-
-  /**
-   * Sets multiple arbitrary timestamps for which to perform the analysis.
-   *
-   * <p>Note for programmers wanting to use this method to supply an arbitrary number (n&gt;=1) of
-   * timestamps: You may supply the same time string multiple times, which will be de-duplicated
-   * internally. E.g. you can call the method like this:
-   * <code>.timestamps(dateArr[0], dateArr[0], dateArr)</code>
-   * </p>
-   *
-   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
-   *
-   * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
-   * @param isoDateSecond an ISO 8601 date string representing the second date of the analysis
-   * @param isoDateMore more ISO 8601 date strings representing the remaining timestamps of the
-   *        analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<X> timestamps(
-          String isoDateFirst, String isoDateSecond, String... isoDateMore) {
-    SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
-    try {
-      timestamps.add(
-          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateFirst).toEpochSecond()));
-      timestamps.add(
-          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateSecond).toEpochSecond()));
-      for (String isoDate : isoDateMore) {
-        timestamps.add(
-            new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDate).toEpochSecond()));
-      }
-    } catch (Exception e) {
-      LOG.error("unable to parse ISO date string: " + e.getMessage());
-    }
-    return this.timestamps(() -> timestamps);
-  }
-
-  @Override
-  public MapReducerBase<X> osmTypeInternal(Set<OSMType> typeFilter) {
+  protected MapReducerBase<X> osmTypeInternal(Set<OSMType> typeFilter) {
     var ret = this.copy();
     typeFilter = Sets.intersection(ret.typeFilter, typeFilter);
     if (typeFilter.isEmpty()) {
@@ -499,7 +403,8 @@ public abstract class MapReducerBase<X> implements
 
   // Some internal methods can also flatMap the "root" object of the mapreducer's view.
   @Contract(pure = true)
-  protected  <R> MapReducerBase<R> flatMap(SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
+  protected <R> MapReducerBase<R> flatMap(
+      SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
     MapReducerBase<?> ret = this.copy();
     ret.mappers.add(new MapFunction(flatMapper, true));
     @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
@@ -635,7 +540,7 @@ public abstract class MapReducerBase<X> implements
       List<MapFunction> mapFunctions = new ArrayList<>(ret.mappers);
       ret.mappers.clear();
       ret.grouping = Grouping.BY_ID;
-      @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of items
+      @SuppressWarnings("unchecked") // in the reduce step the backend will return a list of items
       MapReducerBase<List<?>> listMapReducer = (MapReducerBase<List<?>>) ret;
       for (MapFunction action : mapFunctions) {
         if (action.isFlatMapper()) {
@@ -649,7 +554,6 @@ public abstract class MapReducerBase<X> implements
           listMapReducer = mappedResult;
         }
       }
-      @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of X
       MapReducer<List<X>> result = listMapReducer.map(List.class::cast);
       return result;
     } else {
@@ -679,24 +583,6 @@ public abstract class MapReducerBase<X> implements
           Collection<U> zerofill
   ) {
     return new Aggregator<>(this, (data, ignored) -> indexer.apply(data), zerofill);
-  }
-
-  /**
-   * Sets a custom aggregation function that is used to group output results into.
-   *
-   * @param indexer a function that will be called for each input element and returns a value that
-   *        will be used to group the results by
-   * @param <U> the data type of the values used to aggregate the output. has to be a comparable
-   *        type
-   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
-   *         etc.) of the current MapReducer object
-   */
-  @Override
-  @Contract(pure = true)
-  public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
-          SerializableFunction<X, U> indexer
-  ) {
-    return this.aggregateBy(indexer, Collections.emptyList());
   }
 
   /**
@@ -869,8 +755,7 @@ public abstract class MapReducerBase<X> implements
   public <S> S reduce(
           SerializableSupplier<S> identitySupplier,
           SerializableBiFunction<S, X, S> accumulator,
-          SerializableBinaryOperator<S> combiner)
-      throws Exception {
+          SerializableBinaryOperator<S> combiner) {
     checkTimeout();
     switch (this.grouping) {
       case NONE:
@@ -969,50 +854,6 @@ public abstract class MapReducerBase<X> implements
     }
   }
 
-  /**
-   * Generic map-reduce routine (shorthand syntax).
-   *
-   * <p>
-   * This variant is shorter to program than `reduce(identitySupplier, accumulator, combiner)`, but
-   * can only be used if the result type is the same as the current `map`ped type &lt;X&gt;. Also
-   * this variant can be less efficient since it cannot benefit from the mutability freedoms the
-   * accumulator+combiner approach has.
-   * </p>
-   *
-   * <p>
-   * The combination of the used types and identity/reducer functions must make "mathematical"
-   * sense:
-   * </p>
-   * <ul>
-   * <li>the accumulator function needs to be associative,</li>
-   * <li>values generated by the identitySupplier factory must be an identity for the accumulator
-   * function: `accumulator(identitySupplier(),x)` must be equal to `x`,</li>
-   * </ul>
-   *
-   * <p>
-   * Functionally, this interface is similar to Java11 Stream's
-   * <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Stream.html#reduce(T,java.util.function.BinaryOperator)">reduce(identity,accumulator)</a>
-   * interface.
-   * </p>
-   *
-   * @param identitySupplier a factory function that returns a new starting value to reduce results
-   *        into (e.g. when summing values, one needs to start at zero)
-   * @param accumulator a function that takes a result from the `mapper` function (type &lt;X&gt;)
-   *        and an accumulation value (also of type &lt;X&gt;, e.g. the result of
-   *        `identitySupplier()`) and returns the "sum" of the two; contrary to `combiner`, this
-   *        function is not to alter (mutate) the state of the accumulation value (e.g. directly
-   *        adding new values to an existing Set object)
-   * @return the result of the map-reduce operation, the final result of the last call to the
-   *         `combiner` function, after all `mapper` results have been aggregated (in the
-   *         `accumulator` and `combiner` steps)
-   */
-  @Override
-  @Contract(pure = true)
-  public X reduce(SerializableSupplier<X> identitySupplier,
-                  SerializableBinaryOperator<X> accumulator) throws Exception {
-    return this.reduce(identitySupplier, accumulator::apply, accumulator);
-  }
-
   // -----------------------------------------------------------------------------------------------
   // "Quality of life" helper methods to use the map-reduce functionality more directly and easily
   // for typical queries.
@@ -1032,7 +873,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Number sum() throws Exception {
+  public Number sum() {
     return this.makeNumeric().reduce(() -> 0, NumberUtils::add);
   }
 
@@ -1048,7 +889,8 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public <R extends Number> R sum(SerializableFunction<X, R> mapper) throws Exception {
+  @SuppressWarnings("unchecked")
+  public <R extends Number> R sum(SerializableFunction<X, R> mapper) {
     return this.map(mapper).reduce(() -> (R) (Integer) 0, NumberUtils::add);
   }
 
@@ -1059,7 +901,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Integer count() throws Exception {
+  public Integer count() {
     return this.sum(ignored -> 1);
   }
 
@@ -1073,7 +915,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Set<X> uniq() throws Exception {
+  public Set<X> uniq() {
     return this.reduce(
         MapReducerBase::uniqIdentitySupplier,
         MapReducerBase::uniqAccumulator,
@@ -1092,22 +934,8 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public <R> Set<R> uniq(SerializableFunction<X, R> mapper) throws Exception {
+  public <R> Set<R> uniq(SerializableFunction<X, R> mapper) {
     return this.map(mapper).uniq();
-  }
-
-  /**
-   * Counts all unique values of the results.
-   *
-   * <p>For example, this can be used together with the OSMContributionView to get the number of
-   * unique users editing specific feature types.</p>
-   *
-   * @return the set of distinct values
-   */
-  @Override
-  @Contract(pure = true)
-  public Integer countUniq() throws Exception {
-    return this.uniq().size();
   }
 
   /**
@@ -1121,7 +949,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Double average() throws Exception {
+  public Double average() {
     return this.makeNumeric().average(n -> n);
   }
 
@@ -1134,7 +962,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public <R extends Number> Double average(SerializableFunction<X, R> mapper) throws Exception {
+  public <R extends Number> Double average(SerializableFunction<X, R> mapper) {
     return this.weightedAverage(data -> new WeightedValue(mapper.apply(data), 1.0));
   }
 
@@ -1150,13 +978,11 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception {
-    MutableWeightedDouble runningSums =
-        this.map(mapper).reduce(
+  public Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) {
+    MutableWeightedDouble runningSums = this.map(mapper).reduce(
             MutableWeightedDouble::identitySupplier,
             MutableWeightedDouble::accumulator,
-            MutableWeightedDouble::combiner
-        );
+            MutableWeightedDouble::combiner);
     return runningSums.num / runningSums.weight;
   }
 
@@ -1172,7 +998,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Double estimatedMedian() throws Exception {
+  public Double estimatedMedian() {
     return this.estimatedQuantile(0.5);
   }
 
@@ -1189,8 +1015,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper)
-      throws Exception {
+  public <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper) {
     return this.estimatedQuantile(mapper, 0.5);
   }
 
@@ -1207,7 +1032,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Double estimatedQuantile(double q) throws Exception {
+  public Double estimatedQuantile(double q) {
     return this.makeNumeric().estimatedQuantile(n -> n, q);
   }
 
@@ -1226,8 +1051,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q)
-      throws Exception {
+  public <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q) {
     return this.estimatedQuantiles(mapper).applyAsDouble(q);
   }
 
@@ -1244,7 +1068,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public List<Double> estimatedQuantiles(Iterable<Double> q) throws Exception {
+  public List<Double> estimatedQuantiles(Iterable<Double> q) {
     return this.makeNumeric().estimatedQuantiles(n -> n, q);
   }
 
@@ -1264,8 +1088,7 @@ public abstract class MapReducerBase<X> implements
   @Contract(pure = true)
   public <R extends Number> List<Double> estimatedQuantiles(
           SerializableFunction<X, R> mapper,
-          Iterable<Double> q
-  ) throws Exception {
+          Iterable<Double> q) {
     return Streams.stream(q)
         .mapToDouble(Double::doubleValue)
         .map(this.estimatedQuantiles(mapper))
@@ -1285,7 +1108,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public DoubleUnaryOperator estimatedQuantiles() throws Exception {
+  public DoubleUnaryOperator estimatedQuantiles() {
     return this.makeNumeric().estimatedQuantiles(n -> n);
   }
 
@@ -1304,8 +1127,7 @@ public abstract class MapReducerBase<X> implements
   @Override
   @Contract(pure = true)
   public <R extends Number> DoubleUnaryOperator estimatedQuantiles(
-          SerializableFunction<X, R> mapper
-  ) throws Exception {
+          SerializableFunction<X, R> mapper) {
     TDigest digest = this.digest(mapper);
     return digest::quantile;
   }
@@ -1315,7 +1137,7 @@ public abstract class MapReducerBase<X> implements
    * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
    */
   @Contract(pure = true)
-  private <R extends Number> TDigest digest(SerializableFunction<X, R> mapper) throws Exception {
+  private <R extends Number> TDigest digest(SerializableFunction<X, R> mapper) {
     return this.map(mapper).reduce(
         TdigestReducer::identitySupplier,
         TdigestReducer::accumulator,
@@ -1343,7 +1165,7 @@ public abstract class MapReducerBase<X> implements
   @Override
   @Deprecated
   @SuppressWarnings("ResultOfMethodCallIgnored")
-  public void forEach(SerializableConsumer<X> action) throws Exception {
+  public void forEach(SerializableConsumer<X> action) {
     this.map(data -> {
       action.accept(data);
       return null;
@@ -1357,7 +1179,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public List<X> collect() throws Exception {
+  public List<X> collect() {
     return this.reduce(
         MapReducerBase::collectIdentitySupplier,
         MapReducerBase::collectAccumulator,
@@ -1376,7 +1198,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public Stream<X> stream() throws Exception {
+  public Stream<X> stream() {
     try {
       return this.streamInternal();
     } catch (UnsupportedOperationException e) {
@@ -1387,7 +1209,7 @@ public abstract class MapReducerBase<X> implements
   }
 
   @Contract(pure = true)
-  private Stream<X> streamInternal() throws Exception {
+  private Stream<X> streamInternal() {
     checkTimeout();
     switch (this.grouping) {
       case NONE:
@@ -1472,16 +1294,16 @@ public abstract class MapReducerBase<X> implements
   // -----------------------------------------------------------------------------------------------
 
   protected abstract Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) throws Exception;
+      SerializableFunction<OSMContribution, X> mapper);
 
   protected abstract Stream<X> flatMapStreamCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception;
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper);
 
   protected abstract Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception;
+      SerializableFunction<OSMEntitySnapshot, X> mapper);
 
   protected abstract Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception;
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper);
 
   // -----------------------------------------------------------------------------------------------
   // Generic map-reduce functions (internal).
@@ -1530,8 +1352,7 @@ public abstract class MapReducerBase<X> implements
       SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) throws Exception;
+      SerializableBinaryOperator<S> combiner);
 
   /**
    * Generic "flat" version of the map-reduce used by the `OSMContributionView`, with by-osm-id
@@ -1585,8 +1406,7 @@ public abstract class MapReducerBase<X> implements
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) throws Exception;
+      SerializableBinaryOperator<S> combiner);
 
   /**
    * Generic map-reduce used by the `OSMEntitySnapshotView`.
@@ -1630,8 +1450,7 @@ public abstract class MapReducerBase<X> implements
       SerializableFunction<OSMEntitySnapshot, R> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) throws Exception;
+      SerializableBinaryOperator<S> combiner);
 
   /**
    * Generic "flat" version of the map-reduce used by the `OSMEntitySnapshotView`, with by-osm-id
@@ -1685,8 +1504,7 @@ public abstract class MapReducerBase<X> implements
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) throws Exception;
+      SerializableBinaryOperator<S> combiner);
 
   // -----------------------------------------------------------------------------------------------
   // Some helper methods for internal use in the mapReduce functions
@@ -1700,9 +1518,13 @@ public abstract class MapReducerBase<X> implements
     return OSMEntitySnapshot.class.isAssignableFrom(this.viewClass);
   }
 
-  protected TagInterpreter getTagInterpreter() throws ParseException, IOException {
+  protected TagInterpreter getTagInterpreter() {
     if (this.tagInterpreter == null) {
-      this.tagInterpreter = new DefaultTagInterpreter(this.getTagTranslator());
+      try {
+        this.tagInterpreter = new DefaultTagInterpreter(this.getTagTranslator());
+      } catch (IOException | ParseException e) {
+        throw new OSHDBException(e);
+      }
     }
     return this.tagInterpreter;
   }
@@ -1715,8 +1537,7 @@ public abstract class MapReducerBase<X> implements
         }
         this.tagTranslator = new TagTranslator(this.keytables.getConnection());
       } catch (OSHDBKeytablesNotFoundException e) {
-        LOG.error(e.getMessage());
-        throw new RuntimeException(e);
+        throw new OSHDBException(e);
       }
     }
     return this.tagTranslator;
@@ -1935,7 +1756,8 @@ public abstract class MapReducerBase<X> implements
     return mapRed;
   }
 
-  private <O> MapReducerBase<O> optimizeFilters0(MapReducerBase<O> mapRed, FilterExpression filter) {
+  private <O> MapReducerBase<O> optimizeFilters0(MapReducerBase<O> mapRed,
+      FilterExpression filter) {
     // basic optimizations (“low hanging fruit”):
     // single filters, and-combination of single filters, etc.
     if (filter instanceof TagFilterEquals) {
@@ -1953,7 +1775,8 @@ public abstract class MapReducerBase<X> implements
     return mapRed;
   }
 
-  private <O> MapReducerBase<O> optimizeFilters1(MapReducerBase<O> mapRed, FilterExpression filter) {
+  private <O> MapReducerBase<O> optimizeFilters1(MapReducerBase<O> mapRed,
+      FilterExpression filter) {
     // more advanced optimizations that rely on analyzing the DNF of a filter expression
     List<List<Filter>> filterNormalized = filter.normalize();
     // collect all OSMTypes in all of the clauses
@@ -2045,7 +1868,8 @@ public abstract class MapReducerBase<X> implements
     // MapAggregator specific methods
     // ---------------------------------------------------------------------------------------------
 
-    public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
+    public <V extends Comparable<V> & Serializable>
+        MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
         SerializableFunction<X, V> indexer, Collection<V> zerofill) {
       Aggregator<OSHDBCombinedIndex<U, V>, X> res =
           this.mapIndex((indexData, ignored) -> new OSHDBCombinedIndex<>(indexData.getKey(),
@@ -2055,20 +1879,14 @@ public abstract class MapReducerBase<X> implements
     }
 
     // Some internal methods can also aggregate using the "root" object of the mapreducer's view.
-    private <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
+    private <V extends Comparable<V> & Serializable>
+        MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
         SerializableBiFunction<X, Object, V> indexer, Collection<V> zerofill) {
       Aggregator<OSHDBCombinedIndex<U, V>, X> res =
           this.mapIndex((indexData, root) -> new OSHDBCombinedIndex<>(indexData.getKey(),
               indexer.apply(indexData.getValue(), root)));
       res.zerofill.add(zerofill);
       return res;
-    }
-
-    @Override
-    @Contract(pure = true)
-    public <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-        SerializableFunction<X, V> indexer) {
-      return this.aggregateBy(indexer, Collections.emptyList());
     }
 
     @Override
@@ -2084,10 +1902,10 @@ public abstract class MapReducerBase<X> implements
         indexer = (ignored, root) -> ((OSMEntitySnapshot) root).getTimestamp();
       } else {
         throw new UnsupportedOperationException(
-            "automatic aggregateByTimestamp() only implemented for OSMContribution and "
-                + "OSMEntitySnapshot -> try using aggregateByTimestamp(customTimestampIndex) instead");
+            "automatic aggregateByTimestamp() only implemented "
+            + "for OSMContribution and OSMEntitySnapshot "
+            + "-> try using aggregateByTimestamp(customTimestampIndex) instead");
       }
-
       return this.aggregateBy(indexer, this.mapReducer.getZerofillTimestamps());
     }
 
@@ -2112,7 +1930,8 @@ public abstract class MapReducerBase<X> implements
 
     @Override
     @Contract(pure = true)
-    public <V extends Comparable<V> & Serializable, P extends Geometry & Polygonal> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(
+    public <V extends Comparable<V> & Serializable, P extends Geometry & Polygonal>
+        MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(
         Map<V, P> geometries) throws UnsupportedOperationException {
       if (this.mapReducer.grouping != Grouping.NONE) {
         throw new UnsupportedOperationException(
@@ -2168,59 +1987,56 @@ public abstract class MapReducerBase<X> implements
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, Number> sum() throws Exception {
+    public SortedMap<U, Number> sum() {
       return this.makeNumeric().reduce(() -> 0, NumberUtils::add);
     }
 
     @Override
     @Contract(pure = true)
-    public <R extends Number> SortedMap<U, R> sum(SerializableFunction<X, R> mapper)
-        throws Exception {
+    public <R extends Number> SortedMap<U, R> sum(SerializableFunction<X, R> mapper) {
       return this.map(mapper).reduce(() -> (R) (Integer) 0, NumberUtils::add);
     }
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, Integer> count() throws Exception {
+    public SortedMap<U, Integer> count() {
       return this.sum(ignored -> 1);
     }
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, Set<X>> uniq() throws Exception {
+    public SortedMap<U, Set<X>> uniq() {
       return this.reduce(MapReducerBase::uniqIdentitySupplier, MapReducerBase::uniqAccumulator,
           MapReducerBase::uniqCombiner);
     }
 
     @Override
     @Contract(pure = true)
-    public <R> SortedMap<U, Set<R>> uniq(SerializableFunction<X, R> mapper) throws Exception {
+    public <R> SortedMap<U, Set<R>> uniq(SerializableFunction<X, R> mapper) {
       return this.map(mapper).uniq();
     }
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, Integer> countUniq() throws Exception {
+    public SortedMap<U, Integer> countUniq() {
       return transformSortedMap(this.uniq(), Set::size);
     }
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, Double> average() throws Exception {
+    public SortedMap<U, Double> average() {
       return this.makeNumeric().average(n -> n);
     }
 
     @Override
     @Contract(pure = true)
-    public <R extends Number> SortedMap<U, Double> average(SerializableFunction<X, R> mapper)
-        throws Exception {
+    public <R extends Number> SortedMap<U, Double> average(SerializableFunction<X, R> mapper) {
       return this.weightedAverage(data -> new WeightedValue(mapper.apply(data), 1.0));
     }
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper)
-        throws Exception {
+    public SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper) {
       return transformSortedMap(
           this.map(mapper).reduce(MutableWeightedDouble::identitySupplier,
               MutableWeightedDouble::accumulator, MutableWeightedDouble::combiner),
@@ -2229,41 +2045,41 @@ public abstract class MapReducerBase<X> implements
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, Double> estimatedMedian() throws Exception {
+    public SortedMap<U, Double> estimatedMedian() {
       return this.estimatedQuantile(0.5);
     }
 
     @Override
     @Contract(pure = true)
     public <R extends Number> SortedMap<U, Double> estimatedMedian(
-        SerializableFunction<X, R> mapper) throws Exception {
+        SerializableFunction<X, R> mapper) {
       return this.estimatedQuantile(mapper, 0.5);
     }
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, Double> estimatedQuantile(double q) throws Exception {
+    public SortedMap<U, Double> estimatedQuantile(double q) {
       return this.makeNumeric().estimatedQuantile(n -> n, q);
     }
 
     @Override
     @Contract(pure = true)
     public <R extends Number> SortedMap<U, Double> estimatedQuantile(
-        SerializableFunction<X, R> mapper, double q) throws Exception {
+        SerializableFunction<X, R> mapper, double q) {
       return transformSortedMap(this.estimatedQuantiles(mapper),
           quantileFunction -> quantileFunction.applyAsDouble(q));
     }
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, List<Double>> estimatedQuantiles(Iterable<Double> q) throws Exception {
+    public SortedMap<U, List<Double>> estimatedQuantiles(Iterable<Double> q) {
       return this.makeNumeric().estimatedQuantiles(n -> n, q);
     }
 
     @Override
     @Contract(pure = true)
     public <R extends Number> SortedMap<U, List<Double>> estimatedQuantiles(
-        SerializableFunction<X, R> mapper, Iterable<Double> q) throws Exception {
+        SerializableFunction<X, R> mapper, Iterable<Double> q) {
       return transformSortedMap(this.estimatedQuantiles(mapper),
           quantileFunction -> Streams.stream(q).mapToDouble(Double::doubleValue)
               .map(quantileFunction).boxed().collect(Collectors.toList()));
@@ -2271,14 +2087,14 @@ public abstract class MapReducerBase<X> implements
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, DoubleUnaryOperator> estimatedQuantiles() throws Exception {
+    public SortedMap<U, DoubleUnaryOperator> estimatedQuantiles() {
       return this.makeNumeric().estimatedQuantiles(n -> n);
     }
 
     @Override
     @Contract(pure = true)
     public <R extends Number> SortedMap<U, DoubleUnaryOperator> estimatedQuantiles(
-        SerializableFunction<X, R> mapper) throws Exception {
+        SerializableFunction<X, R> mapper) {
       return transformSortedMap(this.digest(mapper), d -> d::quantile);
     }
 
@@ -2288,27 +2104,27 @@ public abstract class MapReducerBase<X> implements
 
     @Override
     @Deprecated
-    public void forEach(SerializableBiConsumer<U, List<X>> action) throws Exception {
+    public void forEach(SerializableBiConsumer<U, List<X>> action) {
       this.collect().forEach(action);
     }
 
     @Override
     @Contract(pure = true)
-    public SortedMap<U, List<X>> collect() throws Exception {
+    public SortedMap<U, List<X>> collect() {
       return this.reduce(MapReducerBase::collectIdentitySupplier,
           MapReducerBase::collectAccumulator, MapReducerBase::collectCombiner);
     }
 
     @Override
     @Contract(pure = true)
-    public Stream<Entry<U, X>> stream() throws Exception {
+    public Stream<Entry<U, X>> stream() {
       return this.mapReducer.stream()
           .map(d -> Map.entry(d.getKey(), d.getValue()));
     }
 
     // ---------------------------------------------------------------------------------------------
     // "map", "flatMap" transformation methods
-  // -----------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------
 
     @Override
     @Contract(pure = true)
@@ -2332,7 +2148,6 @@ public abstract class MapReducerBase<X> implements
         return outData;
       }));
     }
-
 
     // Some internal methods can also flatMap the "root" object of the mapreducer's view.
     private <R> MapAggregator<U, R> flatMap(
@@ -2372,8 +2187,7 @@ public abstract class MapReducerBase<X> implements
     @Override
     @Contract(pure = true)
     public <S> SortedMap<U, S> reduce(SerializableSupplier<S> identitySupplier,
-        SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner)
-        throws Exception {
+        SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) {
       SortedMap<U, S> result =
           this.mapReducer.reduce(TreeMap::new, (TreeMap<U, S> m, IndexValuePair<U, X> r) -> {
             m.put(r.getKey(), accumulator.apply(m.getOrDefault(r.getKey(), identitySupplier.get()),
@@ -2401,7 +2215,7 @@ public abstract class MapReducerBase<X> implements
     @Override
     @Contract(pure = true)
     public SortedMap<U, X> reduce(SerializableSupplier<X> identitySupplier,
-        SerializableBinaryOperator<X> accumulator) throws Exception {
+        SerializableBinaryOperator<X> accumulator) {
       return this.reduce(identitySupplier, accumulator::apply, accumulator);
     }
 
@@ -2422,7 +2236,6 @@ public abstract class MapReducerBase<X> implements
       return this.copyTransformKey(this.mapReducer.map((inData,
           root) -> new IndexValuePair<>(keyMapper.apply(inData, root), inData.getValue())));
     }
-
 
     // calculate complete set of indices to use for zerofilling
     @SuppressWarnings("rawtypes")

@@ -65,7 +65,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
   }
 
   // copy constructor
-  private MapReducerIgniteLocalPeek(MapReducerIgniteLocalPeek obj) {
+  private MapReducerIgniteLocalPeek(MapReducerIgniteLocalPeek<?> obj) {
     super(obj);
   }
 
@@ -78,28 +78,28 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
       SerializableFunction<OSMContribution, X> mapper
-  ) throws Exception {
+  ) {
     throw new UnsupportedOperationException("Stream function not yet implemented");
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<X>> mapper
-  ) throws Exception {
+  ) {
     throw new UnsupportedOperationException("Stream function not yet implemented");
   }
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, X> mapper
-  ) throws Exception {
+  ) {
     throw new UnsupportedOperationException("Stream function not yet implemented");
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper
-  ) throws Exception {
+  ) {
     throw new UnsupportedOperationException("Stream function not yet implemented");
   }
 
@@ -116,7 +116,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
+      SerializableBinaryOperator<S> combiner) {
     return mapReduceOnIgniteCache((OSHDBIgnite) this.oshdb, identitySupplier, combiner,
         new MapReduceCellsOSMContributionOnIgniteCacheComputeJob<>(
             this.getTagInterpreter(), this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
@@ -128,7 +128,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
+      SerializableBinaryOperator<S> combiner) {
     return mapReduceOnIgniteCache((OSHDBIgnite) this.oshdb, identitySupplier, combiner,
         new FlatMapReduceCellsOSMContributionOnIgniteCacheComputeJob<>(
             this.getTagInterpreter(), this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
@@ -140,8 +140,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
-      throws Exception {
+      SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
     return mapReduceOnIgniteCache((OSHDBIgnite) this.oshdb, identitySupplier, combiner,
         new MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<>(
             this.getTagInterpreter(), this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
@@ -153,7 +152,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
+      SerializableBinaryOperator<S> combiner) {
     return mapReduceOnIgniteCache((OSHDBIgnite) this.oshdb, identitySupplier, combiner,
         new FlatMapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob<>(
             this.getTagInterpreter(), this.cacheNames(this.oshdb.prefix()), this.getCellIdRanges(),
@@ -172,14 +171,13 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
     private boolean notCanceled = true;
 
     /* computation settings */
-    final List<String> cacheNames;
-    final Iterable<CellIdRange> cellIdRanges;
-    final OSHDBBoundingBox bbox;
-    final CellIterator cellIterator;
-    final SerializableFunction<V, M> mapper;
-    final SerializableSupplier<S> identitySupplier;
-    final SerializableBiFunction<S, R, S> accumulator;
-    final SerializableBinaryOperator<S> combiner;
+    private final List<String> cacheNames;
+    private final Iterable<CellIdRange> cellIdRanges;
+    private final CellIterator cellIterator;
+    protected final SerializableFunction<V, M> mapper;
+    protected final SerializableSupplier<S> identitySupplier;
+    protected final SerializableBiFunction<S, R, S> accumulator;
+    protected final SerializableBinaryOperator<S> combiner;
 
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, List<String> cacheNames,
         Iterable<CellIdRange> cellIdRanges,
@@ -190,7 +188,6 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
         SerializableBinaryOperator<S> combiner) {
       this.cacheNames = cacheNames;
       this.cellIdRanges = cellIdRanges;
-      this.bbox = bbox;
       this.cellIterator = new CellIterator(
           tstamps, bbox, poly, tagInterpreter, preFilter, filter, false
       );
@@ -245,7 +242,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
 
       @Override
       public boolean hasNext() {
-        if (buffer.size() > 0) {
+        if (!buffer.isEmpty()) {
           return true;
         }
         if (isActive() && cellIds.hasNext()) {
@@ -417,5 +414,4 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducerBase<X> {
       }
     }
   }
-
 }

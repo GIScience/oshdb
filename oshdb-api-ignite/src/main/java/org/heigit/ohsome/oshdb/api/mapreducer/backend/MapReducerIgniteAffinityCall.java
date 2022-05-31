@@ -2,8 +2,6 @@ package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,7 +47,6 @@ import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.parser.ParseException;
 
 /**
  * {@inheritDoc}
@@ -82,7 +79,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
   }
 
   // copy constructor
-  private MapReducerIgniteAffinityCall(MapReducerIgniteAffinityCall obj) {
+  private MapReducerIgniteAffinityCall(MapReducerIgniteAffinityCall<?> obj) {
     super(obj);
   }
 
@@ -165,14 +162,14 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
       CellProcessor<S> cellProcessor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
-  ) throws ParseException, SQLException, IOException {
+  ) {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
-        this.tstamps.get(),
-        this.bboxFilter, this.getPolyFilter(),
-        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
-    );
+          this.tstamps.get(),
+          this.bboxFilter, this.getPolyFilter(),
+          this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+      );
 
     final Iterable<CellIdRange> cellIdRanges = this.getCellIdRanges();
 
@@ -217,14 +214,14 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
    */
   private Stream<X> stream(
       CellProcessor<Stream<X>> cellProcessor
-  ) throws ParseException, SQLException, IOException {
+  ) {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
-        this.tstamps.get(),
-        this.bboxFilter, this.getPolyFilter(),
-        this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
-    );
+          this.tstamps.get(),
+          this.bboxFilter, this.getPolyFilter(),
+          this.getTagInterpreter(), this.getPreFilter(), this.getFilter(), false
+      );
 
     final Iterable<CellIdRange> cellIdRanges = this.getCellIdRanges();
 
@@ -296,7 +293,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
-  ) throws Exception {
+  ) {
     return reduce(
         Kernels.getOSMContributionCellReducer(
             mapper,
@@ -315,7 +312,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
-  ) throws Exception {
+  ) {
     return reduce(
         Kernels.getOSMContributionGroupingCellReducer(
             mapper,
@@ -328,14 +325,13 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
     );
   }
 
-
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, R> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
-  ) throws Exception {
+  ) {
     return reduce(
         Kernels.getOSMEntitySnapshotCellReducer(
             mapper,
@@ -354,7 +350,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
-  ) throws Exception {
+  ) {
     return reduce(
         Kernels.getOSMEntitySnapshotGroupingCellReducer(
             mapper,
@@ -371,25 +367,25 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
 
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+      SerializableFunction<OSMContribution, X> mapper) {
     return stream(Kernels.getOSMContributionCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) {
     return stream(Kernels.getOSMContributionGroupingCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+      SerializableFunction<OSMEntitySnapshot, X> mapper) {
     return stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper, this));
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) {
     return stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper, this));
   }
 

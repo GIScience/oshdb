@@ -1,10 +1,14 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
+import static java.util.Collections.emptyList;
+import static org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser.parseIsoDateTime;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -12,7 +16,6 @@ import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableConsumer;
@@ -22,19 +25,37 @@ import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 
 public interface MapReducer<X> extends Serializable {
+
+  /**
+   * Returns if the current backend can be canceled (e.g. in a query timeout).
+   */
   boolean isCancelable();
 
-  @Contract(pure = true)
+  /**
+   * Sets the keytables database to use in the calculations to resolve strings (osm tags, roles)
+   * into internally used identifiers. If this function is never called, the main database
+   * (specified during the construction of this object) is used for this.
+   *
+   * @param keytables the database to use for resolving strings into internal identifiers
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
   MapReducer<X> keytables(OSHDBJdbc keytables);
 
-  @SuppressWarnings("unused")
-  @Contract(pure = true)
+  /**
+   * Sets the tagInterpreter to use in the analysis. The tagInterpreter is used internally to
+   * determine the geometry type of osm entities (e.g. an osm way can become either a LineString or
+   * a Polygon, depending on its tags). Normally, this is generated automatically for the user. But
+   * for example, if one doesn't want to use the DefaultTagInterpreter, it is possible to use this
+   * function to supply their own tagInterpreter.
+   *
+   * @param tagInterpreter the tagInterpreter object to use in the processing of osm entities
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
   MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter);
 
   /**
@@ -55,24 +76,84 @@ public interface MapReducer<X> extends Serializable {
    */
   <P extends Geometry & Polygonal> MapReducer<X> areaOfInterest(@NotNull P polygonFilter);
 
-  @Contract(pure = true)
+  /**
+   * Set the timestamps for which to perform the analysis.
+   *
+   * <p>
+   * Depending on the *View*, this has slightly different semantics:
+   * </p>
+   * <ul><li>
+   * For the OSMEntitySnapshotView it will set the time slices at which to take the "snapshots"
+   * </li><li>
+   * For the OSMContributionView it will set the time interval in which to look for
+   * osm contributions (only the first and last timestamp of this list are contributing).
+   * </li></ul>
+   * Additionally, these timestamps are used in the `aggregateByTimestamp` functionality.
+   *
+   * @param tstamps an object (implementing the OSHDBTimestampList interface) which provides the
+   *        timestamps to do the analysis for
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
   MapReducer<X> timestamps(OSHDBTimestampList tstamps);
 
-  @Contract(pure = true)
-  MapReducer<X> timestamps(String isoDateStart, String isoDateEnd,
-      OSHDBTimestamps.Interval interval);
+  /**
+   * Set the timestamps for which to perform the analysis in a regular interval between a start and
+   * end date.
+   *
+   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
+   *
+   * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
+   * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
+   * @param interval the interval between the timestamps to be used in the analysis
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  default MapReducer<X> timestamps(String isoDateStart, String isoDateEnd,
+      OSHDBTimestamps.Interval interval){
+    return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
+  }
 
-  @Contract(pure = true)
-  MapReducer<X> timestamps(String isoDate);
+  /**
+   * Sets a single timestamp for which to perform the analysis at.
+   *
+   * <p>Useful in combination with the OSMEntitySnapshotView when not performing further aggregation
+   * by timestamp.</p>
+   *
+   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
+   *
+   * @param isoDate an ISO 8601 date string representing the date of the analysis
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  default MapReducer<X> timestamps(String isoDate) {
+    return this.timestamps(isoDate, isoDate);
+  }
 
-  @Contract(pure = true)
-  MapReducer<X> timestamps(String isoDateStart, String isoDateEnd);
-
-  @Contract(pure = true)
-  MapReducer<X> timestamps(String isoDateFirst, String isoDateSecond, String... isoDateMore);
-
-  @Contract(pure = true)
-  MapReducer<X> osmTypeInternal(Set<OSMType> typeFilter);
+  /**
+   * Sets multiple arbitrary timestamps for which to perform the analysis.
+   *
+   * <p>Note for programmers wanting to use this method to supply an arbitrary number (n&gt;=1) of
+   * timestamps: You may supply the same time string multiple times, which will be de-duplicated
+   * internally. E.g. you can call the method like this:
+   * <code>.timestamps(dateArr[0], dateArr[0], dateArr)</code>
+   * </p>
+   *
+   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
+   *
+   * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
+   * @param isoDateSecond an ISO 8601 date string representing the second date of the analysis
+   * @param isoDateMore more ISO 8601 date strings representing the remaining timestamps of the
+   *        analysis
+   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
+   */
+  default MapReducer<X> timestamps(String isoDateFirst, String isoDateSecond,
+      String... isoDateMore) {
+    var timestamps = new TreeSet<OSHDBTimestamp>();
+    timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDateFirst).toEpochSecond()));
+    timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDateSecond).toEpochSecond()));
+    for (String isoDate : isoDateMore) {
+      timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDate).toEpochSecond()));
+    }
+    return this.timestamps(() -> timestamps);
+  }
 
   /**
    * Set an arbitrary `map` transformation function.
@@ -130,10 +211,44 @@ public interface MapReducer<X> extends Serializable {
    */
   MapReducer<X> filter(String f);
 
-  @Contract(pure = true)
+  // -----------------------------------------------------------------------------------------------
+  // Grouping and Aggregation
+  // Sets how the input data is "grouped", or the output data is "aggregated" into separate chunks.
+  // -----------------------------------------------------------------------------------------------
+
+  /**
+   * Groups the input data (osm entity snapshot or contributions) by their respective entity's ids
+   * before feeding them into further transformation functions. This can be used to do more complex
+   * analysis on the osm data, that requires one to know about the full editing history of
+   * individual osm entities, e.g., when looking for contributions which got reverted at a later
+   * point in time.
+   *
+   * <p>The values in the returned lists of snapshot or contribution objects are returned in their
+   * natural order: i.e. sorted ascending by timestamp.</p>
+   *
+   * <p>This needs to be called before any `map` or `flatMap` transformation functions have been
+   * set. Otherwise a runtime exception will be thrown.</p>
+   *
+   * @return the MapReducer object which applies its transformations on (by entity id grouped) lists
+   *         of the input data
+   * @throws UnsupportedOperationException if this is called after some map (or flatMap) functions
+   *         have already been set
+   * @throws UnsupportedOperationException if this is called when a grouping has already been
+   *         activated
+   */
   MapReducer<List<X>> groupByEntity() throws UnsupportedOperationException;
 
-  @Contract(pure = true)
+  /**
+   * Sets a custom aggregation function that is used to group output results into.
+   *
+   * @param indexer a function that will be called for each input element and returns a value that
+   *        will be used to group the results by
+   * @param <U> the data type of the values used to aggregate the output. has to be a comparable
+   *        type
+   * @param zerofill a collection of values that are expected to be present in the result
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
+   *         etc.) of the current MapReducer object
+   */
   <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
       SerializableFunction<X, U> indexer, Collection<U> zerofill);
 
@@ -146,18 +261,56 @@ public interface MapReducer<X> extends Serializable {
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
    */
-  <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
-      SerializableFunction<X, U> indexer);
+  default <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
+      SerializableFunction<X, U> indexer) {
+    return this.aggregateBy(indexer, emptyList());
+  }
 
-  @Contract(pure = true)
+  /**
+   * Sets up automatic aggregation by timestamp.
+   *
+   * <p>In the OSMEntitySnapshotView, the snapshots' timestamp will be used directly to aggregate
+   * results into. In the OSMContributionView, the timestamps of the respective data modifications
+   * will be matched to corresponding time intervals (that are defined by the `timestamps` setting
+   * here).</p>
+   *
+   * <p>Cannot be used together with the `groupByEntity()` setting enabled.</p>
+   *
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
+   *         etc.) of the current MapReducer object
+   * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has
+   *         been activated
+   */
   MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp() throws UnsupportedOperationException;
 
+  /**
+   * Sets up aggregation by a custom time index.
+   *
+   * <p>The timestamps returned by the supplied indexing function are matched to the corresponding
+   * time intervals.</p>
+   *
+   * @param indexer a callback function that return a timestamp object for each given data. Note
+   *                that if this function returns timestamps outside of the supplied timestamps()
+   *                interval results may be undefined
+   * @return a MapAggregator object with the equivalent state (settings,
+   *         filters, map function, etc.) of the current MapReducer object
+   */
   MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp(
-      SerializableFunction<X, OSHDBTimestamp> indexer) throws UnsupportedOperationException;
+      SerializableFunction<X, OSHDBTimestamp> indexer);
 
-  @Contract(pure = true)
-  <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal> MapAggregator<U, X> aggregateByGeometry(
-      Map<U, P> geometries) throws UnsupportedOperationException;
+  /**
+   * Sets up automatic aggregation by geometries.
+   *
+   * <p>Cannot be used together with the `groupByEntity()` setting enabled.</p>
+   *
+   * @param geometries an associated list of polygons and identifiers
+   * @param <U> the type of the identifers used to aggregate
+   * @param <P> a polygonal geometry type
+   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
+   *         etc.) of the current MapReducer object
+   */
+  <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal>
+      MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries);
 
   /**
    * Generic Map-reduce routine.
@@ -200,8 +353,8 @@ public interface MapReducer<X> extends Serializable {
    *         `accumulator` and `combiner` steps)
    */
   <S> S reduce(SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner)
-      throws Exception;
+      SerializableBiFunction<S, X, S> accumulator,
+      SerializableBinaryOperator<S> combiner);
 
   /**
    * Generic map-reduce routine (shorthand syntax).
@@ -240,8 +393,10 @@ public interface MapReducer<X> extends Serializable {
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
-  X reduce(SerializableSupplier<X> identitySupplier, SerializableBinaryOperator<X> accumulator)
-      throws Exception;
+  default X reduce(SerializableSupplier<X> identitySupplier,
+      SerializableBinaryOperator<X> accumulator) {
+    return this.reduce(identitySupplier, accumulator::apply, accumulator);
+  }
 
   /**
    * Sums up the results.
@@ -254,7 +409,7 @@ public interface MapReducer<X> extends Serializable {
    * @return the sum of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
-  Number sum() throws Exception;
+  Number sum();
 
   /**
    * Sums up the results provided by a given `mapper` function.
@@ -268,14 +423,14 @@ public interface MapReducer<X> extends Serializable {
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the summed up results of the `mapper` function
    */
-  <R extends Number> R sum(SerializableFunction<X, R> mapper) throws Exception;
+  <R extends Number> R sum(SerializableFunction<X, R> mapper);
 
   /**
    * Counts the number of results.
    *
    * @return the total count of features or modifications, summed up over all timestamps
    */
-  Integer count() throws Exception;
+  Integer count();
 
   /**
    * Gets all unique values of the results.
@@ -287,7 +442,7 @@ public interface MapReducer<X> extends Serializable {
    *
    * @return the set of distinct values
    */
-  Set<X> uniq() throws Exception;
+  Set<X> uniq();
 
   /**
    * Gets all unique values of the results provided by a given mapper function.
@@ -300,19 +455,19 @@ public interface MapReducer<X> extends Serializable {
    * @param <R> the type that is returned by the `mapper` function
    * @return a set of distinct values returned by the `mapper` function
    */
-  <R> Set<R> uniq(SerializableFunction<X, R> mapper) throws Exception;
+  <R> Set<R> uniq(SerializableFunction<X, R> mapper);
 
-  /**
+    /**
    * Counts all unique values of the results.
    *
-   * <p>
-   * For example, this can be used together with the OSMContributionView to get the number of unique
-   * users editing specific feature types.
-   * </p>
+   * <p>For example, this can be used together with the OSMContributionView to get the number of
+   * unique users editing specific feature types.</p>
    *
    * @return the set of distinct values
    */
-  Integer countUniq() throws Exception;
+  default Integer countUniq() {
+    return this.uniq().size();
+  }
 
   /**
    * Calculates the averages of the results.
@@ -325,7 +480,7 @@ public interface MapReducer<X> extends Serializable {
    * @return the average of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
-  Double average() throws Exception;
+  Double average();
 
   /**
    * Calculates the average of the results provided by a given `mapper` function.
@@ -334,7 +489,7 @@ public interface MapReducer<X> extends Serializable {
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the average of the numbers returned by the `mapper` function
    */
-  <R extends Number> Double average(SerializableFunction<X, R> mapper) throws Exception;
+  <R extends Number> Double average(SerializableFunction<X, R> mapper);
 
   /**
    * Calculates the weighted average of the results provided by the `mapper` function.
@@ -348,7 +503,7 @@ public interface MapReducer<X> extends Serializable {
    *        return the value and weight combination of numbers to average
    * @return the weighted average of the numbers returned by the `mapper` function
    */
-  Double weightedAverage(SerializableFunction<X, WeightedValue> mapper) throws Exception;
+  Double weightedAverage(SerializableFunction<X, WeightedValue> mapper);
 
   /**
    * Returns an estimate of the median of the results.
@@ -360,7 +515,7 @@ public interface MapReducer<X> extends Serializable {
    *
    * @return estimated median
    */
-  Double estimatedMedian() throws Exception;
+  Double estimatedMedian();
 
   /**
    * Returns an estimate of the median of the results after applying the given map function.
@@ -373,7 +528,7 @@ public interface MapReducer<X> extends Serializable {
    * @param mapper function that returns the numbers to generate the mean for
    * @return estimated median
    */
-  <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper) throws Exception;
+  <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper);
 
   /**
    * Returns an estimate of a requested quantile of the results.
@@ -386,7 +541,7 @@ public interface MapReducer<X> extends Serializable {
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
-  Double estimatedQuantile(double q) throws Exception;
+  Double estimatedQuantile(double q);
 
   /**
    * Returns an estimate of a requested quantile of the results after applying the given map
@@ -401,8 +556,7 @@ public interface MapReducer<X> extends Serializable {
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
-  <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q)
-      throws Exception;
+  <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q);
 
   /**
    * Returns an estimate of the quantiles of the results.
@@ -415,7 +569,7 @@ public interface MapReducer<X> extends Serializable {
    * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
    * @return estimated quantile boundaries
    */
-  List<Double> estimatedQuantiles(Iterable<Double> q) throws Exception;
+  List<Double> estimatedQuantiles(Iterable<Double> q);
 
   /**
    * Returns an estimate of the quantiles of the results after applying the given map function.
@@ -430,7 +584,7 @@ public interface MapReducer<X> extends Serializable {
    * @return estimated quantile boundaries
    */
   <R extends Number> List<Double> estimatedQuantiles(SerializableFunction<X, R> mapper,
-      Iterable<Double> q) throws Exception;
+      Iterable<Double> q);
 
   /**
    * Returns a function that computes estimates of arbitrary quantiles of the results.
@@ -442,7 +596,7 @@ public interface MapReducer<X> extends Serializable {
    *
    * @return a function that computes estimated quantile boundaries
    */
-  DoubleUnaryOperator estimatedQuantiles() throws Exception;
+  DoubleUnaryOperator estimatedQuantiles();
 
   /**
    * Returns a function that computes estimates of arbitrary quantiles of the results after applying
@@ -456,24 +610,23 @@ public interface MapReducer<X> extends Serializable {
    * @param mapper function that returns the numbers to generate the quantiles for
    * @return a function that computes estimated quantile boundaries
    */
-  <R extends Number> DoubleUnaryOperator estimatedQuantiles(SerializableFunction<X, R> mapper)
-      throws Exception;
+  <R extends Number> DoubleUnaryOperator estimatedQuantiles(SerializableFunction<X, R> mapper);
 
   @Deprecated
   @SuppressWarnings("ResultOfMethodCallIgnored")
-  void forEach(SerializableConsumer<X> action) throws Exception;
+  void forEach(SerializableConsumer<X> action);
 
   /**
    * Collects all results into List(s).
    *
    * @return list(s) with all results returned by the `mapper` function
    */
-  List<X> collect() throws Exception;
+  List<X> collect();
 
   /**
    * Returns all results as a Stream.
    *
    * @return a stream with all results returned by the `mapper` function
    */
-  Stream<X> stream() throws Exception;
+  Stream<X> stream();
 }

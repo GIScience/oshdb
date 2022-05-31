@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
+import static java.util.Collections.emptyList;
+
 import com.tdunning.math.stats.TDigest;
 import java.io.Serializable;
 import java.util.Collection;
@@ -42,8 +44,10 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param <V> the type of the values used to aggregate
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
-  <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-      SerializableFunction<X, V> indexer);
+  default <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
+      SerializableFunction<X, V> indexer) {
+    return this.aggregateBy(indexer, emptyList());
+  }
 
   /**
    * Sets up automatic aggregation by timestamp.
@@ -89,12 +93,9 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param <P> a polygonal geometry type
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
-   * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has
-   *         been activated
-   * @throws UnsupportedOperationException when called after any map or flatMap functions are set
    */
-  <V extends Comparable<V> & Serializable, P extends Geometry & Polygonal> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(
-      Map<V, P> geometries) throws UnsupportedOperationException;
+  <V extends Comparable<V> & Serializable, P extends Geometry & Polygonal>
+      MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(Map<V, P> geometries);
 
   /**
    * Set the area of interest to the given bounding box.
@@ -129,7 +130,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @return the sum of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
-  SortedMap<U, Number> sum() throws Exception;
+  SortedMap<U, Number> sum();
 
   /**
    * Sums up the results provided by a given `mapper` function.
@@ -143,14 +144,14 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the summed up results of the `mapper` function
    */
-  <R extends Number> SortedMap<U, R> sum(SerializableFunction<X, R> mapper) throws Exception;
+  <R extends Number> SortedMap<U, R> sum(SerializableFunction<X, R> mapper);
 
   /**
    * Counts the number of results.
    *
    * @return the total count of features or modifications, summed up over all timestamps
    */
-  SortedMap<U, Integer> count() throws Exception;
+  SortedMap<U, Integer> count();
 
   /**
    * Gets all unique values of the results.
@@ -162,7 +163,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *
    * @return the set of distinct values
    */
-  SortedMap<U, Set<X>> uniq() throws Exception;
+  SortedMap<U, Set<X>> uniq();
 
   /**
    * Gets all unique values of the results provided by a given mapper function.
@@ -175,7 +176,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param <R> the type that is returned by the `mapper` function
    * @return a set of distinct values returned by the `mapper` function
    */
-  <R> SortedMap<U, Set<R>> uniq(SerializableFunction<X, R> mapper) throws Exception;
+  <R> SortedMap<U, Set<R>> uniq(SerializableFunction<X, R> mapper);
 
   /**
    * Counts all unique values of the results.
@@ -187,7 +188,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *
    * @return the set of distinct values
    */
-  SortedMap<U, Integer> countUniq() throws Exception;
+  SortedMap<U, Integer> countUniq();
 
   /**
    * Calculates the averages of the results.
@@ -200,7 +201,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @return the average of the current data
    * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
-  SortedMap<U, Double> average() throws Exception;
+  SortedMap<U, Double> average();
 
   /**
    * Calculates the average of the results provided by a given `mapper` function.
@@ -209,8 +210,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param <R> the numeric type that is returned by the `mapper` function
    * @return the average of the numbers returned by the `mapper` function
    */
-  <R extends Number> SortedMap<U, Double> average(SerializableFunction<X, R> mapper)
-      throws Exception;
+  <R extends Number> SortedMap<U, Double> average(SerializableFunction<X, R> mapper);
 
   /**
    * Calculates the weighted average of the results provided by the `mapper` function.
@@ -224,8 +224,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *        return the value and weight combination of numbers to average
    * @return the weighted average of the numbers returned by the `mapper` function
    */
-  SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper)
-      throws Exception;
+  SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper);
 
   /**
    * Returns an estimate of the median of the results.
@@ -237,7 +236,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *
    * @return estimated median
    */
-  SortedMap<U, Double> estimatedMedian() throws Exception;
+  SortedMap<U, Double> estimatedMedian();
 
   /**
    * Returns an estimate of the median of the results after applying the given map function.
@@ -250,8 +249,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param mapper function that returns the numbers to generate the mean for
    * @return estimated median
    */
-  <R extends Number> SortedMap<U, Double> estimatedMedian(SerializableFunction<X, R> mapper)
-      throws Exception;
+  <R extends Number> SortedMap<U, Double> estimatedMedian(SerializableFunction<X, R> mapper);
 
   /**
    * Returns an estimate of a requested quantile of the results.
@@ -264,7 +262,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param q the desired quantile to calculate (as a number between 0 and 1)
    * @return estimated quantile boundary
    */
-  SortedMap<U, Double> estimatedQuantile(double q) throws Exception;
+  SortedMap<U, Double> estimatedQuantile(double q);
 
   /**
    * Returns an estimate of a requested quantile of the results after applying the given map
@@ -280,7 +278,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @return estimated quantile boundary
    */
   <R extends Number> SortedMap<U, Double> estimatedQuantile(SerializableFunction<X, R> mapper,
-      double q) throws Exception;
+      double q);
 
   /**
    * Returns an estimate of the quantiles of the results.
@@ -293,7 +291,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
    * @return estimated quantile boundaries
    */
-  SortedMap<U, List<Double>> estimatedQuantiles(Iterable<Double> q) throws Exception;
+  SortedMap<U, List<Double>> estimatedQuantiles(Iterable<Double> q);
 
   /**
    * Returns an estimate of the quantiles of the results after applying the given map function.
@@ -308,7 +306,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @return estimated quantile boundaries
    */
   <R extends Number> SortedMap<U, List<Double>> estimatedQuantiles(
-      SerializableFunction<X, R> mapper, Iterable<Double> q) throws Exception;
+      SerializableFunction<X, R> mapper, Iterable<Double> q);
 
   /**
    * Returns a function that computes estimates of arbitrary quantiles of the results.
@@ -320,7 +318,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *
    * @return a function that computes estimated quantile boundaries
    */
-  SortedMap<U, DoubleUnaryOperator> estimatedQuantiles() throws Exception;
+  SortedMap<U, DoubleUnaryOperator> estimatedQuantiles();
 
   /**
    * Returns a function that computes estimates of arbitrary quantiles of the results after applying
@@ -335,15 +333,14 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @return a function that computes estimated quantile boundaries
    */
   <R extends Number> SortedMap<U, DoubleUnaryOperator> estimatedQuantiles(
-      SerializableFunction<X, R> mapper) throws Exception;
+      SerializableFunction<X, R> mapper);
 
   /**
    * Generates the t-digest of the complete result set. see:
    * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
    */
   @Contract(pure = true)
-  default <R extends Number> SortedMap<U, TDigest> digest(SerializableFunction<X, R> mapper)
-      throws Exception {
+  default <R extends Number> SortedMap<U, TDigest> digest(SerializableFunction<X, R> mapper) {
     return this.map(mapper).reduce(TdigestReducer::identitySupplier, TdigestReducer::accumulator,
         TdigestReducer::combiner);
   }
@@ -366,21 +363,21 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *             instead
    */
   @Deprecated
-  void forEach(SerializableBiConsumer<U, List<X>> action) throws Exception;
+  void forEach(SerializableBiConsumer<U, List<X>> action);
 
   /**
    * Collects the results of this data aggregation into Lists.
    *
    * @return an aggregated map of lists with all results
    */
-  SortedMap<U, List<X>> collect() throws Exception;
+  SortedMap<U, List<X>> collect();
 
   /**
    * Returns all results as a Stream.
    *
    * @return a stream with all results returned by the `mapper` function
    */
-  Stream<Map.Entry<U, X>> stream() throws Exception;
+  Stream<Map.Entry<U, X>> stream();
 
   /**
    * Set an arbitrary `map` transformation function.
@@ -480,8 +477,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *         `accumulator` and `combiner` steps)
    */
   <S> SortedMap<U, S> reduce(SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner)
-      throws Exception;
+      SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner);
 
   /**
    * Map-reduce routine with built-in aggregation (shorthand syntax).
@@ -527,5 +523,5 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *         `accumulator` and `combiner` steps)
    */
   SortedMap<U, X> reduce(SerializableSupplier<X> identitySupplier,
-      SerializableBinaryOperator<X> accumulator) throws Exception;
+      SerializableBinaryOperator<X> accumulator);
 }

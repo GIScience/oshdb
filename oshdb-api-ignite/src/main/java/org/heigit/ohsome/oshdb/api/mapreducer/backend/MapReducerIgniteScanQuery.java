@@ -112,7 +112,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
+      SerializableBinaryOperator<S> combiner) {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -130,7 +130,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
   protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
+      SerializableBinaryOperator<S> combiner) {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -148,8 +148,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
-      throws Exception {
+      SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -167,7 +166,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
   protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner) throws Exception {
+      SerializableBinaryOperator<S> combiner) {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -185,7 +184,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
 
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+      SerializableFunction<OSMContribution, X> mapper) {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -202,7 +201,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
+      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -219,7 +218,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+      SerializableFunction<OSMEntitySnapshot, X> mapper) {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -236,7 +235,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
+      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -257,10 +256,8 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
     Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel = new HashMap<>();
     for (CellIdRange cellIdRange : this.getCellIdRanges()) {
       int level = cellIdRange.getStart().getZoomLevel();
-      if (!cellIdRangesByLevel.containsKey(level)) {
-        cellIdRangesByLevel.put(level, new TreeMap<>());
-      }
-      cellIdRangesByLevel.get(level).put(cellIdRange.getStart().getId(), cellIdRange);
+      cellIdRangesByLevel.computeIfAbsent(level, x -> new TreeMap<>())
+          .put(cellIdRange.getStart().getId(), cellIdRange);
     }
     return cellIdRangesByLevel;
   }
@@ -287,16 +284,16 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
       return this.notCanceled;
     }
 
-    Map<UUID, List<Integer>> nodesToPart;
+    private Map<UUID, List<Integer>> nodesToPart;
 
     /* computation settings */
-    final String cacheName;
-    final Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel;
-    final CellIterator cellIterator;
-    final SerializableFunction<V, M> mapper;
-    final SerializableSupplier<S> identitySupplier;
-    final SerializableBiFunction<S, R, S> accumulator;
-    final SerializableBinaryOperator<S> combiner;
+    private final String cacheName;
+    private final Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel;
+    private final CellIterator cellIterator;
+    protected final SerializableFunction<V, M> mapper;
+    protected final SerializableSupplier<S> identitySupplier;
+    protected final SerializableBiFunction<S, R, S> accumulator;
+    protected final SerializableBinaryOperator<S> combiner;
 
     MapReduceCellsOnIgniteCacheComputeJob(TagInterpreter tagInterpreter, String cacheName,
         Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
@@ -476,7 +473,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducerBase<X> {
     Ignite ignite = oshdb.getIgnite();
 
     // build mapping from ignite compute nodes to cache partitions
-    Affinity affinity = ignite.affinity(cacheName);
+    Affinity<Long> affinity = ignite.affinity(cacheName);
     List<Integer> allPartitions = new ArrayList<>(affinity.partitions());
     for (int i = 0; i < affinity.partitions(); i++) {
       allPartitions.add(i);
