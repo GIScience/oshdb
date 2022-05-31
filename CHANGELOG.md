@@ -8,6 +8,11 @@ Changelog
 * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
 * drop "old" etl module ([#447])
 * remove Comparable interface from OSMEntity ([#449])
+* remove deprecated filter methods `osmType`, `osmTag` and `osmEntityFlter` (which were replaced by [OSHDB `filter`s](https://github.com/GIScience/oshdb/blob/0.7/documentation/manual/filters.md#oshdb-filter)) ([#451])
+
+### new features
+
+* Allow to flexibly combine (automatic) aggregation methods (like `aggregateByGeometry(…)` or `aggregateByTimestamp()`) with each other and with `filter` or `map`/`flatMap`, regardless of the order of the applied operations ([#451])
 
 ### bugfixes
 
@@ -30,8 +35,10 @@ Changelog
 [#443]: https://github.com/GIScience/oshdb/pull/443
 [#447]: https://github.com/GIScience/oshdb/pull/447
 [#449]: https://github.com/GIScience/oshdb/pull/449
+[#451]: https://github.com/GIScience/oshdb/pull/451
 [#453]: https://github.com/GIScience/oshdb/pull/453
 [#454]: https://github.com/GIScience/oshdb/pull/454
+
 
 ## 0.7.2
 

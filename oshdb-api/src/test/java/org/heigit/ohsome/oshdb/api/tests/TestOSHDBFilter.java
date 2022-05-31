@@ -107,15 +107,17 @@ class TestOSHDBFilter {
 
   @Test
   void testFilterGroupByEntity() throws Exception {
-    MapReducer<?> mr = createMapReducerOSMEntitySnapshot();
-    Number osmTypeFilterResult = mr.groupByEntity().osmType(OSMType.WAY).count();
-    Number stringFilterResult = mr.groupByEntity().filter("type:way").count();
+    MapReducer<OSMEntitySnapshot> mrSnapshot = createMapReducerOSMEntitySnapshot();
+    Number osmTypeFilterResult = mrSnapshot.groupByEntity()
+        .filter(x -> x.get(0).getEntity().getType() == OSMType.WAY).count();
+    Number stringFilterResult = mrSnapshot.groupByEntity().filter("type:way").count();
 
     assertEquals(osmTypeFilterResult, stringFilterResult);
 
-    mr = createMapReducerOSMContribution();
-    osmTypeFilterResult = mr.groupByEntity().osmType(OSMType.WAY).count();
-    stringFilterResult = mr.groupByEntity().filter("type:way").count();
+    MapReducer<OSMContribution> mrContribution = createMapReducerOSMContribution();
+    osmTypeFilterResult = mrContribution.groupByEntity()
+        .filter(x -> x.get(0).getOSHEntity().getType() == OSMType.WAY).count();
+    stringFilterResult = mrContribution.groupByEntity().filter("type:way").count();
 
     assertEquals(osmTypeFilterResult, stringFilterResult);
   }

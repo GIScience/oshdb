@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.api.mapreducer;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.tdunning.math.stats.TDigest;
@@ -26,7 +27,6 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDB;
@@ -68,9 +68,6 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
-import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTag;
-import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
-import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagKey;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
@@ -415,20 +412,6 @@ public abstract class MapReducer<X> implements
     return this.timestamps(() -> timestamps);
   }
 
-  /**
-   * Limits the analysis to the given osm entity types.
-   *
-   * @param typeFilter the set of osm types to filter (e.g. `EnumSet.of(OSMType.WAY)`)
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapReducer<X> osmType(Set<OSMType> typeFilter) {
-    return osmTypeInternal(typeFilter);
-  }
-
   @Contract(pure = true)
   private MapReducer<X> osmTypeInternal(Set<OSMType> typeFilter) {
     MapReducer<X> ret = this.copy();
@@ -438,250 +421,6 @@ public abstract class MapReducer<X> implements
     } else {
       ret.typeFilter = EnumSet.copyOf(typeFilter);
     }
-    return ret;
-  }
-
-  /**
-   * Adds a custom arbitrary filter that gets executed for each osm entity and determines if it
-   * should be considered for this analyis or not.
-   *
-   * @param f the filter function to call for each osm entity
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(FilterExpression)} with {@link
-   *             org.heigit.ohsome.oshdb.filter.Filter#byOSMEntity(OSMEntityFilter)}
-   *             instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapReducer<X> osmEntityFilter(OSMEntityFilter f) {
-    MapReducer<X> ret = this.copy();
-    ret.filters.add(f);
-    return ret;
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * (with an arbitrary value).
-   *
-   * @param key the tag key to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapReducer<X> osmTag(String key) {
-    return this.osmTag(new OSMTagKey(key));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * (with an arbitrary value), or this tag key and value.
-   *
-   * @param tag the tag (key, or key and value) to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapReducer<X> osmTag(OSMTagInterface tag) {
-    if (tag instanceof OSMTag) {
-      return this.osmTag((OSMTag) tag);
-    }
-    if (tag instanceof OSMTagKey) {
-      return this.osmTag((OSMTagKey) tag);
-    }
-    throw new UnsupportedOperationException("Unknown object implementing OSMTagInterface.");
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * (with an arbitrary value).
-   *
-   * @param key the tag key to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Deprecated
-  @Contract(pure = true)
-  private MapReducer<X> osmTag(OSMTagKey key) {
-    OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf(key);
-    if (!keyId.isPresentInKeytables()) {
-      LOG.warn(TAG_KEY_NOT_FOUND, key.toString());
-      return osmTagEmptyResult();
-    }
-    return osmTag(keyId);
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * and value.
-   *
-   * @param key the tag to filter the osm entities for
-   * @param value the tag value to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapReducer<X> osmTag(String key, String value) {
-    return this.osmTag(new OSMTag(key, value));
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * and value.
-   *
-   * @param tag the tag (key-value pair or key=*) to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Deprecated
-  @Contract(pure = true)
-  private MapReducer<X> osmTag(OSMTag tag) {
-    OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(tag);
-    if (!keyValueId.isPresentInKeytables()) {
-      LOG.warn(TAG_NOT_FOUND, tag.getKey(), tag.getValue());
-      return osmTagEmptyResult();
-    }
-    return osmTag(keyValueId);
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have this tag key
-   * and one of the given values.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @param values an array of tag values to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapReducer<X> osmTag(String key, Collection<String> values) {
-    OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
-    int keyId = oshdbKey.toInt();
-    if (!oshdbKey.isPresentInKeytables() || values.isEmpty()) {
-      LOG.warn(
-          values.isEmpty() ? EMPTY_TAG_LIST : TAG_KEY_NOT_FOUND,
-          key
-      );
-      return osmTagEmptyResult();
-    }
-    Set<Integer> valueIds = new HashSet<>();
-    for (String value : values) {
-      OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(key, value);
-      if (!keyValueId.isPresentInKeytables()) {
-        LOG.warn(TAG_NOT_FOUND, key, value);
-      } else {
-        valueIds.add(keyValueId.getValue());
-      }
-    }
-    MapReducer<X> ret = this.copy();
-    ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(keyId));
-    ret.filters.add(osmEntity -> {
-      var tags = osmEntity.getTags();
-      for (var tag : tags) {
-        if (tag.getKey() == keyId) {
-          return valueIds.contains(tag.getValue());
-        }
-      }
-      return false;
-    });
-    return ret;
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have a tag with
-   * the given key and whose value matches the given regular expression pattern.
-   *
-   * @param key the tag key to filter the osm entities for
-   * @param valuePattern a regular expression which the tag value of the osm entity must match
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<X> osmTag(String key, Pattern valuePattern) {
-    OSHDBTagKey oshdbKey = this.getTagTranslator().getOSHDBTagKeyOf(key);
-    int keyId = oshdbKey.toInt();
-    if (!oshdbKey.isPresentInKeytables()) {
-      LOG.warn(TAG_KEY_NOT_FOUND, key);
-      return osmTagEmptyResult();
-    }
-    MapReducer<X> ret = this.copy();
-    ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(keyId));
-    ret.filters.add(osmEntity -> {
-      var tags = osmEntity.getTags();
-      for (var tag : tags) {
-        if (tag.getKey() == keyId) {
-          String value = this.getTagTranslator().getOSMTagOf(keyId, tag.getValue()).getValue();
-          return valuePattern.matcher(value).matches();
-        }
-      }
-      return false;
-    });
-    return ret;
-  }
-
-  /**
-   * Adds an osm tag filter: The analysis will be restricted to osm entities that have at least one
-   * of the supplied tags (key=value pairs or key=*).
-   *
-   * @param tags the tags (key/value pairs or key=*) to filter the osm entities for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   * @deprecated use oshdb-filter {@link #filter(String)} instead
-   */
-  @Override
-  @Deprecated
-  @Contract(pure = true)
-  public MapReducer<X> osmTag(Collection<? extends OSMTagInterface> tags) {
-    if (tags.isEmpty()) {
-      LOG.warn("Empty tag list. No data will match this filter.");
-      return osmTagEmptyResult();
-    }
-    // for the "pre"-filter which removes all entities which don't match at least one of the
-    // given tag keys
-    Set<Integer> preKeyIds = new HashSet<>();
-    // sets of tag keys and tags for the concrete entity filter: either one of these must match
-    Set<Integer> keyIds = new HashSet<>();
-    Set<OSHDBTag> keyValueIds = new HashSet<>();
-    for (OSMTagInterface tag : tags) {
-      if (tag instanceof OSMTag) {
-        OSMTag keyValue = (OSMTag) tag;
-        OSHDBTag keyValueId = this.getTagTranslator().getOSHDBTagOf(keyValue);
-        if (!keyValueId.isPresentInKeytables()) {
-          LOG.warn(TAG_NOT_FOUND, keyValue.getKey(), keyValue.getValue());
-        } else {
-          preKeyIds.add(keyValueId.getKey());
-          keyValueIds.add(keyValueId);
-        }
-      } else {
-        OSHDBTagKey keyId = this.getTagTranslator().getOSHDBTagKeyOf((OSMTagKey) tag);
-        preKeyIds.add(keyId.toInt());
-        keyIds.add(keyId.toInt());
-      }
-    }
-    MapReducer<X> ret = this.copy();
-    ret.preFilters.add(oshEntity -> {
-      for (var key : oshEntity.getTagKeys()) {
-        if (preKeyIds.contains(key.toInt())) {
-          return true;
-        }
-      }
-      return false;
-    });
-    ret.filters.add(osmEntity -> {
-      for (OSHDBTag oshdbTag : osmEntity.getTags()) {
-        if (keyIds.contains(oshdbTag.getKey()) || keyValueIds.contains(oshdbTag)) {
-          return true;
-        }
-      }
-      return false;
-    });
     return ret;
   }
 
@@ -701,14 +440,6 @@ public abstract class MapReducer<X> implements
     return ret;
   }
 
-  @Contract(pure = true)
-  private MapReducer<X> osmTagEmptyResult() {
-    MapReducer<X>  ret = this.copy();
-    ret.preFilters.add(ignored -> false);
-    ret.filters.add(ignored -> false);
-    return ret;
-  }
-
   // -----------------------------------------------------------------------------------------------
   // "map", "flatMap" transformation methods
   // -----------------------------------------------------------------------------------------------
@@ -724,6 +455,12 @@ public abstract class MapReducer<X> implements
   @Override
   @Contract(pure = true)
   public <R> MapReducer<R> map(SerializableFunction<X, R> mapper) {
+    return map((o, ignored) -> mapper.apply(o));
+  }
+
+  // Some internal methods can also map the "root" object of the mapreducer's view.
+  @Contract(pure = true)
+  protected  <R> MapReducer<R> map(SerializableBiFunction<X, Object, R> mapper) {
     MapReducer<?> ret = this.copy();
     ret.mappers.add(new MapFunction(mapper, false));
     @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
@@ -744,6 +481,12 @@ public abstract class MapReducer<X> implements
   @Override
   @Contract(pure = true)
   public <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
+    return flatMap((o, ignored) -> flatMapper.apply(o));
+  }
+
+  // Some internal methods can also flatMap the "root" object of the mapreducer's view.
+  @Contract(pure = true)
+  protected  <R> MapReducer<R> flatMap(SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
     MapReducer<?> ret = this.copy();
     ret.mappers.add(new MapFunction(flatMapper, true));
     @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
@@ -866,19 +609,42 @@ public abstract class MapReducer<X> implements
    */
   @Contract(pure = true)
   public MapReducer<List<X>> groupByEntity() throws UnsupportedOperationException {
-    if (!this.mappers.isEmpty()) {
-      throw new UnsupportedOperationException(
-          "groupByEntity() must be called before any `map` or `flatMap` "
-              + "transformation functions have been set");
-    }
     if (this.grouping != Grouping.NONE) {
       throw new UnsupportedOperationException("A grouping is already active on this MapReducer");
     }
-    MapReducer<X> ret = this.copy();
-    ret.grouping = Grouping.BY_ID;
-    @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of items
-    MapReducer<List<X>> result = (MapReducer<List<X>>) ret;
-    return result;
+    if (!this.mappers.isEmpty()) {
+      // for convenience, we allow one to set this function even after some map functions were set.
+      // if some map / flatMap functions were already set:
+      // "rewind" them first, apply the grouping and then re-apply the map/flatMap functions
+      // accordingly
+      MapReducer<X> ret = this.copy();
+      List<MapFunction> mapFunctions = new ArrayList<>(ret.mappers);
+      ret.mappers.clear();
+      ret.grouping = Grouping.BY_ID;
+      @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of items
+      MapReducer<List<?>> listMapReducer = (MapReducer<List<?>>) ret;
+      for (MapFunction action : mapFunctions) {
+        if (action.isFlatMapper()) {
+          listMapReducer = listMapReducer.map((list, root) -> list.stream()
+              .flatMap(s -> Streams.stream((Iterable<?>) action.apply(s, root)))
+              .collect(Collectors.toList()));
+        } else {
+          @SuppressWarnings("StaticPseudoFunctionalStyleMethod")
+          MapReducer<List<?>> mappedResult = listMapReducer.map((list, root) ->
+              Lists.transform(list, x -> action.apply(x, root)));
+          listMapReducer = mappedResult;
+        }
+      }
+      @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of X
+      MapReducer<List<X>> result = listMapReducer.map(List.class::cast);
+      return result;
+    } else {
+      MapReducer<X> ret = this.copy();
+      ret.grouping = Grouping.BY_ID;
+      @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of X
+      MapReducer<List<X>> result = (MapReducer<List<X>>) ret;
+      return result;
+    }
   }
 
   /**
@@ -897,7 +663,7 @@ public abstract class MapReducer<X> implements
       SerializableFunction<X, U> indexer,
       Collection<U> zerofill
   ) {
-    return new MapAggregator<>(this, indexer, zerofill);
+    return new MapAggregator<>(this, (data, ignored) -> indexer.apply(data), zerofill);
   }
 
   /**
@@ -943,12 +709,12 @@ public abstract class MapReducer<X> implements
     }
 
     // by timestamp indexing function -> for some views we need to match the input data to the list
-    SerializableFunction<X, OSHDBTimestamp> indexer;
+    SerializableBiFunction<X, Object, OSHDBTimestamp> indexer;
     if (isOSMContributionViewQuery()) {
       final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
-      indexer = data -> timestamps.floor(((OSMContribution) data).getTimestamp());
+      indexer = (ignored, root) -> timestamps.floor(((OSMContribution) root).getTimestamp());
     } else if (isOSMEntitySnapshotViewQuery()) {
-      indexer = data -> ((OSMEntitySnapshot) data).getTimestamp();
+      indexer = (ignored, root) -> ((OSMEntitySnapshot) root).getTimestamp();
     } else {
       throw new UnsupportedOperationException(
           "automatic aggregateByTimestamp() only implemented for OSMContribution and "
@@ -956,33 +722,7 @@ public abstract class MapReducer<X> implements
       );
     }
 
-    if (!this.mappers.isEmpty()) {
-      // for convenience we allow one to set this function even after some map functions were set.
-      // if some map / flatMap functions were already set:
-      // "rewind" them first, apply the indexer and then re-apply the map/flatMap functions
-      // accordingly
-      MapReducer<X> ret = this.copy();
-      List<MapFunction> mappers = new LinkedList<>(ret.mappers);
-      ret.mappers.clear();
-      MapAggregator<OSHDBTimestamp, ?> mapAggregator =
-          new MapAggregator<>(ret, indexer, this.getZerofillTimestamps());
-      for (MapFunction action : mappers) {
-        if (action.isFlatMapper()) {
-          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
-          MapAggregator<OSHDBTimestamp, ?> flatMappedMapAggregator = mapAggregator.flatMap(action);
-          mapAggregator = flatMappedMapAggregator;
-        } else {
-          @SuppressWarnings("unchecked") // applying untyped function (we don't know interm. types)
-          MapAggregator<OSHDBTimestamp, ?> mappedMapAggregator = mapAggregator.map(action);
-          mapAggregator = mappedMapAggregator;
-        }
-      }
-      @SuppressWarnings("unchecked") // after applying all (flat)map functions the final type is X
-      MapAggregator<OSHDBTimestamp, X> result = (MapAggregator<OSHDBTimestamp, X>) mapAggregator;
-      return result;
-    } else {
-      return new MapAggregator<>(this, indexer, this.getZerofillTimestamps());
-    }
+    return new MapAggregator<>(this, indexer, this.getZerofillTimestamps());
   }
 
   /**
@@ -1003,7 +743,7 @@ public abstract class MapReducer<X> implements
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
     final OSHDBTimestamp minTime = timestamps.first();
     final OSHDBTimestamp maxTime = timestamps.last();
-    return new MapAggregator<>(this, data -> {
+    return new MapAggregator<>(this, (data, ignored) -> {
       // match timestamps to the given timestamp list
       OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
       if (aggregationTimestamp == null
@@ -1021,6 +761,9 @@ public abstract class MapReducer<X> implements
    *
    * <p>Cannot be used together with the `groupByEntity()` setting enabled.</p>
    *
+   * @param geometries an associated list of polygons and identifiers
+   * @param <U> the type of the identifers used to aggregate
+   * @param <P> a polygonal geometry type
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
    * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has
@@ -1037,25 +780,24 @@ public abstract class MapReducer<X> implements
     }
 
     GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
-    if (!this.mappers.isEmpty()) {
-      throw new UnsupportedOperationException(
-          "please call aggregateByGeometry before setting any map or flatMap functions");
+
+    MapReducer<? extends Entry<U, ? extends OSHDBMapReducible>> mapRed;
+    if (isOSMContributionViewQuery()) {
+      mapRed = this.flatMap((ignored, root) ->
+          gs.splitOSMContribution((OSMContribution) root).entrySet());
+    } else if (isOSMEntitySnapshotViewQuery()) {
+      mapRed = this.flatMap((ignored, root) ->
+          gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet());
     } else {
-      MapAggregator<U, ? extends OSHDBMapReducible> ret;
-      if (isOSMContributionViewQuery()) {
-        ret = this.flatMap(x -> gs.splitOSMContribution((OSMContribution) x).entrySet())
-            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else if (isOSMEntitySnapshotViewQuery()) {
-        ret = this.flatMap(x -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) x).entrySet())
-            .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
-      } else {
-        throw new UnsupportedOperationException(String.format(
-            UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-      }
-      @SuppressWarnings("unchecked") // no mapper functions have been applied so the type is still X
-      MapAggregator<U, X> result = (MapAggregator<U, X>) ret;
-      return result;
+      throw new UnsupportedOperationException(String.format(
+          UNIMPLEMENTED_DATA_VIEW, this.viewClass));
     }
+    MapAggregator<U, ?> mapAgg = mapRed
+        .aggregateBy(Entry::getKey, geometries.keySet())
+        .map(Entry::getValue);
+    @SuppressWarnings("unchecked") // no mapper functions have been applied so the type is still X
+    MapAggregator<U, X> result = (MapAggregator<U, X>) mapAgg;
+    return result;
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -2021,7 +1763,7 @@ public abstract class MapReducer<X> implements
           assert false : "flatMap callback requested in getMapper";
           throw new UnsupportedOperationException("cannot flat map this");
         } else {
-          result = mapper.apply(result);
+          result = mapper.apply(result, data);
         }
       }
       @SuppressWarnings("unchecked")
@@ -2043,9 +1785,9 @@ public abstract class MapReducer<X> implements
         List<Object> newResults = new LinkedList<>();
         if (mapper.isFlatMapper()) {
           results.forEach(result ->
-              Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result)));
+              Iterables.addAll(newResults, (Iterable<?>) mapper.apply(result, data)));
         } else {
-          results.forEach(result -> newResults.add(mapper.apply(result)));
+          results.forEach(result -> newResults.add(mapper.apply(result, data)));
         }
         results = newResults;
       }

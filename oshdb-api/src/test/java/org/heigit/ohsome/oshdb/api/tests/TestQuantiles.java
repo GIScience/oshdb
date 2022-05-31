@@ -14,7 +14,6 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -57,9 +56,8 @@ class TestQuantiles {
   private MapReducer<OSMEntitySnapshot> createMapReducer() {
     return OSMEntitySnapshotView.on(oshdb)
         .timestamps(timestamps1)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:way and building=yes");
   }
 
   @Test
@@ -117,9 +115,8 @@ class TestQuantiles {
   private MapAggregator<OSHDBTimestamp, OSMEntitySnapshot> createMapAggregator() {
     return OSMEntitySnapshotView.on(oshdb)
         .timestamps(timestamps2)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
         .areaOfInterest(bbox)
+        .filter("type:way and building=yes")
         .aggregateByTimestamp();
   }
 

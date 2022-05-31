@@ -13,7 +13,6 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -40,9 +39,8 @@ class TestHelpersOSMContributionView {
   private MapReducer<OSMContribution> createMapReducer() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:way and building=yes");
   }
 
   @Test
@@ -83,8 +81,6 @@ class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<String, Number> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
         .aggregateBy(contribution -> contribution.getContributionTypes().toString())
         .sum(contribution -> 1);
 
