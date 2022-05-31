@@ -10,6 +10,10 @@ Changelog
 * remove Comparable interface from OSMEntity ([#449])
 * remove deprecated filter methods `osmType`, `osmTag` and `osmEntityFlter` (which were replaced by [OSHDB `filter`s](https://github.com/GIScience/oshdb/blob/0.7/documentation/manual/filters.md#oshdb-filter)) ([#451])
 
+### new features
+
+* Allow to flexibly combine (automatic) aggregation methods (like `aggregateByGeometry(…)` or `aggregateByTimestamp()`) with each other and with `filter` or `map`/`flatMap`, regardless of the order of the applied operations ([#451])
+
 ### bugfixes
 
 * change geometry filters to be based on full (unclipped) geometries ([#433])
