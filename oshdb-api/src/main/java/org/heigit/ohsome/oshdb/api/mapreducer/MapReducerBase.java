@@ -745,10 +745,6 @@ public abstract class MapReducerBase<X> implements
    * @return the result of the map-reduce operation, the final result of the last call to the
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
-   * @throws UnsupportedOperationException if the used oshdb database backend doesn't implement
-   *         the required reduce operation.
-   * @throws Exception if during the reducing operation an exception happens (see the respective
-   *         implementations for details).
    */
   @Override
   @Contract(pure = true)
@@ -869,7 +865,6 @@ public abstract class MapReducerBase<X> implements
    * exception will be thrown.</p>
    *
    * @return the sum of the current data
-   * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
   @Override
   @Contract(pure = true)
@@ -945,7 +940,6 @@ public abstract class MapReducerBase<X> implements
    * exception will be thrown.</p>
    *
    * @return the average of the current data
-   * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
   @Override
   @Contract(pure = true)
@@ -1660,7 +1654,6 @@ public abstract class MapReducerBase<X> implements
    *
    * @param x Arbitrary object
    * @return x casted to Numeric type
-   * @throws UnsupportedOperationException if the supplied value is not numeric
    */
   @Contract(pure = true)
   static Number checkAndMapToNumeric(Object x) {

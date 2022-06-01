@@ -128,7 +128,6 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * </p>
    *
    * @return the sum of the current data
-   * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
   SortedMap<U, Number> sum();
 
@@ -199,7 +198,6 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * </p>
    *
    * @return the average of the current data
-   * @throws UnsupportedOperationException if the data cannot be cast to numbers
    */
   SortedMap<U, Double> average();
 
