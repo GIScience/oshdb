@@ -61,10 +61,8 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
-import org.heigit.ohsome.oshdb.util.function.SerializableBiConsumer;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
-import org.heigit.ohsome.oshdb.util.function.SerializableConsumer;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
@@ -554,8 +552,7 @@ public abstract class MapReducerBase<X> implements
           listMapReducer = mappedResult;
         }
       }
-      MapReducer<List<X>> result = listMapReducer.map(List.class::cast);
-      return result;
+      return listMapReducer.map(List.class::cast);
     } else {
       MapReducerBase<X> ret = this.copy();
       ret.grouping = Grouping.BY_ID;
@@ -1142,29 +1139,6 @@ public abstract class MapReducerBase<X> implements
   // -----------------------------------------------------------------------------------------------
   // "Iterator" like helpers (stream, collect)
   // -----------------------------------------------------------------------------------------------
-
-  /**
-   * Iterates over each entity snapshot or contribution, and performs a single `action` on each one
-   * of them.
-   *
-   * <p>This method can be handy for testing purposes. But note that since the `action` doesn't
-   * produce a return value, it must facilitate its own way of producing output.</p>
-   *
-   * <p>If you'd like to use such a "forEach" in a non-test use case, use `.stream().forEach()`
-   * instead.</p>
-   *
-   * @param action function that gets called for each transformed data entry
-   * @deprecated only for testing purposes, use `.stream().forEach()` instead
-   */
-  @Override
-  @Deprecated
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  public void forEach(SerializableConsumer<X> action) {
-    this.map(data -> {
-      action.accept(data);
-      return null;
-    }).reduce(() -> null, (ignored, ignored2) -> null);
-  }
 
   /**
    * Collects all results into a List.
@@ -2094,12 +2068,6 @@ public abstract class MapReducerBase<X> implements
     // ---------------------------------------------------------------------------------------------
     // "Iterator" like helpers (forEach, collect), mostly intended for testing purposes
     // ---------------------------------------------------------------------------------------------
-
-    @Override
-    @Deprecated
-    public void forEach(SerializableBiConsumer<U, List<X>> action) {
-      this.collect().forEach(action);
-    }
 
     @Override
     @Contract(pure = true)

@@ -8,13 +8,9 @@ import org.heigit.ohsome.oshdb.api.mapreducer.MapReducerBase;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
-import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
-import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
-import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
-import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -46,7 +42,8 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
     return true;
   }
 
-  private <S> S reduce(
+  @Override
+  protected <S> S reduce(
       CellProcessor<S> processor,
       SerializableSupplier<S> identitySupplier,
       SerializableBinaryOperator<S> combiner
@@ -70,9 +67,8 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         .reduce(identitySupplier.get(), combiner);
   }
 
-  private Stream<X> stream(
-      CellProcessor<Stream<X>> processor
-  ) {
+  @Override
+  protected Stream<X> stream(CellProcessor<Stream<X>> processor) {
     this.executionStartTimeMillis = System.currentTimeMillis();
 
     CellIterator cellIterator = new CellIterator(
@@ -91,109 +87,4 @@ public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
         .filter(ignored -> this.isActive())
         .flatMap(oshCell -> processor.apply(oshCell, cellIterator));
   }
-
-  // === map-reduce operations ===
-
-  @Override
-  protected <R, S> S mapReduceCellsOSMContribution(
-      SerializableFunction<OSMContribution, R> mapper,
-      SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) {
-    return this.reduce(
-        Kernels.getOSMContributionCellReducer(
-            mapper,
-            identitySupplier,
-            accumulator,
-            this
-        ),
-        identitySupplier,
-        combiner
-    );
-  }
-
-  @Override
-  protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
-      SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) {
-    return this.reduce(
-        Kernels.getOSMContributionGroupingCellReducer(
-            mapper,
-            identitySupplier,
-            accumulator,
-            this
-        ),
-        identitySupplier,
-        combiner
-    );
-  }
-
-  @Override
-  protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, R> mapper,
-      SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) {
-    return reduce(
-        Kernels.getOSMEntitySnapshotCellReducer(
-            mapper,
-            identitySupplier,
-            accumulator,
-            this
-        ),
-        identitySupplier,
-        combiner
-    );
-  }
-
-  @Override
-  protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
-      SerializableSupplier<S> identitySupplier,
-      SerializableBiFunction<S, R, S> accumulator,
-      SerializableBinaryOperator<S> combiner
-  ) {
-    return this.reduce(
-        Kernels.getOSMEntitySnapshotGroupingCellReducer(
-            mapper,
-            identitySupplier,
-            accumulator,
-            this
-        ),
-        identitySupplier,
-        combiner
-    );
-  }
-
-  // === stream operations ===
-
-  @Override
-  protected Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) {
-    return this.stream(Kernels.getOSMContributionCellStreamer(mapper, this));
-  }
-
-  @Override
-  protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
-      SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) {
-    return this.stream(Kernels.getOSMContributionGroupingCellStreamer(mapper, this));
-  }
-
-  @Override
-  protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) {
-    return this.stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper, this));
-  }
-
-  @Override
-  protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
-      SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) {
-    return this.stream(Kernels.getOSMEntitySnapshotGroupingCellStreamer(mapper, this));
-  }
-
 }

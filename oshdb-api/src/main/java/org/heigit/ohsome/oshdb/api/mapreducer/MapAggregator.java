@@ -16,7 +16,6 @@ import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
-import org.heigit.ohsome.oshdb.util.function.SerializableBiConsumer;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
@@ -342,26 +341,6 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
     return this.map(mapper).reduce(TdigestReducer::identitySupplier, TdigestReducer::accumulator,
         TdigestReducer::combiner);
   }
-
-  /**
-   * Iterates over the results of this data aggregation.
-   *
-   * <p>
-   * This method can be handy for testing purposes. But note that since the `action` doesn't produce
-   * a return value, it must facilitate its own way of producing output.
-   * </p>
-   *
-   * <p>
-   * If you'd like to use such a "forEach" in a non-test use case, use `.collect().forEach()` or
-   * `.stream().forEach()` instead.
-   * </p>
-   *
-   * @param action function that gets called for each transformed data entry
-   * @deprecated only for testing purposes. use `.collect().forEach()` or `.stream().forEach()`
-   *             instead
-   */
-  @Deprecated
-  void forEach(SerializableBiConsumer<U, List<X>> action);
 
   /**
    * Collects the results of this data aggregation into Lists.

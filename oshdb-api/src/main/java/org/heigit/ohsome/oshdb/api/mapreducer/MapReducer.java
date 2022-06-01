@@ -18,7 +18,6 @@ import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
-import org.heigit.ohsome.oshdb.util.function.SerializableConsumer;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
@@ -611,10 +610,6 @@ public interface MapReducer<X> extends Serializable {
    * @return a function that computes estimated quantile boundaries
    */
   <R extends Number> DoubleUnaryOperator estimatedQuantiles(SerializableFunction<X, R> mapper);
-
-  @Deprecated
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  void forEach(SerializableConsumer<X> action);
 
   /**
    * Collects all results into List(s).
