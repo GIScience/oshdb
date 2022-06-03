@@ -13,6 +13,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
@@ -64,7 +65,7 @@ abstract class TestMapReduce {
         .timestamps(timestamps72)
         .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
-        .uniq();
+        .aggregate(Agg::uniq);
 
     // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids
@@ -76,7 +77,7 @@ abstract class TestMapReduce {
         .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
-        .uniq();
+        .aggregate(Agg::uniq);
 
     // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids
@@ -88,7 +89,7 @@ abstract class TestMapReduce {
         .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
-        .sum()
+        .aggregate(Agg::sumInt).intValue()
     );
   }
 
@@ -119,7 +120,7 @@ abstract class TestMapReduce {
         .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
-        .sum()
+        .aggregate(Agg::sumInt).intValue()
     );
   }
 

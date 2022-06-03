@@ -10,6 +10,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
@@ -91,7 +92,8 @@ abstract class TestFlatMapReduceGroupedByEntity {
           ret.add(2); // just add another "2" for good measure ;-)
           return ret;
         })
-        .sum();
+        .aggregate(Agg::sumInt);
+
 
     assertEquals(2 + 2, result.intValue());
   }

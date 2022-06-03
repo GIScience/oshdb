@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
-import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Collector;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
@@ -33,7 +33,9 @@ public interface MapReducer<X> extends Serializable {
   /**
    * Returns if the current backend can be canceled (e.g. in a query timeout).
    */
-  boolean isCancelable();
+  default boolean isCancelable() {
+    return false;
+  }
 
   /**
    * Sets the keytables database to use in the calculations to resolve strings (osm tags, roles)
@@ -107,7 +109,7 @@ public interface MapReducer<X> extends Serializable {
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   default MapReducer<X> timestamps(String isoDateStart, String isoDateEnd,
-      OSHDBTimestamps.Interval interval){
+      OSHDBTimestamps.Interval interval) {
     return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
   }
 
@@ -397,39 +399,23 @@ public interface MapReducer<X> extends Serializable {
     return this.reduce(identitySupplier, accumulator::apply, accumulator);
   }
 
-  /**
-   * Sums up the results.
-   *
-   * <p>
-   * The current data values need to be numeric (castable to "Number" type), otherwise a runtime
-   * exception will be thrown.
-   * </p>
-   *
-   * @return the sum of the current data
-   * @throws UnsupportedOperationException if the data cannot be cast to numbers
-   */
-  Number sum();
+  @FunctionalInterface
+  public interface Aggregator<X, Y> {
+    Y aggregate(MapReducer<X> mr);
+  }
 
-  /**
-   * Sums up the results provided by a given `mapper` function.
-   *
-   * <p>
-   * This is a shorthand for `.map(mapper).sum()`, with the difference that here the numerical
-   * return type of the `mapper` is ensured.
-   * </p>
-   *
-   * @param mapper function that returns the numbers to sum up
-   * @param <R> the numeric type that is returned by the `mapper` function
-   * @return the summed up results of the `mapper` function
-   */
-  <R extends Number> R sum(SerializableFunction<X, R> mapper);
+  default <S> S aggregate(Aggregator<X, S> aggregator) {
+    return aggregator.aggregate(this);
+  }
 
   /**
    * Counts the number of results.
    *
    * @return the total count of features or modifications, summed up over all timestamps
    */
-  Integer count();
+  default Long count() {
+    return aggregate(Agg::count);
+  }
 
   /**
    * Gets all unique values of the results.
@@ -441,182 +427,30 @@ public interface MapReducer<X> extends Serializable {
    *
    * @return the set of distinct values
    */
-  Set<X> uniq();
-
-  /**
-   * Gets all unique values of the results provided by a given mapper function.
-   *
-   * <p>
-   * This is a shorthand for `.map(mapper).uniq()`.
-   * </p>
-   *
-   * @param mapper function that returns some values
-   * @param <R> the type that is returned by the `mapper` function
-   * @return a set of distinct values returned by the `mapper` function
-   */
-  <R> Set<R> uniq(SerializableFunction<X, R> mapper);
-
-    /**
-   * Counts all unique values of the results.
-   *
-   * <p>For example, this can be used together with the OSMContributionView to get the number of
-   * unique users editing specific feature types.</p>
-   *
-   * @return the set of distinct values
-   */
-  default Integer countUniq() {
-    return this.uniq().size();
+  default Set<X> uniq() {
+    return aggregate(Agg::uniq);
   }
 
   /**
-   * Calculates the averages of the results.
-   *
-   * <p>
-   * The current data values need to be numeric (castable to "Number" type), otherwise a runtime
-   * exception will be thrown.
-   * </p>
-   *
-   * @return the average of the current data
-   * @throws UnsupportedOperationException if the data cannot be cast to numbers
-   */
-  Double average();
-
-  /**
-   * Calculates the average of the results provided by a given `mapper` function.
-   *
-   * @param mapper function that returns the numbers to average
-   * @param <R> the numeric type that is returned by the `mapper` function
-   * @return the average of the numbers returned by the `mapper` function
-   */
-  <R extends Number> Double average(SerializableFunction<X, R> mapper);
-
-  /**
-   * Calculates the weighted average of the results provided by the `mapper` function.
-   *
-   * <p>
-   * The mapper must return an object of the type `WeightedValue` which contains a numeric value
-   * associated with a (floating point) weight.
-   * </p>
-   *
-   * @param mapper function that gets called for each entity snapshot or modification, needs to
-   *        return the value and weight combination of numbers to average
-   * @return the weighted average of the numbers returned by the `mapper` function
-   */
-  Double weightedAverage(SerializableFunction<X, WeightedValue> mapper);
-
-  /**
-   * Returns an estimate of the median of the results.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @return estimated median
-   */
-  Double estimatedMedian();
-
-  /**
-   * Returns an estimate of the median of the results after applying the given map function.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param mapper function that returns the numbers to generate the mean for
-   * @return estimated median
-   */
-  <R extends Number> Double estimatedMedian(SerializableFunction<X, R> mapper);
-
-  /**
-   * Returns an estimate of a requested quantile of the results.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param q the desired quantile to calculate (as a number between 0 and 1)
-   * @return estimated quantile boundary
-   */
-  Double estimatedQuantile(double q);
-
-  /**
-   * Returns an estimate of a requested quantile of the results after applying the given map
-   * function.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param mapper function that returns the numbers to generate the quantile for
-   * @param q the desired quantile to calculate (as a number between 0 and 1)
-   * @return estimated quantile boundary
-   */
-  <R extends Number> Double estimatedQuantile(SerializableFunction<X, R> mapper, double q);
-
-  /**
-   * Returns an estimate of the quantiles of the results.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
-   * @return estimated quantile boundaries
-   */
-  List<Double> estimatedQuantiles(Iterable<Double> q);
-
-  /**
-   * Returns an estimate of the quantiles of the results after applying the given map function.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param mapper function that returns the numbers to generate the quantiles for
-   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
-   * @return estimated quantile boundaries
-   */
-  <R extends Number> List<Double> estimatedQuantiles(SerializableFunction<X, R> mapper,
-      Iterable<Double> q);
-
-  /**
-   * Returns a function that computes estimates of arbitrary quantiles of the results.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @return a function that computes estimated quantile boundaries
-   */
-  DoubleUnaryOperator estimatedQuantiles();
-
-  /**
-   * Returns a function that computes estimates of arbitrary quantiles of the results after applying
-   * the given map function.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param mapper function that returns the numbers to generate the quantiles for
-   * @return a function that computes estimated quantile boundaries
-   */
-  <R extends Number> DoubleUnaryOperator estimatedQuantiles(SerializableFunction<X, R> mapper);
+  * Counts all unique values of the results.
+  *
+  * <p>For example, this can be used together with the OSMContributionView to get the number of
+  * unique users editing specific feature types.</p>
+  *
+  * @return the set of distinct values
+  */
+  default Integer countUniq() {
+    return aggregate(Agg::countUniq);
+  }
 
   /**
    * Collects all results into List(s).
    *
    * @return list(s) with all results returned by the `mapper` function
    */
-  List<X> collect();
+  default List<X> collect() {
+    return aggregate(Collector::toList);
+  }
 
   /**
    * Returns all results as a Stream.

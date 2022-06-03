@@ -10,6 +10,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -24,8 +25,6 @@ class TestLambdaFilter {
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
-
-  private static final double DELTA = 1e-8;
 
   TestLambdaFilter() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
@@ -47,7 +46,7 @@ class TestLambdaFilter {
             .getContributionTypes()
             .contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)
-        .uniq();
+        .aggregate(Agg::uniq);
 
     // should be 3: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids, but last two didn't modify the node's coordinates

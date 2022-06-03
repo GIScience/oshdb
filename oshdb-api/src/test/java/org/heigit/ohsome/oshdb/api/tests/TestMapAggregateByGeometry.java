@@ -126,7 +126,7 @@ class TestMapAggregateByGeometry {
 
   @Test
   void testZerofill() throws Exception {
-    SortedMap<String, Integer> resultZerofilled = createMapReducerOSMEntitySnapshot()
+    SortedMap<String, Long> resultZerofilled = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
         .aggregateByGeometry(getSubRegions())
         .count();

@@ -10,6 +10,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.filter.FilterParser;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -62,14 +63,15 @@ class TestOSHDBFilter {
     Number result = createMapReducerOSMEntitySnapshot()
         .map(x -> 1)
         .filter("type:way and geometry:polygon and building=*")
-        .sum();
+        .aggregate(Agg::sumInt);
+
 
     assertEquals(42, result.intValue());
 
     result = createMapReducerOSMContribution()
         .map(x -> 1)
         .filter("type:way and geometry:polygon and building=*")
-        .sum();
+        .aggregate(Agg::sumInt);
 
     assertEquals(42, result.intValue());
   }
@@ -85,7 +87,7 @@ class TestOSHDBFilter {
 
   @Test
   void testAggregateFilter() throws Exception {
-    SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
+    SortedMap<OSMType, Long> result = createMapReducerOSMEntitySnapshot()
         .aggregateBy(x -> x.getEntity().getType())
         .filter("(geometry:polygon or geometry:other) and building=*")
         .count();
@@ -97,7 +99,7 @@ class TestOSHDBFilter {
 
   @Test
   void testAggregateFilterObject() throws Exception {
-    SortedMap<OSMType, Integer> result = createMapReducerOSMEntitySnapshot()
+    SortedMap<OSMType, Long> result = createMapReducerOSMEntitySnapshot()
         .aggregateBy(x -> x.getEntity().getType())
         .filter(filterParser.parse("(geometry:polygon or geometry:other) and building=*"))
         .count();

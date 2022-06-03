@@ -14,6 +14,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Estimated;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -66,8 +67,8 @@ class TestQuantiles {
         .map(s -> s.getGeometry().getCoordinates().length);
     List<Integer> fullResult = mr.collect();
     Collections.sort(fullResult);
-
-    assertApproximateQuantiles(fullResult, 0.5, mr.estimatedMedian());
+    Double median = mr.aggregate(Estimated::median);
+    assertApproximateQuantiles(fullResult, 0.5, median);
   }
 
   @Test
@@ -76,8 +77,8 @@ class TestQuantiles {
         .map(s -> s.getGeometry().getCoordinates().length);
     List<Integer> fullResult = mr.collect();
     Collections.sort(fullResult);
-
-    assertApproximateQuantiles(fullResult, 0.8, mr.estimatedQuantile(0.8));
+    Double quantile = Estimated.quantile(mr, 0.8);
+    assertApproximateQuantiles(fullResult, 0.8, quantile);
   }
 
   @Test
@@ -88,7 +89,7 @@ class TestQuantiles {
     Collections.sort(fullResult);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    List<Double> quantiles = mr.estimatedQuantiles(qs);
+    List<Double> quantiles = Estimated.quantiles(mr, qs);
 
     for (Double quantile : quantiles) {
       assertApproximateQuantiles(fullResult, qs.get(quantiles.indexOf(quantile)), quantile);
@@ -103,7 +104,7 @@ class TestQuantiles {
     Collections.sort(fullResult);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    DoubleUnaryOperator quantilesFunction = mr.estimatedQuantiles();
+    DoubleUnaryOperator quantilesFunction = mr.aggregate(Estimated::quantiles);
 
     for (Double q : qs) {
       assertApproximateQuantiles(fullResult, q, quantilesFunction.applyAsDouble(q));
@@ -127,7 +128,7 @@ class TestQuantiles {
     SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
     fullResult.values().forEach(Collections::sort);
 
-    SortedMap<OSHDBTimestamp, Double> medians = mr.estimatedQuantile(0.8);
+    SortedMap<OSHDBTimestamp, Double> medians = Estimated.quantile(mr, 0.8);
 
     medians.forEach((ts, median) ->
         assertApproximateQuantiles(fullResult.get(ts), 0.8, median)
@@ -141,7 +142,7 @@ class TestQuantiles {
     SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
     fullResult.values().forEach(Collections::sort);
 
-    SortedMap<OSHDBTimestamp, Double> quantiles = mr.estimatedQuantile(0.8);
+    SortedMap<OSHDBTimestamp, Double> quantiles = Estimated.quantile(mr, 0.8);
 
     quantiles.forEach((ts, quantile) ->
         assertApproximateQuantiles(fullResult.get(ts), 0.8, quantile)
@@ -156,7 +157,7 @@ class TestQuantiles {
     fullResult.values().forEach(Collections::sort);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    SortedMap<OSHDBTimestamp, List<Double>> quantiless = mr.estimatedQuantiles(qs);
+    SortedMap<OSHDBTimestamp, List<Double>> quantiless = Estimated.quantiles(mr, qs);
 
     quantiless.forEach((ts, quantiles) -> {
       for (Double quantile : quantiles) {
@@ -177,7 +178,8 @@ class TestQuantiles {
     fullResult.values().forEach(Collections::sort);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    SortedMap<OSHDBTimestamp, DoubleUnaryOperator> quantilesFunctions = mr.estimatedQuantiles();
+    SortedMap<OSHDBTimestamp, DoubleUnaryOperator> quantilesFunctions =
+        mr.aggregate(Estimated::quantiles);
 
     quantilesFunctions.forEach((ts, quantilesFunction) -> {
       for (Double q : qs) {

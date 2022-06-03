@@ -32,8 +32,6 @@ class TestMapAggregateByIndex {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  private static final double DELTA = 1e-8;
-
   TestMapAggregateByIndex() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
@@ -107,7 +105,7 @@ class TestMapAggregateByIndex {
   @Test
   void testZerofill() throws Exception {
     // partially empty result
-    SortedMap<Long, Integer> result = createMapReducerOSMContribution()
+    SortedMap<Long, Long> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
         .aggregateBy(
@@ -118,8 +116,8 @@ class TestMapAggregateByIndex {
 
     assertEquals(2, result.entrySet().size());
     assertEquals(true, result.containsKey(-1L));
-    assertEquals(0, (int) result.get(-1L));
-    assertEquals(7, (int) result.get(617308093L));
+    assertEquals(0, result.get(-1L).intValue());
+    assertEquals(7, result.get(617308093L).intValue());
 
     // totally empty result
     result = createMapReducerOSMContribution()
@@ -133,12 +131,12 @@ class TestMapAggregateByIndex {
 
     assertEquals(1, result.entrySet().size());
     assertEquals(true, result.containsKey(-1L));
-    assertEquals(0, (int) result.get(-1L));
+    assertEquals(0, result.get(-1L).intValue());
   }
 
   @Test
   void testMultiple2() throws Exception {
-    SortedMap<OSHDBCombinedIndex<Long, OSMType>, Integer> result =
+    SortedMap<OSHDBCombinedIndex<Long, OSMType>, Long> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
             .filter("id:617308093")
@@ -147,14 +145,14 @@ class TestMapAggregateByIndex {
             .count();
 
     assertEquals(1, result.entrySet().size());
-    assertEquals(1, (int) result.get(new OSHDBCombinedIndex<>(617308093L, OSMType.NODE)));
-    SortedMap<Long, SortedMap<OSMType, Integer>> nestedResult = OSHDBCombinedIndex.nest(result);
-    assertEquals(1, (int) nestedResult.get(617308093L).get(OSMType.NODE));
+    assertEquals(1, result.get(new OSHDBCombinedIndex<>(617308093L, OSMType.NODE)).intValue());
+    SortedMap<Long, SortedMap<OSMType, Long>> nestedResult = OSHDBCombinedIndex.nest(result);
+    assertEquals(1, nestedResult.get(617308093L).get(OSMType.NODE).intValue());
   }
 
   @Test
   void testMultiple3() throws Exception {
-    SortedMap<OSHDBCombinedIndex<OSHDBCombinedIndex<Long, OSMType>, Integer>, Integer> result =
+    SortedMap<OSHDBCombinedIndex<OSHDBCombinedIndex<Long, OSMType>, Integer>, Long> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
             .filter("id:617308093")
@@ -164,8 +162,8 @@ class TestMapAggregateByIndex {
             .count();
 
     assertEquals(1, result.entrySet().size());
-    SortedMap<Long, SortedMap<OSMType, SortedMap<Integer, Integer>>> nestedResult =
+    SortedMap<Long, SortedMap<OSMType, SortedMap<Integer, Long>>> nestedResult =
         OSHDBCombinedIndex.nest(OSHDBCombinedIndex.nest(result));
-    assertEquals(1, (int) nestedResult.get(617308093L).get(OSMType.NODE).get(165061));
+    assertEquals(1, nestedResult.get(617308093L).get(OSMType.NODE).get(165061).intValue());
   }
 }

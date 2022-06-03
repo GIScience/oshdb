@@ -8,6 +8,10 @@ public class WeightedValue {
   private final Number value;
   private final double weight;
 
+  public WeightedValue(Number value) {
+    this(value, 1.0);
+  }
+
   public WeightedValue(Number value, double weight) {
     this.value = value;
     this.weight = weight;

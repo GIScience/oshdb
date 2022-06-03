@@ -1,4 +1,4 @@
-package org.heigit.ohsome.oshdb.api.mapreducer;
+package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

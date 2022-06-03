@@ -2,26 +2,24 @@ package org.heigit.ohsome.oshdb.api.mapreducer;
 
 import static java.util.Collections.emptyList;
 
-import com.tdunning.math.stats.TDigest;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
-import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Collector;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
-import org.jetbrains.annotations.Contract;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 
@@ -43,8 +41,9 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param <V> the type of the values used to aggregate
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
-  default <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-      SerializableFunction<X, V> indexer) {
+  default <V extends Comparable<V> & Serializable>
+      MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
+        SerializableFunction<X, V> indexer) {
     return this.aggregateBy(indexer, emptyList());
   }
 
@@ -118,38 +117,15 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    */
   <P extends Geometry & Polygonal> MapAggregator<U, X> areaOfInterest(P polygonFilter);
 
-  /**
-   * Sums up the results.
-   *
-   * <p>
-   * The current data values need to be numeric (castable to "Number" type), otherwise a runtime
-   * exception will be thrown.
-   * </p>
-   *
-   * @return the sum of the current data
-   */
-  SortedMap<U, Number> sum();
-
-  /**
-   * Sums up the results provided by a given `mapper` function.
-   *
-   * <p>
-   * This is a shorthand for `.map(mapper).sum()`, with the difference that here the numerical
-   * return type of the `mapper` is ensured.
-   * </p>
-   *
-   * @param mapper function that returns the numbers to sum up
-   * @param <R> the numeric type that is returned by the `mapper` function
-   * @return the summed up results of the `mapper` function
-   */
-  <R extends Number> SortedMap<U, R> sum(SerializableFunction<X, R> mapper);
 
   /**
    * Counts the number of results.
    *
    * @return the total count of features or modifications, summed up over all timestamps
    */
-  SortedMap<U, Integer> count();
+  default SortedMap<U, Long> count() {
+    return aggregate(Agg::count);
+  }
 
   /**
    * Gets all unique values of the results.
@@ -161,20 +137,9 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *
    * @return the set of distinct values
    */
-  SortedMap<U, Set<X>> uniq();
-
-  /**
-   * Gets all unique values of the results provided by a given mapper function.
-   *
-   * <p>
-   * This is a shorthand for `.map(mapper).uniq()`.
-   * </p>
-   *
-   * @param mapper function that returns some values
-   * @param <R> the type that is returned by the `mapper` function
-   * @return a set of distinct values returned by the `mapper` function
-   */
-  <R> SortedMap<U, Set<R>> uniq(SerializableFunction<X, R> mapper);
+  default SortedMap<U, Set<X>> uniq() {
+    return aggregate(Agg::uniq);
+  }
 
   /**
    * Counts all unique values of the results.
@@ -186,160 +151,8 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *
    * @return the set of distinct values
    */
-  SortedMap<U, Integer> countUniq();
-
-  /**
-   * Calculates the averages of the results.
-   *
-   * <p>
-   * The current data values need to be numeric (castable to "Number" type), otherwise a runtime
-   * exception will be thrown.
-   * </p>
-   *
-   * @return the average of the current data
-   */
-  SortedMap<U, Double> average();
-
-  /**
-   * Calculates the average of the results provided by a given `mapper` function.
-   *
-   * @param mapper function that returns the numbers to average
-   * @param <R> the numeric type that is returned by the `mapper` function
-   * @return the average of the numbers returned by the `mapper` function
-   */
-  <R extends Number> SortedMap<U, Double> average(SerializableFunction<X, R> mapper);
-
-  /**
-   * Calculates the weighted average of the results provided by the `mapper` function.
-   *
-   * <p>
-   * The mapper must return an object of the type `WeightedValue` which contains a numeric value
-   * associated with a (floating point) weight.
-   * </p>
-   *
-   * @param mapper function that gets called for each entity snapshot or modification, needs to
-   *        return the value and weight combination of numbers to average
-   * @return the weighted average of the numbers returned by the `mapper` function
-   */
-  SortedMap<U, Double> weightedAverage(SerializableFunction<X, WeightedValue> mapper);
-
-  /**
-   * Returns an estimate of the median of the results.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @return estimated median
-   */
-  SortedMap<U, Double> estimatedMedian();
-
-  /**
-   * Returns an estimate of the median of the results after applying the given map function.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param mapper function that returns the numbers to generate the mean for
-   * @return estimated median
-   */
-  <R extends Number> SortedMap<U, Double> estimatedMedian(SerializableFunction<X, R> mapper);
-
-  /**
-   * Returns an estimate of a requested quantile of the results.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param q the desired quantile to calculate (as a number between 0 and 1)
-   * @return estimated quantile boundary
-   */
-  SortedMap<U, Double> estimatedQuantile(double q);
-
-  /**
-   * Returns an estimate of a requested quantile of the results after applying the given map
-   * function.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param mapper function that returns the numbers to generate the quantile for
-   * @param q the desired quantile to calculate (as a number between 0 and 1)
-   * @return estimated quantile boundary
-   */
-  <R extends Number> SortedMap<U, Double> estimatedQuantile(SerializableFunction<X, R> mapper,
-      double q);
-
-  /**
-   * Returns an estimate of the quantiles of the results.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
-   * @return estimated quantile boundaries
-   */
-  SortedMap<U, List<Double>> estimatedQuantiles(Iterable<Double> q);
-
-  /**
-   * Returns an estimate of the quantiles of the results after applying the given map function.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param mapper function that returns the numbers to generate the quantiles for
-   * @param q the desired quantiles to calculate (as a collection of numbers between 0 and 1)
-   * @return estimated quantile boundaries
-   */
-  <R extends Number> SortedMap<U, List<Double>> estimatedQuantiles(
-      SerializableFunction<X, R> mapper, Iterable<Double> q);
-
-  /**
-   * Returns a function that computes estimates of arbitrary quantiles of the results.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @return a function that computes estimated quantile boundaries
-   */
-  SortedMap<U, DoubleUnaryOperator> estimatedQuantiles();
-
-  /**
-   * Returns a function that computes estimates of arbitrary quantiles of the results after applying
-   * the given map function.
-   *
-   * <p>
-   * Uses the t-digest algorithm to calculate estimates for the quantiles in a map-reduce system:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   * </p>
-   *
-   * @param mapper function that returns the numbers to generate the quantiles for
-   * @return a function that computes estimated quantile boundaries
-   */
-  <R extends Number> SortedMap<U, DoubleUnaryOperator> estimatedQuantiles(
-      SerializableFunction<X, R> mapper);
-
-  /**
-   * Generates the t-digest of the complete result set. see:
-   * https://raw.githubusercontent.com/tdunning/t-digest/master/docs/t-digest-paper/histo.pdf
-   */
-  @Contract(pure = true)
-  default <R extends Number> SortedMap<U, TDigest> digest(SerializableFunction<X, R> mapper) {
-    return this.map(mapper).reduce(TdigestReducer::identitySupplier, TdigestReducer::accumulator,
-        TdigestReducer::combiner);
+  default SortedMap<U, Integer> countUniq() {
+    return aggregate(Agg::countUniq);
   }
 
   /**
@@ -347,7 +160,9 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *
    * @return an aggregated map of lists with all results
    */
-  SortedMap<U, List<X>> collect();
+  default SortedMap<U, List<X>> collect() {
+    return aggregate(Collector::toList);
+  }
 
   /**
    * Returns all results as a Stream.
@@ -501,4 +316,13 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    */
   SortedMap<U, X> reduce(SerializableSupplier<X> identitySupplier,
       SerializableBinaryOperator<X> accumulator);
+
+  @FunctionalInterface
+  public interface Aggregator<U extends Comparable<U> & Serializable, X, Y> {
+    SortedMap<U, Y> aggregate(MapAggregator<U, X> mr);
+  }
+
+  default <S> SortedMap<U, S> aggregate(Aggregator<U, X, S> aggregator) {
+    return aggregator.aggregate(this);
+  }
 }

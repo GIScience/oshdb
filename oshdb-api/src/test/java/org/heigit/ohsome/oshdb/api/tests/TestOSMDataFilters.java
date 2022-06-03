@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
@@ -37,7 +36,7 @@ class TestOSMDataFilters {
 
   @Test
   void bbox() throws Exception {
-    Integer result = createMapReducerOSMEntitySnapshot()
+    Long result = createMapReducerOSMEntitySnapshot()
         .filter("type:node")
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
@@ -47,7 +46,7 @@ class TestOSMDataFilters {
 
   @Test
   void polygon() throws Exception {
-    Integer result = createMapReducerOSMEntitySnapshot()
+    Long result = createMapReducerOSMEntitySnapshot()
         .filter("type:node")
         .areaOfInterest(OSHDBGeometryBuilder.getGeometry(bbox))
         .timestamps(timestamps1)
@@ -58,7 +57,7 @@ class TestOSMDataFilters {
   @Test
   void multiPolygon() throws Exception {
     GeometryFactory gf = new GeometryFactory();
-    Integer result = createMapReducerOSMEntitySnapshot()
+    Long result = createMapReducerOSMEntitySnapshot()
         .filter("type:node")
         .areaOfInterest(gf.createMultiPolygon(new Polygon[] {
             OSHDBGeometryBuilder.getGeometry(bbox)

@@ -16,6 +16,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -80,7 +81,7 @@ class TestFlatMapReduce {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(contribution -> input)
-        .uniq();
+        .aggregate(Agg::uniq);
 
     assertEquals(input, result);
   }
@@ -94,7 +95,7 @@ class TestFlatMapReduce {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(contribution -> input.stream()::iterator)
-        .uniq();
+        .aggregate(Agg::uniq);
 
     assertEquals(input, result);
   }
