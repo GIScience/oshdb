@@ -8,7 +8,7 @@ import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
@@ -30,9 +30,8 @@ class TestLambdaFilter {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -42,6 +41,7 @@ class TestLambdaFilter {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
+        .on(oshdb)
         .filter(contribution -> contribution
             .getContributionTypes()
             .contains(ContributionType.GEOMETRY_CHANGE))
@@ -58,6 +58,7 @@ class TestLambdaFilter {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
+        .on(oshdb)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .filter(contribution -> contribution
             .getContributionTypes()

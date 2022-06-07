@@ -30,23 +30,23 @@ class TestFlatMapAggregate {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  private static final double DELTA = 1e-8;
-
   TestFlatMapAggregate() throws Exception {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private MapReducer<OSMContribution> createMapReducerOSMContribution(OSHDBTimestamps timestamps)
+      throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
-        .filter("type:node and highway=*");
+        .filter("type:node and highway=*")
+        .timestamps(timestamps)
+        .on(oshdb);
   }
 
   @Test
   void test() throws Exception {
-    SortedMap<Long, Set<Entry<Integer, Integer>>> result = createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+    SortedMap<Long, Set<Entry<Integer, Integer>>> result =
+        createMapReducerOSMContribution(timestamps72)
         .flatMap(
             contribution -> {
               if (contribution.getEntityAfter().getId() != 617308093) {

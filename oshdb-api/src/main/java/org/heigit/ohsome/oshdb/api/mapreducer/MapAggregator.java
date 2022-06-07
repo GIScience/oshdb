@@ -9,12 +9,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
-import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Collector;
-import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
@@ -94,29 +92,6 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    */
   <V extends Comparable<V> & Serializable, P extends Geometry & Polygonal>
       MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(Map<V, P> geometries);
-
-  /**
-   * Set the area of interest to the given bounding box.
-   *
-   * <p>
-   * Only objects inside or clipped by this bbox will be passed on to the analysis' `mapper`
-   * function.
-   * </p>
-   *
-   * @param bboxFilter the bounding box to query the data in
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   */
-  MapAggregator<U, X> areaOfInterest(OSHDBBoundingBox bboxFilter);
-
-  /**
-   * Set the area of interest to the given polygon. Only objects inside or clipped by this polygon
-   * will be passed on to the analysis' `mapper` function.
-   *
-   * @param polygonFilter the bounding box to query the data in
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   */
-  <P extends Geometry & Polygonal> MapAggregator<U, X> areaOfInterest(P polygonFilter);
-
 
   /**
    * Counts the number of results.
@@ -205,27 +180,6 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @return a modified copy of this object (can be used to chain multiple commands together)
    */
   MapAggregator<U, X> filter(SerializablePredicate<X> f);
-
-  /**
-   * Apply a custom filter expression to this query.
-   *
-   * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#readme">oshdb-filter
-   *      readme</a> and {@link org.heigit.ohsome.oshdb.filter} for further information about how to
-   *      create such a filter expression object.
-   */
-  MapAggregator<U, X> filter(FilterExpression f);
-
-  /**
-   * Apply a textual filter to this query.
-   *
-   * @param f the filter string to apply
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#syntax">oshdb-filter
-   *      readme</a> for a description of the filter syntax.
-   */
-  MapAggregator<U, X> filter(String f);
 
   /**
    * Map-reduce routine with built-in aggregation.

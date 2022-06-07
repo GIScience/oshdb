@@ -4,13 +4,12 @@ import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
@@ -38,22 +37,16 @@ abstract class TestMapReduce {
     this.oshdb = oshdb;
   }
 
-  protected MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    MapReducer<OSMContribution> mapRed = OSMContributionView.on(oshdb);
-    if (this.keytables != null) {
-      mapRed = mapRed.keytables(this.keytables);
-    }
-    return mapRed
+  protected OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
+    return OSMContributionView.view()
+        .keytables(this.keytables)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
 
-  protected MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    MapReducer<OSMEntitySnapshot> mapRed = OSMEntitySnapshotView.on(oshdb);
-    if (this.keytables != null) {
-      mapRed = mapRed.keytables(this.keytables);
-    }
-    return mapRed
+  protected OSHDBView<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
+    return OSMEntitySnapshotView.view()
+        .keytables(keytables)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -64,6 +57,7 @@ abstract class TestMapReduce {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
+        .on(oshdb)
         .map(OSMContribution::getContributorUserId)
         .aggregate(Agg::uniq);
 
@@ -75,6 +69,7 @@ abstract class TestMapReduce {
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
+        .on(oshdb)
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
         .aggregate(Agg::uniq);
@@ -82,15 +77,6 @@ abstract class TestMapReduce {
     // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids
     assertEquals(5, result.size());
-
-    // "groupByEntity"
-    assertEquals(7, createMapReducerOSMContribution()
-        .timestamps(timestamps72)
-        .filter("id:617308093")
-        .groupByEntity()
-        .map(List::size)
-        .aggregate(Agg::sumInt).intValue()
-    );
   }
 
   @Test
@@ -99,6 +85,7 @@ abstract class TestMapReduce {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .filter("id:617308093")
+        .on(oshdb)
         .map(snapshot -> snapshot.getEntity().getUserId())
         .uniq();
 
@@ -108,20 +95,12 @@ abstract class TestMapReduce {
     result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .filter("id:617308093")
+        .on(oshdb)
         .map(snapshot -> snapshot.getEntity().getUserId())
         .filter(uid -> uid > 0)
         .uniq();
 
     assertEquals(3, result.size());
-
-    // "groupByEntity"
-    assertEquals(5, createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps6)
-        .filter("id:617308093")
-        .groupByEntity()
-        .map(List::size)
-        .aggregate(Agg::sumInt).intValue()
-    );
   }
 
   @Test
@@ -130,6 +109,7 @@ abstract class TestMapReduce {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
+        .on(oshdb)
         .map(OSMContribution::getContributorUserId)
         .stream()
         .collect(Collectors.toSet());
@@ -142,6 +122,7 @@ abstract class TestMapReduce {
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
+        .on(oshdb)
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
         .stream()
@@ -150,17 +131,6 @@ abstract class TestMapReduce {
     // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids
     assertEquals(5, result.size());
-
-    // "groupByEntity"
-    assertEquals(7, createMapReducerOSMContribution()
-        .timestamps(timestamps72)
-        .filter("id:617308093")
-        .groupByEntity()
-        .map(List::size)
-        .stream()
-        .mapToInt(x -> x)
-        .reduce(0, Integer::sum)
-    );
   }
 
   @Test
@@ -169,6 +139,7 @@ abstract class TestMapReduce {
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .filter("id:617308093")
+        .on(oshdb)
         .map(snapshot -> snapshot.getEntity().getUserId())
         .stream()
         .collect(Collectors.toSet());
@@ -179,23 +150,13 @@ abstract class TestMapReduce {
     result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
         .filter("id:617308093")
+        .on(oshdb)
         .map(snapshot -> snapshot.getEntity().getUserId())
         .filter(uid -> uid > 0)
         .stream()
         .collect(Collectors.toSet());
 
     assertEquals(3, result.size());
-
-    // "groupByEntity"
-    assertEquals(5, createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps6)
-        .filter("id:617308093")
-        .groupByEntity()
-        .map(List::size)
-        .stream()
-        .mapToInt(x -> x)
-        .reduce(0, Integer::sum)
-    );
   }
 
   @Test
@@ -213,6 +174,7 @@ abstract class TestMapReduce {
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps6)
           .filter("id:617308093")
+          .on(oshdb)
           .map(delay(100))
           .count();
     } finally {
@@ -236,6 +198,7 @@ abstract class TestMapReduce {
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps6)
           .filter("id:617308093")
+          .on(oshdb)
           .map(snapshot -> snapshot.getEntity().getId())
           .map(delay(100))
           .stream()

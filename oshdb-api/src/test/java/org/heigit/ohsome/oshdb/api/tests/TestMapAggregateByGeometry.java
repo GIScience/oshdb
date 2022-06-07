@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
@@ -43,16 +42,14 @@ class TestMapAggregateByGeometry {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:way and highway=*");
   }
 
-  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView
-        .on(oshdb)
+  private OSHDBView<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
+    return OSMEntitySnapshotView.view()
         .areaOfInterest(bbox)
         .filter("type:way and highway=*");
   }
@@ -78,6 +75,7 @@ class TestMapAggregateByGeometry {
   void testOSMContribution() throws Exception {
     SortedMap<String, Integer> resultCount = createMapReducerOSMContribution()
         .timestamps(timestamps2)
+        .on(oshdb)
         .aggregateByGeometry(getSubRegions())
         .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
@@ -86,6 +84,7 @@ class TestMapAggregateByGeometry {
 
     SortedMap<String, Double> resultSumLength = createMapReducerOSMContribution()
         .timestamps(timestamps2)
+        .on(oshdb)
         .aggregateByGeometry(getSubRegions())
         .map(OSMContribution::getGeometryAfter)
         .map(Geo::lengthOf)
@@ -103,6 +102,7 @@ class TestMapAggregateByGeometry {
   void testOSMEntitySnapshot() throws Exception {
     SortedMap<String, Integer> resultCount = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateByGeometry(getSubRegions())
         .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
@@ -111,6 +111,7 @@ class TestMapAggregateByGeometry {
 
     SortedMap<String, Double> resultSumLength = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateByGeometry(getSubRegions())
         .map(OSMEntitySnapshot::getGeometry)
         .map(Geo::lengthOf)
@@ -128,6 +129,7 @@ class TestMapAggregateByGeometry {
   void testZerofill() throws Exception {
     SortedMap<String, Long> resultZerofilled = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateByGeometry(getSubRegions())
         .count();
     assertEquals(4, resultZerofilled.entrySet().size());
@@ -139,6 +141,7 @@ class TestMapAggregateByGeometry {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
+            .on(oshdb)
             .aggregateByTimestamp()
             .aggregateByGeometry(getSubRegions())
             .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
@@ -158,6 +161,7 @@ class TestMapAggregateByGeometry {
     SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
+            .on(oshdb)
             .aggregateByGeometry(getSubRegions())
             .aggregateByTimestamp()
             .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
@@ -175,23 +179,23 @@ class TestMapAggregateByGeometry {
   @Test
   void testCombinedWithAggregateByTimestampOrder() throws Exception {
     SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, List<Long>> resultGeomTime =
-        OSMEntitySnapshotView
-            .on(oshdb)
+        OSMEntitySnapshotView.view()
             .areaOfInterest(bbox)
             .timestamps(timestamps2)
+            .filter("type:way and highway=*")
+            .on(oshdb)
             .aggregateByGeometry(getSubRegions())
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
-            .filter("type:way and highway=*")
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, List<Long>> resultTimeGeom =
-        OSMEntitySnapshotView
-            .on(oshdb)
+        OSMEntitySnapshotView.view()
             .areaOfInterest(bbox)
             .timestamps(timestamps2)
+            .filter("type:way and highway=*")
+            .on(oshdb)
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .aggregateByGeometry(getSubRegions())
-            .filter("type:way and highway=*")
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
     assertEquals(resultGeomTime.entrySet().size(), resultTimeGeom.entrySet().size());
@@ -201,17 +205,5 @@ class TestMapAggregateByGeometry {
           resultTimeGeom.get(new OSHDBCombinedIndex<>(idx.getSecondIndex(), idx.getFirstIndex()))
       );
     }
-  }
-
-  @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
-  @Test()
-  void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
-    assertThrows(UnsupportedOperationException.class, () -> {
-      createMapReducerOSMEntitySnapshot()
-          .timestamps(timestamps1)
-          .groupByEntity()
-          .aggregateByGeometry(getSubRegions())
-          .collect();
-    });
   }
 }

@@ -16,6 +16,7 @@ import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
@@ -28,7 +29,6 @@ import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
-import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 
@@ -40,8 +40,8 @@ abstract class MapReducerJdbc<X> extends MapReducerBase<X> implements Cancelable
    */
   protected long executionStartTimeMillis;
 
-  MapReducerJdbc(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> forClass) {
-    super(oshdb, forClass);
+  MapReducerJdbc(OSHDBDatabase oshdb, OSHDBView view) {
+    super(oshdb, view);
   }
 
   // copy constructor

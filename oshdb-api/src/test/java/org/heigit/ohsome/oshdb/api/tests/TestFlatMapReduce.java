@@ -35,17 +35,18 @@ class TestFlatMapReduce {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private MapReducer<OSMContribution> createMapReducerOSMContribution(OSHDBTimestamps timestamps)
+      throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
-        .filter("type:node and highway=*");
+        .filter("type:node and highway=*")
+        .timestamps(timestamps)
+        .on(oshdb);
   }
 
   @Test
   void test() throws Exception {
-    Set<Entry<Integer, Integer>> result = createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+    Set<Entry<Integer, Integer>> result = createMapReducerOSMContribution(timestamps72)
         .flatMap(contribution -> {
           if (contribution.getEntityAfter().getId() != 617308093) {
             return new ArrayList<>();
@@ -78,8 +79,7 @@ class TestFlatMapReduce {
     input.add(1);
     input.add(2);
     input.add(3);
-    Set<Integer> result = createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+    Set<Integer> result = createMapReducerOSMContribution(timestamps72)
         .flatMap(contribution -> input)
         .aggregate(Agg::uniq);
 
@@ -92,8 +92,7 @@ class TestFlatMapReduce {
     input.add(1);
     input.add(2);
     input.add(3);
-    Set<Integer> result = createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+    Set<Integer> result = createMapReducerOSMContribution(timestamps72)
         .flatMap(contribution -> input.stream()::iterator)
         .aggregate(Agg::uniq);
 

@@ -10,6 +10,7 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;
@@ -108,7 +109,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   }
 
   @Override
-  public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
+  public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(OSHDBView<X> view) {
     MapReducer<X> mapReducer;
     Collection<String> allCaches = this.getIgnite().cacheNames();
     Collection<String> expectedCaches = Stream.of(OSMType.values())
@@ -120,13 +121,13 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     }
     switch (this.computeMode()) {
       case LOCAL_PEEK:
-        mapReducer = new MapReducerIgniteLocalPeek<>(this, forClass);
+        mapReducer = new MapReducerIgniteLocalPeek<>(this, view);
         break;
       case SCAN_QUERY:
-        mapReducer = new MapReducerIgniteScanQuery<>(this, forClass);
+        mapReducer = new MapReducerIgniteScanQuery<>(this, view);
         break;
       case AFFINITY_CALL:
-        mapReducer = new MapReducerIgniteAffinityCall<>(this, forClass);
+        mapReducer = new MapReducerIgniteAffinityCall<>(this, view);
         break;
       default:
         throw new UnsupportedOperationException("Backend not implemented for this compute mode.");

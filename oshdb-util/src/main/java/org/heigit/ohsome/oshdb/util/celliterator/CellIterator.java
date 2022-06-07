@@ -276,20 +276,13 @@ public class CellIterator implements Serializable {
    */
   public Stream<IterateByTimestampEntry> iterateByTimestamps(Iterable<? extends OSHEntity> cellData,
       boolean allFullyInside) {
-    return Streams.stream(cellData).flatMap(oshEntity -> {
-      if (!oshEntityPreFilter.test(oshEntity)
-          || !allFullyInside && (
-              !oshEntity.getBoundable().intersects(boundingBox)
-              || (isBoundByPolygon && bboxOutsidePolygon.test(oshEntity.getBoundable()))
-          )) {
-        // this osh entity doesn't match the prefilter or is fully outside the requested
-        // area of interest -> skip it
-        return Stream.empty();
-      }
-      if (Streams.stream(oshEntity.getVersions()).noneMatch(osmEntityFilter)) {
-        // none of this osh entity's versions matches the filter -> skip it
-        return Stream.empty();
-      }
+    return Streams.stream(cellData)
+        .filter(oshEntity -> allFullyInside || oshEntity.getBoundable().intersects(boundingBox))
+        .filter(oshEntityPreFilter)
+        .filter(oshEntity -> allFullyInside || !isBoundByPolygon
+            || !bboxOutsidePolygon.test(oshEntity.getBoundable()))
+        .flatMap(oshEntity -> {
+
       boolean fullyInside = allFullyInside || fullyInside(oshEntity.getBoundable());
 
       // optimize loop by requesting modification timestamps first, and skip geometry calculations

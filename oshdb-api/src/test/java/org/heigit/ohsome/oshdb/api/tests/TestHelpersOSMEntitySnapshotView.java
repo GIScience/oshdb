@@ -9,7 +9,7 @@ import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
@@ -34,9 +34,8 @@ class TestHelpersOSMEntitySnapshotView {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
-  private MapReducer<OSMEntitySnapshot> createMapReducer() throws Exception {
-    return OSMEntitySnapshotView
-        .on(oshdb)
+  private OSHDBView<OSMEntitySnapshot> createMapReducer() throws Exception {
+    return OSMEntitySnapshotView.view()
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
   }
@@ -46,6 +45,7 @@ class TestHelpersOSMEntitySnapshotView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Long> result1 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
@@ -56,6 +56,7 @@ class TestHelpersOSMEntitySnapshotView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Long> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
@@ -67,6 +68,7 @@ class TestHelpersOSMEntitySnapshotView {
     // total
     Number result3 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
 
@@ -75,6 +77,7 @@ class TestHelpersOSMEntitySnapshotView {
     // custom aggregation identifier
     SortedMap<Boolean, Long> result4 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
@@ -88,6 +91,7 @@ class TestHelpersOSMEntitySnapshotView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Long> result1 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateByTimestamp()
         .count();
 
@@ -97,6 +101,7 @@ class TestHelpersOSMEntitySnapshotView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Long> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .count();
 
@@ -107,6 +112,7 @@ class TestHelpersOSMEntitySnapshotView {
     // total
     Long result3 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .count();
 
     assertEquals(42, result3.intValue());
@@ -114,6 +120,7 @@ class TestHelpersOSMEntitySnapshotView {
     // custom aggregation identifier
     SortedMap<Boolean, Long> result4 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .count();
 
@@ -126,6 +133,7 @@ class TestHelpersOSMEntitySnapshotView {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .map(snapshot -> snapshot.getEntity().getId() % 2)
         .aggregate(Agg::average);
 
@@ -134,6 +142,7 @@ class TestHelpersOSMEntitySnapshotView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(snapshot -> snapshot.getEntity().getId() % 2)
         .aggregate(Agg::average);
@@ -145,6 +154,7 @@ class TestHelpersOSMEntitySnapshotView {
     // custom aggregation identifier
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .map(snapshot -> snapshot.getEntity().getId() % 2)
         .aggregate(Agg::average);;
@@ -158,6 +168,7 @@ class TestHelpersOSMEntitySnapshotView {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .map(snapshot -> new WeightedValue(
             snapshot.getEntity().getId() % 2,
             1 * (snapshot.getEntity().getId() % 2)
@@ -169,6 +180,7 @@ class TestHelpersOSMEntitySnapshotView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(snapshot -> new WeightedValue(
             snapshot.getEntity().getId() % 2,
@@ -183,6 +195,7 @@ class TestHelpersOSMEntitySnapshotView {
     // custom aggregation identifier
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .map(snapshot -> new WeightedValue(
             snapshot.getEntity().getId() % 2,
@@ -199,6 +212,7 @@ class TestHelpersOSMEntitySnapshotView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Set<Long>> result1 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(snapshot -> snapshot.getEntity().getId())
         .aggregate(Agg::uniq);
@@ -209,6 +223,7 @@ class TestHelpersOSMEntitySnapshotView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Set<Long>> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(snapshot -> snapshot.getEntity().getId())
         .aggregate(Agg::uniq);
@@ -220,6 +235,7 @@ class TestHelpersOSMEntitySnapshotView {
     // total
     Set<Long> result3 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .map(snapshot -> snapshot.getEntity().getId())
         .aggregate(Agg::uniq);
 
@@ -228,6 +244,7 @@ class TestHelpersOSMEntitySnapshotView {
     // custom aggregation identifier
     SortedMap<Boolean, Set<Long>> result4 = this.createMapReducer()
         .timestamps(timestamps1)
+        .on(oshdb)
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .map(snapshot -> snapshot.getEntity().getId())
         .aggregate(Agg::uniq);

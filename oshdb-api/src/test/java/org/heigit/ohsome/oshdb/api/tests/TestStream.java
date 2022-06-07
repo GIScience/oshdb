@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -27,9 +27,8 @@ class TestStream {
     oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(false);
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
   }
@@ -39,6 +38,7 @@ class TestStream {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
+        .on(oshdb)
         .stream()
         .forEach(contribution -> {
           result.put(contribution.getEntityAfter().getId(), true);
@@ -47,22 +47,11 @@ class TestStream {
   }
 
   @Test
-  void testForEachGroupedById() throws Exception {
-    ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
-    this.createMapReducerOSMContribution()
-        .timestamps(timestamps72)
-        .groupByEntity()
-        .map(contributions -> contributions.get(0).getEntityAfter().getId())
-        .stream()
-        .forEach(id -> result.put(id, true));
-    assertEquals(42, result.entrySet().size());
-  }
-
-  @Test
   void testForEachAggregatedByTimestamp() throws Exception {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .stream()
         .forEach(entry ->

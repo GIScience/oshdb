@@ -55,10 +55,11 @@ class TestQuantiles {
   // MapReducer
 
   private MapReducer<OSMEntitySnapshot> createMapReducer() {
-    return OSMEntitySnapshotView.on(oshdb)
+    return OSMEntitySnapshotView.view()
         .timestamps(timestamps1)
         .areaOfInterest(bbox)
-        .filter("type:way and building=yes");
+        .filter("type:way and building=yes")
+        .on(oshdb);
   }
 
   @Test
@@ -114,10 +115,11 @@ class TestQuantiles {
   // MapAggregator
 
   private MapAggregator<OSHDBTimestamp, OSMEntitySnapshot> createMapAggregator() {
-    return OSMEntitySnapshotView.on(oshdb)
+    return OSMEntitySnapshotView.view()
         .timestamps(timestamps2)
         .areaOfInterest(bbox)
         .filter("type:way and building=yes")
+        .on(oshdb)
         .aggregateByTimestamp();
   }
 

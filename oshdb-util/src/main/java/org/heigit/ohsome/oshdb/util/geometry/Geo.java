@@ -9,7 +9,6 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.Polygonal;
 
 /**
  * Geometry utility functions.
@@ -308,7 +307,7 @@ public class Geo {
     return obj.intersection(OSHDBGeometryBuilder.getGeometry(bbox));
   }
 
-  public static <P extends Geometry & Polygonal> Geometry clip(Geometry obj, P poly) {
+  public static Geometry clip(Geometry obj, Geometry poly) {
     return obj.intersection(poly);
   }
 }

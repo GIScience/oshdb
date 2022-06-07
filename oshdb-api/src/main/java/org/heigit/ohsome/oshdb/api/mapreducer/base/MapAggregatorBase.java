@@ -17,12 +17,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
-import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase.Grouping;
-import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
@@ -159,10 +156,6 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
   public <V extends Comparable<V> & Serializable, P extends Geometry & Polygonal>
       MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateByGeometry(
       Map<V, P> geometries) throws UnsupportedOperationException {
-    if (this.mapReducer.grouping != Grouping.NONE) {
-      throw new UnsupportedOperationException(
-          "aggregateByGeometry() cannot be used together with the groupByEntity() functionality");
-    }
 
     GeometrySplitter<V> gs = new GeometrySplitter<>(geometries);
 
@@ -178,7 +171,7 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
           .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
     } else {
       throw new UnsupportedOperationException(
-          String.format(MapReducerBase.UNIMPLEMENTED_DATA_VIEW, this.mapReducer.viewClass));
+          String.format(MapReducerBase.UNIMPLEMENTED_DATA_VIEW, this.mapReducer.viewType));
     }
     @SuppressWarnings("unchecked") // no mapper functions have been applied -> the type is still X
     MapAggregator<OSHDBCombinedIndex<U, V>, X> result =
@@ -190,18 +183,6 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
   // Filtering methods
   // Just forwards everything to the wrapped MapReducer object
   // ---------------------------------------------------------------------------------------------
-
-  @Override
-  @Contract(pure = true)
-  public MapAggregator<U, X> areaOfInterest(OSHDBBoundingBox bboxFilter) {
-    return this.copyTransform(this.mapReducer.areaOfInterest(bboxFilter));
-  }
-
-  @Override
-  @Contract(pure = true)
-  public <P extends Geometry & Polygonal> MapAggregator<U, X> areaOfInterest(P polygonFilter) {
-    return this.copyTransform(this.mapReducer.areaOfInterest(polygonFilter));
-  }
 
   // ---------------------------------------------------------------------------------------------
   // "Quality of life" helper methods to use the map-reduce functionality more directly and easily
@@ -264,18 +245,6 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
   @Contract(pure = true)
   public MapAggregator<U, X> filter(SerializablePredicate<X> f) {
     return this.copyTransform(this.mapReducer.filter(data -> f.test(data.getValue())));
-  }
-
-  @Override
-  @Contract(pure = true)
-  public MapAggregator<U, X> filter(FilterExpression f) {
-    return this.copyTransform(this.mapReducer.filter(f));
-  }
-
-  @Override
-  @Contract(pure = true)
-  public MapAggregator<U, X> filter(String f) {
-    return this.copyTransform(this.mapReducer.filter(f));
   }
 
   // ---------------------------------------------------------------------------------------------

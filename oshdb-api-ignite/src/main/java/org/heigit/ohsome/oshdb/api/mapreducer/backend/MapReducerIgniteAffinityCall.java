@@ -29,6 +29,7 @@ import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CancelableProcessStatus;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
@@ -43,7 +44,6 @@ import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
-import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.jetbrains.annotations.NotNull;
@@ -74,8 +74,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducerBase<X>
   private long executionStartTimeMillis;
 
   public MapReducerIgniteAffinityCall(OSHDBDatabase oshdb,
-      Class<? extends OSHDBMapReducible> forClass) {
-    super(oshdb, forClass);
+      OSHDBView<X> view) {
+    super(oshdb, view);
   }
 
   // copy constructor

@@ -7,7 +7,7 @@ import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
@@ -46,14 +46,14 @@ class TestOSHDBFilter {
     this.oshdb = oshdb;
   }
 
-  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb)
+  private OSHDBView<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
+    return OSMEntitySnapshotView.view()
         .areaOfInterest(bbox)
         .timestamps("2014-01-01");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.on(oshdb)
+  private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .timestamps("2008-01-01", "2014-01-01");
   }
@@ -61,16 +61,18 @@ class TestOSHDBFilter {
   @Test
   void testFilterString() throws Exception {
     Number result = createMapReducerOSMEntitySnapshot()
-        .map(x -> 1)
         .filter("type:way and geometry:polygon and building=*")
+        .on(oshdb)
+        .map(x -> 1)
         .aggregate(Agg::sumInt);
 
 
     assertEquals(42, result.intValue());
 
     result = createMapReducerOSMContribution()
-        .map(x -> 1)
         .filter("type:way and geometry:polygon and building=*")
+        .on(oshdb)
+        .map(x -> 1)
         .aggregate(Agg::sumInt);
 
     assertEquals(42, result.intValue());
@@ -80,6 +82,7 @@ class TestOSHDBFilter {
   void testFilterObject() throws Exception {
     Number result = createMapReducerOSMEntitySnapshot()
         .filter(filterParser.parse("type:way and geometry:polygon and building=*"))
+        .on(oshdb)
         .count();
 
     assertEquals(42, result.intValue());
@@ -88,8 +91,9 @@ class TestOSHDBFilter {
   @Test
   void testAggregateFilter() throws Exception {
     SortedMap<OSMType, Long> result = createMapReducerOSMEntitySnapshot()
-        .aggregateBy(x -> x.getEntity().getType())
         .filter("(geometry:polygon or geometry:other) and building=*")
+        .on(oshdb)
+        .aggregateBy(x -> x.getEntity().getType())
         .count();
 
     assertEquals(2, result.entrySet().size());
@@ -100,28 +104,12 @@ class TestOSHDBFilter {
   @Test
   void testAggregateFilterObject() throws Exception {
     SortedMap<OSMType, Long> result = createMapReducerOSMEntitySnapshot()
-        .aggregateBy(x -> x.getEntity().getType())
         .filter(filterParser.parse("(geometry:polygon or geometry:other) and building=*"))
+        .on(oshdb)
+        .aggregateBy(x -> x.getEntity().getType())
         .count();
 
     assertEquals(42, result.get(OSMType.WAY).intValue());
-  }
-
-  @Test
-  void testFilterGroupByEntity() throws Exception {
-    MapReducer<OSMEntitySnapshot> mrSnapshot = createMapReducerOSMEntitySnapshot();
-    Number osmTypeFilterResult = mrSnapshot.groupByEntity()
-        .filter(x -> x.get(0).getEntity().getType() == OSMType.WAY).count();
-    Number stringFilterResult = mrSnapshot.groupByEntity().filter("type:way").count();
-
-    assertEquals(osmTypeFilterResult, stringFilterResult);
-
-    MapReducer<OSMContribution> mrContribution = createMapReducerOSMContribution();
-    osmTypeFilterResult = mrContribution.groupByEntity()
-        .filter(x -> x.get(0).getOSHEntity().getType() == OSMType.WAY).count();
-    stringFilterResult = mrContribution.groupByEntity().filter("type:way").count();
-
-    assertEquals(osmTypeFilterResult, stringFilterResult);
   }
 
   @Test
@@ -131,9 +119,11 @@ class TestOSHDBFilter {
     try {
       createMapReducerOSMEntitySnapshot()
           .filter(parser.parse("type:way and nonexistentkey=*"))
+          .on(oshdb)
           .count();
       createMapReducerOSMContribution()
           .filter(parser.parse("type:way and nonexistentkey=nonexistentvalue"))
+          .on(oshdb)
           .count();
     } catch (Exception e) {
       fail("should not crash on non-existent tags");
@@ -142,8 +132,7 @@ class TestOSHDBFilter {
 
   @Test
   void testFilterNotCrashDuringNormalize() throws Exception {
-    var mr = createMapReducerOSMContribution();
-    mr = mr.filter(new FilterExpression() {
+    var mr = createMapReducerOSMContribution().filter(new FilterExpression() {
       @Override
       public boolean applyOSM(OSMEntity entity) {
         return false;
@@ -153,7 +142,7 @@ class TestOSHDBFilter {
       public FilterExpression negate() {
         throw new RuntimeException("not implemented");
       }
-    });
+    }).on(oshdb);
     assertEquals(0, (long) mr.count());
   }
 }

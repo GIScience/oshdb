@@ -1,19 +1,15 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
-import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -24,7 +20,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -34,6 +29,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.filter.AndOperator;
 import org.heigit.ohsome.oshdb.filter.Filter;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
@@ -50,7 +46,6 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
@@ -58,19 +53,14 @@ import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
-import org.heigit.ohsome.oshdb.util.geometry.Geo;
-import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
-import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
-import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 import org.slf4j.Logger;
@@ -133,16 +123,10 @@ public abstract class MapReducerBase<X> implements
 
   /** the class representing the used OSHDB view: either {@link OSMContribution} or
    * {@link OSMEntitySnapshot}. */
-  Class<? extends OSHDBMapReducible> viewClass;
-
-  enum Grouping {
-    NONE, BY_ID
-  }
-
-  Grouping grouping = Grouping.NONE;
+  protected OSHDBView.ViewType viewType;
 
   // utility objects
-  private transient TagTranslator tagTranslator = null;
+  //private transient TagTranslator tagTranslator = null;
   private TagInterpreter tagInterpreter = null;
 
   // settings and filters
@@ -159,20 +143,33 @@ public abstract class MapReducerBase<X> implements
   final LinkedList<MapFunction> mappers = new LinkedList<>();
 
   // basic constructor
-  protected MapReducerBase(OSHDBDatabase oshdb, Class<? extends OSHDBMapReducible> viewClass) {
+  protected MapReducerBase(OSHDBDatabase oshdb, OSHDBView<X> view) {
     this.oshdb = oshdb;
-    this.viewClass = viewClass;
+    this.viewType = view.type();
+    try {
+      this.tagInterpreter = view.getTagInterpreter(oshdb);
+      this.tstamps = view.getTimestamps();
+      this.bboxFilter = view.getBboxFilter();
+      this.polyFilter = view.getPolyFilter();
+      if (!view.getFilters().isEmpty()) {
+        var tagTranslator = view.getTagTranslator(oshdb);
+        var parser = new FilterParser(tagTranslator);
+        view.getFilters()
+            .stream()
+            .map(parser::parse)
+            .forEach(this::applyFilterExpression);
+      }
+      view.getFilterExpressions().forEach(this::applyFilterExpression);
+    } catch (Exception e) {
+      throw new OSHDBException(e);
+    }
   }
 
   // copy constructor
   protected MapReducerBase(MapReducerBase<?> obj) {
     this.oshdb = obj.oshdb;
-    this.keytables = obj.keytables;
 
-    this.viewClass = obj.viewClass;
-    this.grouping = obj.grouping;
-
-    this.tagTranslator = obj.tagTranslator;
+    this.viewType = obj.viewType;
     this.tagInterpreter = obj.tagInterpreter;
 
     this.tstamps = obj.tstamps;
@@ -191,126 +188,9 @@ public abstract class MapReducerBase<X> implements
   // "Setting" methods and associated internal helpers
   // -----------------------------------------------------------------------------------------------
 
-  /**
-   * Sets the keytables database to use in the calculations to resolve strings (osm tags, roles)
-   * into internally used identifiers. If this function is never called, the main database
-   * (specified during the construction of this object) is used for this.
-   *
-   * @param keytables the database to use for resolving strings into internal identifiers
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<X> keytables(OSHDBJdbc keytables) {
-    if (keytables != this.oshdb && this.oshdb instanceof OSHDBJdbc) {
-      Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
-      boolean oshdbContainsKeytables = true;
-      try {
-        new TagTranslator(c).close();
-      } catch (OSHDBKeytablesNotFoundException e) {
-        // this is the expected path -> the oshdb doesn't have the key tables
-        oshdbContainsKeytables = false;
-      } catch (SQLException e) {
-        throw new OSHDBException(e);
-      }
-      if (oshdbContainsKeytables) {
-        LOG.warn("It looks like as if the current OSHDB comes with keytables included. "
-            + "Usually this means that you should use this file's keytables "
-            + "and should not set the keytables manually.");
-      }
-    }
-    MapReducerBase<X> ret = this.copy();
-    ret.keytables = keytables;
-    return ret;
-  }
-
-  /**
-   * Sets the tagInterpreter to use in the analysis. The tagInterpreter is used internally to
-   * determine the geometry type of osm entities (e.g. an osm way can become either a LineString or
-   * a Polygon, depending on its tags). Normally, this is generated automatically for the user. But
-   * for example, if one doesn't want to use the DefaultTagInterpreter, it is possible to use this
-   * function to supply their own tagInterpreter.
-   *
-   * @param tagInterpreter the tagInterpreter object to use in the processing of osm entities
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter) {
-    MapReducerBase<X> ret = this.copy();
-    ret.tagInterpreter = tagInterpreter;
-    return ret;
-  }
-
   // -----------------------------------------------------------------------------------------------
   // Filtering methods
   // -----------------------------------------------------------------------------------------------
-
-  /**
-   * Set the area of interest to the given bounding box. Only objects inside or clipped by this bbox
-   * will be passed on to the analysis' `mapper` function.
-   *
-   * @param bboxFilter the bounding box to query the data in
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducerBase<X> areaOfInterest(@NotNull OSHDBBoundingBox bboxFilter) {
-    MapReducerBase<X> ret = this.copy();
-    if (this.polyFilter == null) {
-      ret.bboxFilter = bboxFilter.intersection(bboxFilter);
-    } else {
-      ret.polyFilter = Geo.clip(ret.polyFilter, bboxFilter);
-      ret.bboxFilter = OSHDBGeometryBuilder.boundingBoxOf(ret.polyFilter.getEnvelopeInternal());
-    }
-    return ret;
-  }
-
-  /**
-   * Set the area of interest to the given polygon. Only objects inside or clipped by this polygon
-   * will be passed on to the analysis' `mapper` function.
-   *
-   * @param polygonFilter the bounding box to query the data in
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public <P extends Geometry & Polygonal> MapReducerBase<X> areaOfInterest(P polygonFilter) {
-    MapReducerBase<X> ret = this.copy();
-    if (this.polyFilter == null) {
-      ret.polyFilter = Geo.clip(polygonFilter, ret.bboxFilter);
-    } else {
-      ret.polyFilter = Geo.clip(polygonFilter, ret.getPolyFilter());
-    }
-    ret.bboxFilter = OSHDBGeometryBuilder.boundingBoxOf(ret.polyFilter.getEnvelopeInternal());
-    return ret;
-  }
-
-  /**
-   * Set the timestamps for which to perform the analysis.
-   *
-   * <p>
-   * Depending on the *View*, this has slightly different semantics:
-   * </p>
-   * <ul><li>
-   * For the OSMEntitySnapshotView it will set the time slices at which to take the "snapshots"
-   * </li><li>
-   * For the OSMContributionView it will set the time interval in which to look for
-   * osm contributions (only the first and last timestamp of this list are contributing).
-   * </li></ul>
-   * Additionally, these timestamps are used in the `aggregateByTimestamp` functionality.
-   *
-   * @param tstamps an object (implementing the OSHDBTimestampList interface) which provides the
-   *        timestamps to do the analysis for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<X> timestamps(OSHDBTimestampList tstamps) {
-    MapReducerBase<X> ret = this.copy();
-    ret.tstamps = tstamps;
-    return ret;
-  }
 
   protected MapReducerBase<X> osmTypeInternal(Set<OSMType> typeFilter) {
     var ret = this.copy();
@@ -404,147 +284,31 @@ public abstract class MapReducerBase<X> implements
   @Override
   @Contract(pure = true)
   public MapReducerBase<X> filter(SerializablePredicate<X> f) {
-    return this
-        .flatMap(data -> f.test(data) ? Collections.singletonList(data) : Collections.emptyList());
+    return this.flatMap(data -> f.test(data) ? singletonList(data) : emptyList());
   }
 
-  /**
-   * Apply a custom filter expression to this query.
-   *
-   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#readme">oshdb-filter
-   *      readme</a> and {@link org.heigit.ohsome.oshdb.filter} for further information about how
-   *      to create such a filter expression object.
-   *
-   * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducerBase<X> filter(FilterExpression f) {
-    MapReducerBase<X> ret = this.copy();
-    ret.preFilters.add(f::applyOSH);
-    ret.filters.add(f::applyOSM);
-    // apply geometry filter as first map function
-    final List<MapFunction> remainingMappers = List.copyOf(ret.mappers);
-    ret.mappers.clear();
-    if (this.grouping == Grouping.NONE) {
-      // no grouping -> directly filter using the geometries of the snapshot / contribution
-      if (isOSMEntitySnapshotViewQuery()) {
-        ret = ret.filter(x -> {
-          OSMEntitySnapshot s = (OSMEntitySnapshot) x;
-          return f.applyOSMEntitySnapshot(s);
-        });
-      } else if (isOSMContributionViewQuery()) {
-        ret = ret.filter(x -> {
-          OSMContribution c = (OSMContribution) x;
-          return f.applyOSMContribution(c);
-        });
-      }
-    } else if (this.grouping == Grouping.BY_ID) {
-      // grouping by entity -> filter each list entry individually
-      if (isOSMEntitySnapshotViewQuery()) {
-        @SuppressWarnings("unchecked") MapReducerBase<X> filteredListMapper = (MapReducerBase<X>)
-            ret.map(x -> (Collection<OSMEntitySnapshot>) x)
-                .map(snapshots -> snapshots.stream()
-                    .filter(f::applyOSMEntitySnapshot)
-                    .collect(Collectors.toCollection(ArrayList::new)))
-                .filter(snapshots -> !snapshots.isEmpty());
-        ret = filteredListMapper;
-      } else if (isOSMContributionViewQuery()) {
-        @SuppressWarnings("unchecked") MapReducerBase<X> filteredListMapper = (MapReducerBase<X>)
-            ret.map(x -> (Collection<OSMContribution>) x)
-                .map(contributions -> contributions.stream()
-                    .filter(f::applyOSMContribution)
-                    .collect(Collectors.toCollection(ArrayList::new)))
-                .filter(contributions -> !contributions.isEmpty());
-        ret = filteredListMapper;
-      }
-    } else {
-      throw new UnsupportedOperationException(
-          "filtering not implemented in grouping mode " + this.grouping.toString());
+  private void applyFilterExpression(FilterExpression f) {
+    preFilters.add(f::applyOSH);
+    filters.add(f::applyOSM);
+    // no grouping -> directly filter using the geometries of the snapshot / contribution
+    if (isOSMEntitySnapshotViewQuery()) {
+      filter(x -> {
+        OSMEntitySnapshot s = (OSMEntitySnapshot) x;
+        return f.applyOSMEntitySnapshot(s);
+      });
+    } else if (isOSMContributionViewQuery()) {
+      filter(x -> {
+        OSMContribution c = (OSMContribution) x;
+        return f.applyOSMContribution(c);
+      });
     }
-    ret.mappers.addAll(remainingMappers);
-    return optimizeFilters(ret, f);
-  }
-
-  /**
-   * Apply a textual filter to this query.
-   *
-   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#syntax">oshdb-filter
-   *      readme</a> for a description of the filter syntax.
-   *
-   * @param f the filter string to apply
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducerBase<X> filter(String f) {
-    return this.filter(new FilterParser(this.getTagTranslator()).parse(f));
+    optimizeFilters(this, f);
   }
 
   // -----------------------------------------------------------------------------------------------
   // Grouping and Aggregation
   // Sets how the input data is "grouped", or the output data is "aggregated" into separate chunks.
   // -----------------------------------------------------------------------------------------------
-
-  /**
-   * Groups the input data (osm entity snapshot or contributions) by their respective entity's ids
-   * before feeding them into further transformation functions. This can be used to do more complex
-   * analysis on the osm data, that requires one to know about the full editing history of
-   * individual osm entities, e.g., when looking for contributions which got reverted at a later
-   * point in time.
-   *
-   * <p>The values in the returned lists of snapshot or contribution objects are returned in their
-   * natural order: i.e. sorted ascending by timestamp.</p>
-   *
-   * <p>This needs to be called before any `map` or `flatMap` transformation functions have been
-   * set. Otherwise a runtime exception will be thrown.</p>
-   *
-   * @return the MapReducer object which applies its transformations on (by entity id grouped) lists
-   *         of the input data
-   * @throws UnsupportedOperationException if this is called after some map (or flatMap) functions
-   *         have already been set
-   * @throws UnsupportedOperationException if this is called when a grouping has already been
-   *         activated
-   */
-  @Override
-  @Contract(pure = true)
-  public MapReducer<List<X>> groupByEntity() throws UnsupportedOperationException {
-    if (this.grouping != Grouping.NONE) {
-      throw new UnsupportedOperationException("A grouping is already active on this MapReducer");
-    }
-    if (!this.mappers.isEmpty()) {
-      // for convenience, we allow one to set this function even after some map functions were set.
-      // if some map / flatMap functions were already set:
-      // "rewind" them first, apply the grouping and then re-apply the map/flatMap functions
-      // accordingly
-      MapReducerBase<X> ret = this.copy();
-      List<MapFunction> mapFunctions = new ArrayList<>(ret.mappers);
-      ret.mappers.clear();
-      ret.grouping = Grouping.BY_ID;
-      @SuppressWarnings("unchecked") // in the reduce step the backend will return a list of items
-      MapReducerBase<List<?>> listMapReducer = (MapReducerBase<List<?>>) ret;
-      for (MapFunction action : mapFunctions) {
-        if (action.isFlatMapper()) {
-          listMapReducer = listMapReducer.map((list, root) -> list.stream()
-              .flatMap(s -> Streams.stream((Iterable<?>) action.apply(s, root)))
-              .collect(Collectors.toList()));
-        } else {
-          @SuppressWarnings("StaticPseudoFunctionalStyleMethod")
-          MapReducerBase<List<?>> mappedResult = listMapReducer.map((list, root) ->
-              Lists.transform(list, x -> action.apply(x, root)));
-          listMapReducer = mappedResult;
-        }
-      }
-      return listMapReducer.map(List.class::cast);
-    } else {
-      MapReducerBase<X> ret = this.copy();
-      ret.grouping = Grouping.BY_ID;
-      @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of X
-      MapReducer<List<X>> result = (MapReducer<List<X>>) ret;
-      return result;
-    }
-  }
 
   /**
    * Sets a custom aggregation function that is used to group output results into.
@@ -585,12 +349,6 @@ public abstract class MapReducerBase<X> implements
   @Contract(pure = true)
   public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp()
       throws UnsupportedOperationException {
-    if (this.grouping != Grouping.NONE) {
-      throw new UnsupportedOperationException(
-          "automatic aggregateByTimestamp() cannot be used together with the groupByEntity() "
-              + "functionality -> try using aggregateByTimestamp(customTimestampIndex) instead");
-    }
-
     // by timestamp indexing function -> for some views we need to match the input data to the list
     SerializableBiFunction<X, Object, OSHDBTimestamp> indexer;
     if (isOSMContributionViewQuery()) {
@@ -604,7 +362,6 @@ public abstract class MapReducerBase<X> implements
               + "OSMEntitySnapshot -> try using aggregateByTimestamp(customTimestampIndex) instead"
       );
     }
-
     return new MapAggregatorBase<>(this, indexer, this.getZerofillTimestamps());
   }
 
@@ -659,11 +416,6 @@ public abstract class MapReducerBase<X> implements
   public <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal>
       MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries)
       throws UnsupportedOperationException {
-    if (this.grouping != Grouping.NONE) {
-      throw new UnsupportedOperationException(
-          "aggregateByGeometry() cannot be used together with the groupByEntity() functionality");
-    }
-
     GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
 
     MapReducer<? extends Entry<U, ? extends OSHDBMapReducible>> mapRed;
@@ -675,7 +427,7 @@ public abstract class MapReducerBase<X> implements
           gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet());
     } else {
       throw new UnsupportedOperationException(String.format(
-          UNIMPLEMENTED_DATA_VIEW, this.viewClass));
+          UNIMPLEMENTED_DATA_VIEW, this.viewType));
     }
     MapAggregator<U, ?> mapAgg = mapRed
         .aggregateBy(Entry::getKey, geometries.keySet())
@@ -734,100 +486,58 @@ public abstract class MapReducerBase<X> implements
           SerializableBiFunction<S, X, S> accumulator,
           SerializableBinaryOperator<S> combiner) {
     checkTimeout();
-    switch (this.grouping) {
-      case NONE:
-        if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
-          final SerializableFunction<Object, X> mapper = this.getMapper();
-          if (isOSMContributionViewQuery()) {
-            @SuppressWarnings("Convert2MethodRef")
-            // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-            final SerializableFunction<OSMContribution, X> contributionMapper =
-                data -> mapper.apply(data);
-            return this.mapReduceCellsOSMContribution(
-                contributionMapper,
-                identitySupplier,
-                accumulator,
-                combiner
-            );
-          } else if (isOSMEntitySnapshotViewQuery()) {
-            @SuppressWarnings("Convert2MethodRef")
-            // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
-                data -> mapper.apply(data);
-            return this.mapReduceCellsOSMEntitySnapshot(
-                snapshotMapper,
-                identitySupplier,
-                accumulator,
-                combiner
-            );
-          } else {
-            throw new UnsupportedOperationException(String.format(
-                UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-          }
-        } else {
-          final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
-          if (isOSMContributionViewQuery()) {
-            return this.flatMapReduceCellsOSMContributionGroupedById(
-                (List<OSMContribution> inputList) -> {
-                  List<X> outputList = new LinkedList<>();
-                  inputList.stream()
-                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
-                      .forEach(data -> Iterables.addAll(outputList, data));
-                  return outputList;
-                }, identitySupplier, accumulator, combiner);
-          } else if (isOSMEntitySnapshotViewQuery()) {
-            return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
-                (List<OSMEntitySnapshot> inputList) -> {
-                  List<X> outputList = new LinkedList<>();
-                  inputList.stream()
-                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
-                      .forEach(data -> Iterables.addAll(outputList, data));
-                  return outputList;
-                }, identitySupplier, accumulator, combiner);
-          } else {
-            throw new UnsupportedOperationException(String.format(
-                UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-          }
-        }
-      case BY_ID:
-        final SerializableFunction<Object, Iterable<X>> flatMapper;
-        if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
-          final SerializableFunction<Object, X> mapper = this.getMapper();
-          flatMapper = data -> Collections.singletonList(mapper.apply(data));
-          // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in
-          // this case? should we add this as optimization case to getFlatMapper()??
-        } else {
-          flatMapper = this.getFlatMapper();
-        }
-        if (isOSMContributionViewQuery()) {
-          @SuppressWarnings("Convert2MethodRef")
-          // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-          final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
-              data -> flatMapper.apply(data);
-          return this.flatMapReduceCellsOSMContributionGroupedById(
-              contributionFlatMapper,
-              identitySupplier,
-              accumulator,
-              combiner
-          );
-        } else if (isOSMEntitySnapshotViewQuery()) {
-          @SuppressWarnings("Convert2MethodRef")
-          // having just `flatMapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-          final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
-              data -> flatMapper.apply(data);
-          return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
-              snapshotFlatMapper,
-              identitySupplier,
-              accumulator,
-              combiner
-          );
-        } else {
-          throw new UnsupportedOperationException(String.format(
-              UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-        }
-      default:
+    if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
+      final SerializableFunction<Object, X> mapper = this.getMapper();
+      if (isOSMContributionViewQuery()) {
+        @SuppressWarnings("Convert2MethodRef")
+        // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+        final SerializableFunction<OSMContribution, X> contributionMapper =
+            data -> mapper.apply(data);
+        return this.mapReduceCellsOSMContribution(
+            contributionMapper,
+            identitySupplier,
+            accumulator,
+            combiner
+        );
+      } else if (isOSMEntitySnapshotViewQuery()) {
+        @SuppressWarnings("Convert2MethodRef")
+        // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+        final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
+            data -> mapper.apply(data);
+        return this.mapReduceCellsOSMEntitySnapshot(
+            snapshotMapper,
+            identitySupplier,
+            accumulator,
+            combiner
+        );
+      } else {
         throw new UnsupportedOperationException(String.format(
-            UNSUPPORTED_GROUPING, this.grouping));
+            UNIMPLEMENTED_DATA_VIEW, this.viewType));
+      }
+    } else {
+      final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
+      if (isOSMContributionViewQuery()) {
+        return this.flatMapReduceCellsOSMContributionGroupedById(
+            (List<OSMContribution> inputList) -> {
+              List<X> outputList = new LinkedList<>();
+              inputList.stream()
+                  .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                  .forEach(data -> Iterables.addAll(outputList, data));
+              return outputList;
+            }, identitySupplier, accumulator, combiner);
+      } else if (isOSMEntitySnapshotViewQuery()) {
+        return this.flatMapReduceCellsOSMEntitySnapshotGroupedById(
+            (List<OSMEntitySnapshot> inputList) -> {
+              List<X> outputList = new LinkedList<>();
+              inputList.stream()
+                  .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                  .forEach(data -> Iterables.addAll(outputList, data));
+              return outputList;
+            }, identitySupplier, accumulator, combiner);
+      } else {
+        throw new UnsupportedOperationException(String.format(
+            UNIMPLEMENTED_DATA_VIEW, this.viewType));
+      }
     }
   }
 
@@ -867,80 +577,48 @@ public abstract class MapReducerBase<X> implements
   @Contract(pure = true)
   private Stream<X> streamInternal() {
     checkTimeout();
-    switch (this.grouping) {
-      case NONE:
-        if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
-          final SerializableFunction<Object, X> mapper = this.getMapper();
-          if (isOSMContributionViewQuery()) {
-            @SuppressWarnings("Convert2MethodRef")
-            // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-            final SerializableFunction<OSMContribution, X> contributionMapper =
-                data -> mapper.apply(data);
-            return this.mapStreamCellsOSMContribution(contributionMapper);
-          } else if (isOSMEntitySnapshotViewQuery()) {
-            @SuppressWarnings("Convert2MethodRef")
-            // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
-                data -> mapper.apply(data);
-            return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
-          } else {
-            throw new UnsupportedOperationException(String.format(
-                UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-          }
-        } else {
-          final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
-          if (isOSMContributionViewQuery()) {
-            return this.flatMapStreamCellsOSMContributionGroupedById(
-                (List<OSMContribution> inputList) -> {
-                  List<X> outputList = new LinkedList<>();
-                  inputList.stream()
-                      .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
-                      .forEach(data -> Iterables.addAll(outputList, data));
-                  return outputList;
-                });
-          } else if (isOSMEntitySnapshotViewQuery()) {
-            return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(
-                (List<OSMEntitySnapshot> inputList) -> {
-                  List<X> outputList = new LinkedList<>();
-                  inputList.stream()
-                      .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
-                      .forEach(data -> Iterables.addAll(outputList, data));
-                  return outputList;
-                });
-          } else {
-            throw new UnsupportedOperationException(String.format(
-                UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-          }
-        }
-      case BY_ID:
-        final SerializableFunction<Object, Iterable<X>> flatMapper;
-        if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
-          final SerializableFunction<Object, X> mapper = this.getMapper();
-          flatMapper = data -> Collections.singletonList(mapper.apply(data));
-          // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in
-          // this case? should we add this as optimization case to getFlatMapper()??
-        } else {
-          flatMapper = this.getFlatMapper();
-        }
-        if (isOSMContributionViewQuery()) {
-          @SuppressWarnings("Convert2MethodRef")
-          // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-          final SerializableFunction<List<OSMContribution>, Iterable<X>> contributionFlatMapper =
-              data -> flatMapper.apply(data);
-          return this.flatMapStreamCellsOSMContributionGroupedById(contributionFlatMapper);
-        } else if (isOSMEntitySnapshotViewQuery()) {
-          @SuppressWarnings("Convert2MethodRef")
-          // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-          final SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> snapshotFlatMapper =
-              data -> flatMapper.apply(data);
-          return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(snapshotFlatMapper);
-        } else {
-          throw new UnsupportedOperationException(String.format(
-              UNIMPLEMENTED_DATA_VIEW, this.viewClass));
-        }
-      default:
+    if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
+      final SerializableFunction<Object, X> mapper = this.getMapper();
+      if (isOSMContributionViewQuery()) {
+        @SuppressWarnings("Convert2MethodRef")
+        // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+        final SerializableFunction<OSMContribution, X> contributionMapper =
+            data -> mapper.apply(data);
+        return this.mapStreamCellsOSMContribution(contributionMapper);
+      } else if (isOSMEntitySnapshotViewQuery()) {
+        @SuppressWarnings("Convert2MethodRef")
+        // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
+        final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
+            data -> mapper.apply(data);
+        return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
+      } else {
         throw new UnsupportedOperationException(String.format(
-            UNSUPPORTED_GROUPING, this.grouping));
+            UNIMPLEMENTED_DATA_VIEW, this.viewType));
+      }
+    } else {
+      final SerializableFunction<Object, Iterable<X>> flatMapper = this.getFlatMapper();
+      if (isOSMContributionViewQuery()) {
+        return this.flatMapStreamCellsOSMContributionGroupedById(
+            (List<OSMContribution> inputList) -> {
+              List<X> outputList = new LinkedList<>();
+              inputList.stream()
+                  .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                  .forEach(data -> Iterables.addAll(outputList, data));
+              return outputList;
+            });
+      } else if (isOSMEntitySnapshotViewQuery()) {
+        return this.flatMapStreamCellsOSMEntitySnapshotGroupedById(
+            (List<OSMEntitySnapshot> inputList) -> {
+              List<X> outputList = new LinkedList<>();
+              inputList.stream()
+                  .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                  .forEach(data -> Iterables.addAll(outputList, data));
+              return outputList;
+            });
+      } else {
+        throw new UnsupportedOperationException(String.format(
+            UNIMPLEMENTED_DATA_VIEW, this.viewType));
+      }
     }
   }
 
@@ -1167,36 +845,15 @@ public abstract class MapReducerBase<X> implements
   // -----------------------------------------------------------------------------------------------
 
   protected boolean isOSMContributionViewQuery() {
-    return OSMContribution.class.isAssignableFrom(this.viewClass);
+    return viewType == OSHDBView.ViewType.CONTRIBUTION;
   }
 
   protected boolean isOSMEntitySnapshotViewQuery() {
-    return OSMEntitySnapshot.class.isAssignableFrom(this.viewClass);
+    return viewType == OSHDBView.ViewType.SNAPSHOT;
   }
 
   protected TagInterpreter getTagInterpreter() {
-    if (this.tagInterpreter == null) {
-      try {
-        this.tagInterpreter = new DefaultTagInterpreter(this.getTagTranslator());
-      } catch (IOException | ParseException e) {
-        throw new OSHDBException(e);
-      }
-    }
-    return this.tagInterpreter;
-  }
-
-  protected TagTranslator getTagTranslator() {
-    if (this.tagTranslator == null) {
-      try {
-        if (this.keytables == null) {
-          throw new OSHDBKeytablesNotFoundException();
-        }
-        this.tagTranslator = new TagTranslator(this.keytables.getConnection());
-      } catch (OSHDBKeytablesNotFoundException e) {
-        throw new OSHDBException(e);
-      }
-    }
-    return this.tagTranslator;
+    return tagInterpreter;
   }
 
   // Helper that chains multiple oshEntity filters together
@@ -1235,7 +892,7 @@ public abstract class MapReducerBase<X> implements
         || this.bboxFilter.getMinLatitude() >= this.bboxFilter.getMaxLatitude()) {
       // return an empty iterable if bbox is not set or empty
       LOG.warn("area of interest not set or empty");
-      return Collections.emptyList();
+      return emptyList();
     }
     return grid.bbox2CellIdRanges(this.bboxFilter, true);
   }

@@ -1,30 +1,20 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
 import static java.util.Collections.emptyList;
-import static org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser.parseIsoDateTime;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Stream;
-import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Collector;
-import org.heigit.ohsome.oshdb.filter.FilterExpression;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
-import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
-import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
-import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.jetbrains.annotations.NotNull;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 
@@ -35,125 +25,6 @@ public interface MapReducer<X> extends Serializable {
    */
   default boolean isCancelable() {
     return false;
-  }
-
-  /**
-   * Sets the keytables database to use in the calculations to resolve strings (osm tags, roles)
-   * into internally used identifiers. If this function is never called, the main database
-   * (specified during the construction of this object) is used for this.
-   *
-   * @param keytables the database to use for resolving strings into internal identifiers
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  MapReducer<X> keytables(OSHDBJdbc keytables);
-
-  /**
-   * Sets the tagInterpreter to use in the analysis. The tagInterpreter is used internally to
-   * determine the geometry type of osm entities (e.g. an osm way can become either a LineString or
-   * a Polygon, depending on its tags). Normally, this is generated automatically for the user. But
-   * for example, if one doesn't want to use the DefaultTagInterpreter, it is possible to use this
-   * function to supply their own tagInterpreter.
-   *
-   * @param tagInterpreter the tagInterpreter object to use in the processing of osm entities
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  MapReducer<X> tagInterpreter(TagInterpreter tagInterpreter);
-
-  /**
-   * Set the area of interest to the given bounding box. Only objects inside or clipped by this bbox
-   * will be passed on to the analysis' `mapper` function.
-   *
-   * @param bboxFilter the bounding box to query the data in
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   */
-  MapReducer<X> areaOfInterest(@NotNull OSHDBBoundingBox bboxFilter);
-
-  /**
-   * Set the area of interest to the given polygon. Only objects inside or clipped by this polygon
-   * will be passed on to the analysis' `mapper` function.
-   *
-   * @param polygonFilter the bounding box to query the data in
-   * @return `this` mapReducer (can be used to chain multiple commands together)
-   */
-  <P extends Geometry & Polygonal> MapReducer<X> areaOfInterest(@NotNull P polygonFilter);
-
-  /**
-   * Set the timestamps for which to perform the analysis.
-   *
-   * <p>
-   * Depending on the *View*, this has slightly different semantics:
-   * </p>
-   * <ul><li>
-   * For the OSMEntitySnapshotView it will set the time slices at which to take the "snapshots"
-   * </li><li>
-   * For the OSMContributionView it will set the time interval in which to look for
-   * osm contributions (only the first and last timestamp of this list are contributing).
-   * </li></ul>
-   * Additionally, these timestamps are used in the `aggregateByTimestamp` functionality.
-   *
-   * @param tstamps an object (implementing the OSHDBTimestampList interface) which provides the
-   *        timestamps to do the analysis for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  MapReducer<X> timestamps(OSHDBTimestampList tstamps);
-
-  /**
-   * Set the timestamps for which to perform the analysis in a regular interval between a start and
-   * end date.
-   *
-   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
-   *
-   * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
-   * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
-   * @param interval the interval between the timestamps to be used in the analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  default MapReducer<X> timestamps(String isoDateStart, String isoDateEnd,
-      OSHDBTimestamps.Interval interval) {
-    return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
-  }
-
-  /**
-   * Sets a single timestamp for which to perform the analysis at.
-   *
-   * <p>Useful in combination with the OSMEntitySnapshotView when not performing further aggregation
-   * by timestamp.</p>
-   *
-   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
-   *
-   * @param isoDate an ISO 8601 date string representing the date of the analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  default MapReducer<X> timestamps(String isoDate) {
-    return this.timestamps(isoDate, isoDate);
-  }
-
-  /**
-   * Sets multiple arbitrary timestamps for which to perform the analysis.
-   *
-   * <p>Note for programmers wanting to use this method to supply an arbitrary number (n&gt;=1) of
-   * timestamps: You may supply the same time string multiple times, which will be de-duplicated
-   * internally. E.g. you can call the method like this:
-   * <code>.timestamps(dateArr[0], dateArr[0], dateArr)</code>
-   * </p>
-   *
-   * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
-   *
-   * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
-   * @param isoDateSecond an ISO 8601 date string representing the second date of the analysis
-   * @param isoDateMore more ISO 8601 date strings representing the remaining timestamps of the
-   *        analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  default MapReducer<X> timestamps(String isoDateFirst, String isoDateSecond,
-      String... isoDateMore) {
-    var timestamps = new TreeSet<OSHDBTimestamp>();
-    timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDateFirst).toEpochSecond()));
-    timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDateSecond).toEpochSecond()));
-    for (String isoDate : isoDateMore) {
-      timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDate).toEpochSecond()));
-    }
-    return this.timestamps(() -> timestamps);
   }
 
   /**
@@ -189,55 +60,10 @@ public interface MapReducer<X> extends Serializable {
    */
   MapReducer<X> filter(SerializablePredicate<X> f);
 
-  /**
-   * Apply a custom filter expression to this query.
-   *
-   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#readme">oshdb-filter
-   *      readme</a> and {@link org.heigit.ohsome.oshdb.filter} for further information about how to
-   *      create such a filter expression object.
-   *
-   * @param f the {@link org.heigit.ohsome.oshdb.filter.FilterExpression} to apply
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  MapReducer<X> filter(FilterExpression f);
-
-  /**
-   * Apply a textual filter to this query.
-   *
-   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#syntax">oshdb-filter
-   *      readme</a> for a description of the filter syntax.
-   *
-   * @param f the filter string to apply
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  MapReducer<X> filter(String f);
-
   // -----------------------------------------------------------------------------------------------
   // Grouping and Aggregation
   // Sets how the input data is "grouped", or the output data is "aggregated" into separate chunks.
   // -----------------------------------------------------------------------------------------------
-
-  /**
-   * Groups the input data (osm entity snapshot or contributions) by their respective entity's ids
-   * before feeding them into further transformation functions. This can be used to do more complex
-   * analysis on the osm data, that requires one to know about the full editing history of
-   * individual osm entities, e.g., when looking for contributions which got reverted at a later
-   * point in time.
-   *
-   * <p>The values in the returned lists of snapshot or contribution objects are returned in their
-   * natural order: i.e. sorted ascending by timestamp.</p>
-   *
-   * <p>This needs to be called before any `map` or `flatMap` transformation functions have been
-   * set. Otherwise a runtime exception will be thrown.</p>
-   *
-   * @return the MapReducer object which applies its transformations on (by entity id grouped) lists
-   *         of the input data
-   * @throws UnsupportedOperationException if this is called after some map (or flatMap) functions
-   *         have already been set
-   * @throws UnsupportedOperationException if this is called when a grouping has already been
-   *         activated
-   */
-  MapReducer<List<X>> groupByEntity() throws UnsupportedOperationException;
 
   /**
    * Sets a custom aggregation function that is used to group output results into.

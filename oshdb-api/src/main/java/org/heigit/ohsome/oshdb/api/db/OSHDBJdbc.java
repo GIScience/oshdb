@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcMultithread;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcSinglethread;
 import org.heigit.ohsome.oshdb.osm.OSMType;
@@ -23,7 +24,7 @@ import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 /**
  * OSHDB database backend connector to a JDBC database file.
  */
-public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
+public class OSHDBJdbc extends OSHDBDatabase {
 
   protected Connection connection;
   private boolean useMultithreading = true;
@@ -49,7 +50,7 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
   }
 
   @Override
-  public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
+  public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(OSHDBView<X> view) {
     try {
       Collection<String> expectedTables = Stream.of(OSMType.values())
           .map(TableNames::forOSMType).filter(Optional::isPresent).map(Optional::get)
@@ -68,13 +69,13 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
     } catch (SQLException e) {
       throw new OSHDBException(e);
     }
+    view.keytables(this);
     MapReducer<X> mapReducer;
     if (this.useMultithreading) {
-      mapReducer = new MapReducerJdbcMultithread<>(this, forClass);
+      mapReducer = new MapReducerJdbcMultithread<>(this, view);
     } else {
-      mapReducer = new MapReducerJdbcSinglethread<>(this, forClass);
+      mapReducer = new MapReducerJdbcSinglethread<>(this, view);
     }
-    mapReducer = mapReducer.keytables(this);
     return mapReducer;
   }
 

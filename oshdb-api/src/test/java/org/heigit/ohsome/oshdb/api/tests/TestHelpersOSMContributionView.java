@@ -11,7 +11,7 @@ import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
@@ -37,9 +37,8 @@ class TestHelpersOSMContributionView {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducer() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private OSHDBView<OSMContribution> createMapReducer() throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
   }
@@ -49,6 +48,7 @@ class TestHelpersOSMContributionView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Long> result1 = this.createMapReducer()
         .timestamps(timestamps2)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(contribution -> contribution
             .getContributionTypes()
@@ -63,6 +63,7 @@ class TestHelpersOSMContributionView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Long> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(contribution ->
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
@@ -77,6 +78,7 @@ class TestHelpersOSMContributionView {
     // total
     Number result3 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .map(contribution ->
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
         .aggregate(Agg::sumInt);
@@ -86,6 +88,7 @@ class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<String, Long> result4 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateBy(contribution -> contribution.getContributionTypes().toString())
         .map(contribution -> 1)
         .aggregate(Agg::sumInt);
@@ -99,6 +102,7 @@ class TestHelpersOSMContributionView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Long> result1 = this.createMapReducer()
         .timestamps(timestamps2)
+        .on(oshdb)
         .aggregateByTimestamp()
         .count();
 
@@ -108,6 +112,7 @@ class TestHelpersOSMContributionView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Long> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .count();
 
@@ -118,6 +123,7 @@ class TestHelpersOSMContributionView {
     // total
     Long result3 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .count();
 
     assertEquals(70, result3.intValue());
@@ -125,6 +131,7 @@ class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Long> result4 = this.createMapReducer()
         .timestamps(timestamps2)
+        .on(oshdb)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
         .count();
 
@@ -137,6 +144,7 @@ class TestHelpersOSMContributionView {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps2)
+        .on(oshdb)
         .map(contribution ->
             contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0)
         .aggregate(Agg::average);
@@ -146,6 +154,7 @@ class TestHelpersOSMContributionView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(contribution ->
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
@@ -162,6 +171,7 @@ class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateBy(contribution -> contribution
             .getContributionTypes()
             .contains(ContributionType.CREATION))
@@ -176,6 +186,7 @@ class TestHelpersOSMContributionView {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps2)
+        .on(oshdb)
         .map(contribution -> new WeightedValue(
             contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0,
             2 * (contribution.getEntityAfter().getId() % 2)
@@ -187,6 +198,7 @@ class TestHelpersOSMContributionView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(contribution -> new WeightedValue(
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0,
@@ -205,6 +217,7 @@ class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Double> result4 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateBy(contribution ->
             contribution.getContributionTypes().contains(ContributionType.CREATION))
         .map(contribution -> new WeightedValue(
@@ -221,6 +234,7 @@ class TestHelpersOSMContributionView {
     // single timestamp
     SortedMap<OSHDBTimestamp, Set<Long>> result1 = this.createMapReducer()
         .timestamps(timestamps2)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
         .aggregate(Agg::uniq);
@@ -231,6 +245,7 @@ class TestHelpersOSMContributionView {
     // many timestamps
     SortedMap<OSHDBTimestamp, Set<Long>> result2 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
         .aggregate(Agg::uniq);
@@ -246,6 +261,7 @@ class TestHelpersOSMContributionView {
     // total
     Set<Long> result3 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .map(contribution -> contribution.getEntityAfter().getId())
         .aggregate(Agg::uniq);
 
@@ -254,6 +270,7 @@ class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<Boolean, Set<Long>> result4 = this.createMapReducer()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
         .map(contribution -> contribution.getEntityAfter().getId())
         .aggregate(Agg::uniq);
@@ -264,6 +281,7 @@ class TestHelpersOSMContributionView {
     // doesn't crash with null pointers
     Set<Object> result5 = this.createMapReducer()
         .timestamps(timestamps2)
+        .on(oshdb)
         .map(x -> null)
         .aggregate(Agg::uniq);
     assertEquals(result5.size(), 1);

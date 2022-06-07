@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
-import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -22,8 +22,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class MapReducerJdbcMultithread<X> extends MapReducerJdbc<X> {
   public MapReducerJdbcMultithread(OSHDBDatabase oshdb,
-      Class<? extends OSHDBMapReducible> forClass) {
-    super(oshdb, forClass);
+      OSHDBView<X> view) {
+    super(oshdb, view);
   }
 
   // copy constructor

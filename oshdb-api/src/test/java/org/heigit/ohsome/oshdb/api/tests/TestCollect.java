@@ -4,11 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
 import java.util.Collections;
-import java.util.List;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
@@ -32,17 +29,18 @@ class TestCollect {
     oshdb = new OSHDBH2("./src/test/resources/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private MapReducer<OSMContribution> createMapReducerOSMContribution(OSHDBTimestamps timestamps)
+      throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
-        .filter("type:way and building=yes");
+        .filter("type:way and building=yes")
+        .timestamps(timestamps)
+        .on(oshdb);
   }
 
   @Test
   void testCollect() throws Exception {
-    List<OSMContribution> result = this.createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+    var result = this.createMapReducerOSMContribution(timestamps72)
         .collect();
     assertEquals(42, result
         .stream()
@@ -52,8 +50,7 @@ class TestCollect {
 
   @Test
   void testMapCollect() throws Exception {
-    List<Long> result = this.createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+    var result = this.createMapReducerOSMContribution(timestamps72)
         .map(contribution -> contribution.getEntityAfter().getId())
         .collect();
     assertEquals(42, result
@@ -63,8 +60,7 @@ class TestCollect {
 
   @Test
   void testFlatMapCollect() throws Exception {
-    List<Long> result = this.createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+    var result = this.createMapReducerOSMContribution(timestamps72)
         .flatMap(contribution -> Collections
             .singletonList(contribution.getEntityAfter().getId()))
         .collect();
@@ -74,22 +70,8 @@ class TestCollect {
   }
 
   @Test
-  void testFlatMapCollectGroupedById() throws Exception {
-    List<Long> result = this.createMapReducerOSMContribution()
-        .timestamps(timestamps72)
-        .groupByEntity()
-        .flatMap(contributions -> Collections
-            .singletonList(contributions.get(0).getEntityAfter().getId()))
-        .collect();
-    assertEquals(42, result
-        .stream()
-        .collect(Collectors.toSet()).size());
-  }
-
-  @Test
   void testAggregatedByTimestamp() throws Exception {
-    SortedMap<OSHDBTimestamp, List<Long>> result = this.createMapReducerOSMContribution()
-        .timestamps(timestamps72)
+    var result = this.createMapReducerOSMContribution(timestamps72)
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
         .collect();
