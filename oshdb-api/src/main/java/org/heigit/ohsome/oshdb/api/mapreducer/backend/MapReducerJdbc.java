@@ -40,7 +40,7 @@ abstract class MapReducerJdbc<X> extends MapReducerBase<X> implements Cancelable
    */
   protected long executionStartTimeMillis;
 
-  MapReducerJdbc(OSHDBDatabase oshdb, OSHDBView view) {
+  MapReducerJdbc(OSHDBDatabase oshdb, OSHDBView<X> view) {
     super(oshdb, view);
   }
 

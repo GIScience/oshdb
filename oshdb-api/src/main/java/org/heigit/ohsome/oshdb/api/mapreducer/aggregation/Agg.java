@@ -10,6 +10,9 @@ import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 
 public class Agg {
+  private Agg() {
+    throw new IllegalStateException("Utility class");
+  }
 
   /**
    * Sums up the results.

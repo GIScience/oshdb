@@ -126,7 +126,6 @@ public abstract class MapReducerBase<X> implements
   protected OSHDBView.ViewType viewType;
 
   // utility objects
-  //private transient TagTranslator tagTranslator = null;
   private TagInterpreter tagInterpreter = null;
 
   // settings and filters
@@ -147,12 +146,12 @@ public abstract class MapReducerBase<X> implements
     this.oshdb = oshdb;
     this.viewType = view.type();
     try {
-      this.tagInterpreter = view.getTagInterpreter(oshdb);
+      this.tagInterpreter = view.getTagInterpreter();
       this.tstamps = view.getTimestamps();
       this.bboxFilter = view.getBboxFilter();
       this.polyFilter = view.getPolyFilter();
       if (!view.getFilters().isEmpty()) {
-        var tagTranslator = view.getTagTranslator(oshdb);
+        var tagTranslator = view.getTagTranslator();
         var parser = new FilterParser(tagTranslator);
         view.getFilters()
             .stream()

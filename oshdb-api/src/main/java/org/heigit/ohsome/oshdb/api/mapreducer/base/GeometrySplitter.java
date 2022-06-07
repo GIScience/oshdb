@@ -18,6 +18,7 @@ import org.heigit.ohsome.oshdb.api.object.OSMContributionImpl;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshotImpl;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedObject;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
@@ -264,7 +265,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
         P readData = (P) reader.read(data);
         result.put(key, readData);
       } catch (ParseException e) {
-        throw new RuntimeException(e);
+        throw new OSHDBException(e);
       }
     }
     this.subregions = result;

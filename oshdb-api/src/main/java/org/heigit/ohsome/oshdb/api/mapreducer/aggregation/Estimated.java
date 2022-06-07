@@ -15,6 +15,9 @@ import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 
 public class Estimated {
+  private Estimated() {
+    throw new IllegalStateException("Utility class");
+  }
 
   /**
    * Returns an estimate of the median of the results.

@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   public MapReducerJdbcSinglethread(OSHDBDatabase oshdb,
-      OSHDBView view) {
+      OSHDBView<X> view) {
     super(oshdb, view);
   }
 

@@ -9,6 +9,9 @@ import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 
 public class Collector {
+  private Collector() {
+    throw new IllegalStateException("Utility class");
+  }
 
   public static <T> List<T> toList(MapReducer<T> mr) {
     return mr.reduce(Collector::init, Collector::combine, Collector::accumulate);

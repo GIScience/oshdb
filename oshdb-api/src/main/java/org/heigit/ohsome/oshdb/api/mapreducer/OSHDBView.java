@@ -95,7 +95,7 @@ public abstract class OSHDBView<T> {
     return filterExpressions;
   }
 
-  public final TagTranslator getTagTranslator(OSHDBDatabase oshdb) {
+  public final TagTranslator getTagTranslator() {
     if (this.tagTranslator == null) {
       try {
         if (this.keytables == null) {
@@ -137,9 +137,9 @@ public abstract class OSHDBView<T> {
     return this;
   }
 
-  public TagInterpreter getTagInterpreter(OSHDBDatabase oshdb) throws IOException, ParseException {
+  public TagInterpreter getTagInterpreter() throws IOException, ParseException {
     if (this.tagInterpreter == null) {
-      return new DefaultTagInterpreter(this.getTagTranslator(oshdb));
+      return new DefaultTagInterpreter(this.getTagTranslator());
     }
     return tagInterpreter;
   }
