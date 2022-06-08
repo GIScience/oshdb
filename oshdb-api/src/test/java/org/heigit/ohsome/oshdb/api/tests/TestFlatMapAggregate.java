@@ -2,12 +2,12 @@ package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import java.util.Set;
 import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -49,8 +49,16 @@ class TestFlatMapAggregate {
         createMapReducerOSMContribution(timestamps72)
         .flatMap(
             contribution -> {
+//              return Stream.of(contribution)
+//                .map(OSMContribution::getEntityAfter)
+//                .filter(e -> e.getId() != 617308093)
+//                .flatMap(e -> e.getTags().stream()
+//                    .map(tag -> Map.entry(e.getId(), Map.entry(tag.getKey(), tag.getValue()))));
+
+
+
               if (contribution.getEntityAfter().getId() != 617308093) {
-                  return new ArrayList<>();
+                  return Stream.empty();
                 }
               List<Entry<Long, Entry<Integer, Integer>>> ret = new ArrayList<>();
               for (OSHDBTag tag : contribution.getEntityAfter().getTags()) {
@@ -59,7 +67,7 @@ class TestFlatMapAggregate {
                     new SimpleImmutableEntry<>(tag.getKey(), tag.getValue())
                 ));
               }
-              return ret;
+              return ret.stream();
             }
         )
         .aggregateBy(Entry::getKey)

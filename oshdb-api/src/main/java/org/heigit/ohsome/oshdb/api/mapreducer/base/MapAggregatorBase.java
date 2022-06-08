@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -161,13 +160,10 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
 
     MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
     if (mapReducer.isOSMContributionViewQuery()) {
-      ret = this
-          .flatMap((ignored, root) -> gs.splitOSMContribution((OSMContribution) root).entrySet())
+      ret = this.flatMap((ignored, root) -> gs.splitOSMContribution((OSMContribution) root))
           .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
     } else if (mapReducer.isOSMEntitySnapshotViewQuery()) {
-      ret = this
-          .flatMap(
-              (ignored, root) -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet())
+      ret = this.flatMap((ignored, root) -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root))
           .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
     } else {
       throw new UnsupportedOperationException(
@@ -220,25 +216,19 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
   }
 
   @Override
-  @Contract(pure = true)
-  public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
-    return this.copyTransform(this.mapReducer.flatMap(inData -> {
-      List<IndexValuePair<U, R>> outData = new LinkedList<>();
-      flatMapper.apply(inData.getValue()).forEach(
-          flatMappedData -> outData.add(new IndexValuePair<>(inData.getKey(), flatMappedData)));
-      return outData;
-    }));
+  public <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Stream<R>> flatMapper) {
+    return this.copyTransform(this.mapReducer.flatMap(inData ->
+      flatMapper.apply(inData.getValue())
+          .map(flatMappedData -> new IndexValuePair<>(inData.getKey(), flatMappedData))));
   }
 
   // Some internal methods can also flatMap the "root" object of the mapreducer's view.
   private <R> MapAggregator<U, R> flatMap(
-      SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
-    return this.copyTransform(this.mapReducer.flatMap((inData, root) -> {
-      List<IndexValuePair<U, R>> outData = new LinkedList<>();
-      flatMapper.apply(inData.getValue(), root).forEach(
-          flatMappedData -> outData.add(new IndexValuePair<>(inData.getKey(), flatMappedData)));
-      return outData;
-    }));
+      SerializableBiFunction<X, Object, Stream<R>> flatMapper) {
+    return this.copyTransform(this.mapReducer.flatMap((inData, root) ->
+      flatMapper
+            .apply(inData.getValue(), root)
+            .map(flatMappedData -> new IndexValuePair<>(inData.getKey(), flatMappedData))));
   }
 
   @Override

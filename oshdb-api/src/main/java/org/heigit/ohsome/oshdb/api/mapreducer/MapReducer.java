@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
 import static java.util.Collections.emptyList;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -49,7 +50,7 @@ public interface MapReducer<X> extends Serializable {
    * @return a modified copy of the current "Mappable" object operating on the transformed type
    *         (&lt;R&gt;)
    */
-  <R> MapReducer<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper);
+  <R> MapReducer<R> flatMap(SerializableFunction<X, Stream<R>> flatMapper);
 
   /**
    * Adds a custom arbitrary filter that gets executed in the current transformation chain.

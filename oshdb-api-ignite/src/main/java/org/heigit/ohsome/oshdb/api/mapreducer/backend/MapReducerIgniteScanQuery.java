@@ -30,7 +30,7 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
+import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.OSHDBIgniteMapReduceComputeTask.CancelableIgniteMapReduceJob;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;

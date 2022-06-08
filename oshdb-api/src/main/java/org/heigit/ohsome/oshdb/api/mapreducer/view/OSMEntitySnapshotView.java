@@ -16,6 +16,22 @@ public class OSMEntitySnapshotView extends OSHDBView<OSMEntitySnapshot> {
 
   @Override
   public MapReducer<OSMEntitySnapshot> on(OSHDBDatabase oshdb) {
+//    OSHEntityFilter preFilter = x -> true;
+//    OSMEntityFilter filter = x -> true;
+//    SortedSet<OSHDBTimestamp> timestamps = null;
+//    OSHDBBoundingBox bbox = null;
+//    Polygon poly = null;
+//    TagInterpreter tagInterpreter2 = null;
+//
+//    var cellIterator = new CellIterator(
+//        timestamps,
+//        bbox, poly,
+//        tagInterpreter2, preFilter, filter, false);
+//
+//    MapReducer<OSHEntity> mapReducer = null; // oshdb.createMapReducer(this);
+//    return mapReducer
+//        .flatMap(osh -> cellIterator.iterateByTimestamps(osh, false)) // filtering
+//        .map(data -> (OSMEntitySnapshot) new OSMEntitySnapshotImpl(data));
     return oshdb.createMapReducer(this);
   }
 

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import java.util.Set;
 import java.util.TreeSet;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -49,13 +50,13 @@ class TestFlatMapReduce {
     Set<Entry<Integer, Integer>> result = createMapReducerOSMContribution(timestamps72)
         .flatMap(contribution -> {
           if (contribution.getEntityAfter().getId() != 617308093) {
-            return new ArrayList<>();
+            return Stream.empty();
           }
           List<Entry<Integer, Integer>> ret = new ArrayList<>();
           for (OSHDBTag tag : contribution.getEntityAfter().getTags()) {
             ret.add(new SimpleImmutableEntry<>(tag.getKey(), tag.getValue()));
           }
-          return ret;
+          return ret.stream();
         })
         .reduce(
             HashSet::new,
@@ -80,7 +81,7 @@ class TestFlatMapReduce {
     input.add(2);
     input.add(3);
     Set<Integer> result = createMapReducerOSMContribution(timestamps72)
-        .flatMap(contribution -> input)
+        .flatMap(contribution -> input.stream())
         .aggregate(Agg::uniq);
 
     assertEquals(input, result);
@@ -93,7 +94,7 @@ class TestFlatMapReduce {
     input.add(2);
     input.add(3);
     Set<Integer> result = createMapReducerOSMContribution(timestamps72)
-        .flatMap(contribution -> input.stream()::iterator)
+        .flatMap(contribution -> input.stream())
         .aggregate(Agg::uniq);
 
     assertEquals(input, result);

@@ -3,8 +3,8 @@ package org.heigit.ohsome.oshdb.api.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
-import java.util.Collections;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
@@ -61,8 +61,7 @@ class TestCollect {
   @Test
   void testFlatMapCollect() throws Exception {
     var result = this.createMapReducerOSMContribution(timestamps72)
-        .flatMap(contribution -> Collections
-            .singletonList(contribution.getEntityAfter().getId()))
+        .flatMap(contribution -> Stream.of(contribution.getEntityAfter().getId()))
         .collect();
     assertEquals(42, result
         .stream()

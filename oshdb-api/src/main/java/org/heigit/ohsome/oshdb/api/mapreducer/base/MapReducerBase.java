@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 
 import com.google.common.collect.Iterables;
@@ -275,16 +274,15 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
    */
   @Override
   @Contract(pure = true)
-  public <R> MapReducerBase<R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper) {
+  public <R> MapReducerBase<R> flatMap(SerializableFunction<X, Stream<R>> flatMapper) {
     return flatMap((o, ignored) -> flatMapper.apply(o));
   }
 
   // Some internal methods can also flatMap the "root" object of the mapreducer's view.
-  @Contract(pure = true)
   protected <R> MapReducerBase<R> flatMap(
-      SerializableBiFunction<X, Object, Iterable<R>> flatMapper) {
+      SerializableBiFunction<X, Object, Stream<R>> flatMapper) {
     MapReducerBase<?> ret = this.copy();
-    ret.mappers.add(new MapFunction(flatMapper, true));
+    ret.mappers.add(new MapFunction(flatMapper.andThen(x -> (Iterable<R>) x::iterator), true));
     @SuppressWarnings("unchecked") // after applying this mapper, we have a mapreducer of type R
     MapReducerBase<R> result = (MapReducerBase<R>) ret;
     return result;
@@ -299,7 +297,7 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
    */
   @Override
   public MapReducerBase<X> filter(SerializablePredicate<X> f) {
-    return this.flatMap(data -> f.test(data) ? singletonList(data) : emptyList());
+    return this.flatMap(data -> f.test(data) ? Stream.of(data) : Stream.empty());
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -414,11 +412,9 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
 
     MapReducer<? extends Entry<U, ? extends OSHDBMapReducible>> mapRed;
     if (isOSMContributionViewQuery()) {
-      mapRed = this.flatMap((ignored, root) ->
-      gs.splitOSMContribution((OSMContribution) root).entrySet());
+      mapRed = this.flatMap((ignored, root) -> gs.splitOSMContribution((OSMContribution) root));
     } else if (isOSMEntitySnapshotViewQuery()) {
-      mapRed = this.flatMap((ignored, root) ->
-      gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet());
+      mapRed = this.flatMap((ignored, root) -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root));
     } else {
       throw new UnsupportedOperationException(String.format(
           UNIMPLEMENTED_DATA_VIEW, this.viewType));

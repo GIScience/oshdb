@@ -10,7 +10,7 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
+import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteAffinityCall;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteLocalPeek;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerIgniteScanQuery;

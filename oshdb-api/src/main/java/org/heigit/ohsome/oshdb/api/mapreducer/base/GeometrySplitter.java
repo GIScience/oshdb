@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
+import static org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder.getGeometry;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
@@ -64,43 +65,23 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
     this.subregions = subregions;
   }
 
-  private static class IndexData<I, D> {
-    private final I index;
-    private final D data;
-
-    IndexData(I index, D data) {
-      this.index = index;
-      this.data = data;
-    }
-
-    I getIndex() {
-      return index;
-    }
-
-    D getData() {
-      return data;
-    }
-  }
-
   /**
    * Splits osm entity snapshot objects into sub-regions.
    *
    * @param data the OSMEntitySnapshot to split into the given sub-regions
    * @return a list of OSMEntitySnapshot objects
    */
-  public Map<U, OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
+  public Stream<Entry<U, OSMEntitySnapshot>> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
     OSHDBBoundable oshBoundingBox = data.getOSHEntity().getBoundable();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
-    List<U> candidates = spatialIndex.query(
-        OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
-    );
+    List<U> candidates = spatialIndex.query(getGeometry(oshBoundingBox).getEnvelopeInternal());
     return candidates.stream()
         // OSH entity fully outside -> skip
         .filter(index -> !bops.get(index).test(oshBoundingBox))
         .flatMap(index -> {
           if (bips.get(index).test(oshBoundingBox)) {
             // OSH entity fully inside -> directly return
-            return Stream.of(new IndexData<>(index, data));
+            return Stream.of(Map.entry(index, data));
           }
 
           // now we can check against the actual contribution geometry
@@ -115,7 +96,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
           }
           // OSM entity fully inside -> directly return
           if (bips.get(index).test(snapshotBbox)) {
-            return Stream.of(new IndexData<>(index, data));
+            return Stream.of(Map.entry(index, data));
           }
 
           FastPolygonOperations poop = poops.get(index);
@@ -126,7 +107,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
               // not actually intersecting -> skip
               return Stream.empty();
             } else {
-              return Stream.of(new IndexData<>(index, new OSMEntitySnapshotImpl(data,
+              return Stream.of(Map.entry(index, new OSMEntitySnapshotImpl(data,
                   new LazyEvaluatedObject<>(() ->
                       faultTolerantIntersection(snapshotGeometry, poop))
               )));
@@ -135,7 +116,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
             // JTS cannot handle broken osm geometry -> skip
             return Stream.empty();
           }
-        }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
+        });
   }
 
   /**
@@ -152,19 +133,17 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
    * @param data the OSMContribution to split into the given sub-regions
    * @return a list of OSMContribution objects
    */
-  public Map<U, OSMContribution> splitOSMContribution(OSMContribution data) {
+  public Stream<Entry<U, OSMContribution>> splitOSMContribution(OSMContribution data) {
     OSHDBBoundable oshBoundingBox = data.getOSHEntity().getBoundable();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
-    List<U> candidates = spatialIndex.query(
-        OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
-    );
+    List<U> candidates = spatialIndex.query(getGeometry(oshBoundingBox).getEnvelopeInternal());
     return candidates.stream()
         // OSH entity fully outside -> skip
         .filter(index -> !bops.get(index).test(oshBoundingBox))
         .flatMap(index -> {
           // OSH entity fully inside -> directly return
           if (bips.get(index).test(oshBoundingBox)) {
-            return Stream.of(new IndexData<>(index, data));
+            return Stream.of(Map.entry(index, data));
           }
 
           // now we can check against the actual contribution geometry
@@ -191,7 +170,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
           }
           if (bips.get(index).test(contributionGeometryBbox)) {
             // contribution fully inside -> directly return
-            return Stream.of(new IndexData<>(index, data));
+            return Stream.of(Map.entry(index, data));
           }
 
           FastPolygonOperations poop = poops.get(index);
@@ -205,7 +184,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
               // not actually intersecting -> skip
               return Stream.empty();
             } else {
-              return Stream.of(new IndexData<>(index, new OSMContributionImpl(data,
+              return Stream.of(Map.entry(index, new OSMContributionImpl(data,
                   new LazyEvaluatedObject<>(() ->
                       faultTolerantIntersection(contributionGeometryBefore, poop)),
                   new LazyEvaluatedObject<>(() ->
@@ -216,7 +195,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
             // JTS cannot handle broken osm geometry -> skip
             return Stream.empty();
           }
-        }).collect(Collectors.toMap(IndexData::getIndex, IndexData::getData));
+        });
   }
 
   private static Geometry faultTolerantIntersection(Geometry subject, FastPolygonOperations poop) {

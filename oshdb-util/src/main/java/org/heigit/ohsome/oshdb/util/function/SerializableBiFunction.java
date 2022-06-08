@@ -6,4 +6,10 @@ import java.util.function.BiFunction;
 /**
  * A serializable {@link BiFunction}.
  */
-public interface SerializableBiFunction<T1, T2, R> extends BiFunction<T1, T2, R>, Serializable {}
+public interface SerializableBiFunction<T, U, R> extends BiFunction<T, U, R>, Serializable {
+
+  default <V> SerializableBiFunction<T, U, V> andThen(
+      SerializableFunction<? super R, ? extends V> after) {
+    return (T t, U u) -> after.apply(apply(t, u));
+  }
+}

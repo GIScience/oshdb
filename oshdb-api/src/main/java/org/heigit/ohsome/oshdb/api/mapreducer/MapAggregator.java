@@ -170,7 +170,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param <R> an arbitrary data type which is the return type of the transformation `map` function
    * @return a modified copy of this MapAggregator object operating on the transformed type R
    */
-  <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Iterable<R>> flatMapper);
+  <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Stream<R>> flatMapper);
 
   /**
    * Adds a custom arbitrary filter that gets executed in the current transformation chain.
