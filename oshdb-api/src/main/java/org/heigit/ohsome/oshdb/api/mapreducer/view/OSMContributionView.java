@@ -1,6 +1,7 @@
-package org.heigit.ohsome.oshdb.api.mapreducer;
+package org.heigit.ohsome.oshdb.api.mapreducer.view;
 
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 
 /**

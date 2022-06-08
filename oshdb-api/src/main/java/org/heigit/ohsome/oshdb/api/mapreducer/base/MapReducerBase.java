@@ -29,7 +29,7 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSHDBView;
+import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.filter.AndOperator;
 import org.heigit.ohsome.oshdb.filter.Filter;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
@@ -103,8 +103,7 @@ import org.slf4j.LoggerFactory;
  * @param <X> the type that is returned by the currently set of mapper function. the next added
  *        mapper function will be called with a parameter of this type as input
  */
-public abstract class MapReducerBase<X> implements
-        MapReducer<X> {
+public abstract class MapReducerBase<X> implements MapReducer<X> {
 
   private static final Logger LOG = LoggerFactory.getLogger(MapReducerBase.class);
   protected static final String TAG_KEY_NOT_FOUND =
@@ -190,6 +189,24 @@ public abstract class MapReducerBase<X> implements
   // -----------------------------------------------------------------------------------------------
   // Filtering methods
   // -----------------------------------------------------------------------------------------------
+
+  private void applyFilterExpression(FilterExpression f) {
+    preFilters.add(f::applyOSH);
+    filters.add(f::applyOSM);
+    // no grouping -> directly filter using the geometries of the snapshot / contribution
+    if (isOSMEntitySnapshotViewQuery()) {
+      filter(x -> {
+        OSMEntitySnapshot s = (OSMEntitySnapshot) x;
+        return f.applyOSMEntitySnapshot(s);
+      });
+    } else if (isOSMContributionViewQuery()) {
+      filter(x -> {
+        OSMContribution c = (OSMContribution) x;
+        return f.applyOSMContribution(c);
+      });
+    }
+    optimizeFilters(this, f);
+  }
 
   protected MapReducerBase<X> osmTypeInternal(Set<OSMType> typeFilter) {
     var ret = this.copy();
@@ -281,27 +298,8 @@ public abstract class MapReducerBase<X> implements
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   @Override
-  @Contract(pure = true)
   public MapReducerBase<X> filter(SerializablePredicate<X> f) {
     return this.flatMap(data -> f.test(data) ? singletonList(data) : emptyList());
-  }
-
-  private void applyFilterExpression(FilterExpression f) {
-    preFilters.add(f::applyOSH);
-    filters.add(f::applyOSM);
-    // no grouping -> directly filter using the geometries of the snapshot / contribution
-    if (isOSMEntitySnapshotViewQuery()) {
-      filter(x -> {
-        OSMEntitySnapshot s = (OSMEntitySnapshot) x;
-        return f.applyOSMEntitySnapshot(s);
-      });
-    } else if (isOSMContributionViewQuery()) {
-      filter(x -> {
-        OSMContribution c = (OSMContribution) x;
-        return f.applyOSMContribution(c);
-      });
-    }
-    optimizeFilters(this, f);
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -323,9 +321,8 @@ public abstract class MapReducerBase<X> implements
   @Override
   @Contract(pure = true)
   public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
-          SerializableFunction<X, U> indexer,
-          Collection<U> zerofill
-  ) {
+      SerializableFunction<X, U> indexer,
+      Collection<U> zerofill) {
     return new MapAggregatorBase<>(this, (data, ignored) -> indexer.apply(data), zerofill);
   }
 
@@ -346,8 +343,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   @Contract(pure = true)
-  public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp()
-      throws UnsupportedOperationException {
+  public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp() {
     // by timestamp indexing function -> for some views we need to match the input data to the list
     SerializableBiFunction<X, Object, OSHDBTimestamp> indexer;
     if (isOSMContributionViewQuery()) {
@@ -359,7 +355,7 @@ public abstract class MapReducerBase<X> implements
       throw new UnsupportedOperationException(
           "automatic aggregateByTimestamp() only implemented for OSMContribution and "
               + "OSMEntitySnapshot -> try using aggregateByTimestamp(customTimestampIndex) instead"
-      );
+          );
     }
     return new MapAggregatorBase<>(this, indexer, this.getZerofillTimestamps());
   }
@@ -378,8 +374,7 @@ public abstract class MapReducerBase<X> implements
    */
   @Override
   public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp(
-          SerializableFunction<X, OSHDBTimestamp> indexer
-  ) throws UnsupportedOperationException {
+      SerializableFunction<X, OSHDBTimestamp> indexer) {
     final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(this.tstamps.get());
     final OSHDBTimestamp minTime = timestamps.first();
     final OSHDBTimestamp maxTime = timestamps.last();
@@ -413,17 +408,17 @@ public abstract class MapReducerBase<X> implements
   @Override
   @Contract(pure = true)
   public <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal>
-      MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries)
+         MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries)
       throws UnsupportedOperationException {
     GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
 
     MapReducer<? extends Entry<U, ? extends OSHDBMapReducible>> mapRed;
     if (isOSMContributionViewQuery()) {
       mapRed = this.flatMap((ignored, root) ->
-          gs.splitOSMContribution((OSMContribution) root).entrySet());
+      gs.splitOSMContribution((OSMContribution) root).entrySet());
     } else if (isOSMEntitySnapshotViewQuery()) {
       mapRed = this.flatMap((ignored, root) ->
-          gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet());
+      gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet());
     } else {
       throw new UnsupportedOperationException(String.format(
           UNIMPLEMENTED_DATA_VIEW, this.viewType));
@@ -481,9 +476,9 @@ public abstract class MapReducerBase<X> implements
   @Override
   @Contract(pure = true)
   public <S> S reduce(
-          SerializableSupplier<S> identitySupplier,
-          SerializableBiFunction<S, X, S> accumulator,
-          SerializableBinaryOperator<S> combiner) {
+      SerializableSupplier<S> identitySupplier,
+      SerializableBiFunction<S, X, S> accumulator,
+      SerializableBinaryOperator<S> combiner) {
     checkTimeout();
     if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
       final SerializableFunction<Object, X> mapper = this.getMapper();
@@ -497,7 +492,7 @@ public abstract class MapReducerBase<X> implements
             identitySupplier,
             accumulator,
             combiner
-        );
+            );
       } else if (isOSMEntitySnapshotViewQuery()) {
         @SuppressWarnings("Convert2MethodRef")
         // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
@@ -508,7 +503,7 @@ public abstract class MapReducerBase<X> implements
             identitySupplier,
             accumulator,
             combiner
-        );
+            );
       } else {
         throw new UnsupportedOperationException(String.format(
             UNIMPLEMENTED_DATA_VIEW, this.viewType));
@@ -520,8 +515,8 @@ public abstract class MapReducerBase<X> implements
             (List<OSMContribution> inputList) -> {
               List<X> outputList = new LinkedList<>();
               inputList.stream()
-                  .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
-                  .forEach(data -> Iterables.addAll(outputList, data));
+                .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                .forEach(data -> Iterables.addAll(outputList, data));
               return outputList;
             }, identitySupplier, accumulator, combiner);
       } else if (isOSMEntitySnapshotViewQuery()) {
@@ -529,8 +524,8 @@ public abstract class MapReducerBase<X> implements
             (List<OSMEntitySnapshot> inputList) -> {
               List<X> outputList = new LinkedList<>();
               inputList.stream()
-                  .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
-                  .forEach(data -> Iterables.addAll(outputList, data));
+                .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                .forEach(data -> Iterables.addAll(outputList, data));
               return outputList;
             }, identitySupplier, accumulator, combiner);
       } else {
@@ -601,8 +596,8 @@ public abstract class MapReducerBase<X> implements
             (List<OSMContribution> inputList) -> {
               List<X> outputList = new LinkedList<>();
               inputList.stream()
-                  .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
-                  .forEach(data -> Iterables.addAll(outputList, data));
+                .map((SerializableFunction<OSMContribution, Iterable<X>>) flatMapper::apply)
+                .forEach(data -> Iterables.addAll(outputList, data));
               return outputList;
             });
       } else if (isOSMEntitySnapshotViewQuery()) {
@@ -610,8 +605,8 @@ public abstract class MapReducerBase<X> implements
             (List<OSMEntitySnapshot> inputList) -> {
               List<X> outputList = new LinkedList<>();
               inputList.stream()
-                  .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
-                  .forEach(data -> Iterables.addAll(outputList, data));
+                .map((SerializableFunction<OSMEntitySnapshot, Iterable<X>>) flatMapper::apply)
+                .forEach(data -> Iterables.addAll(outputList, data));
               return outputList;
             });
       } else {
@@ -859,28 +854,28 @@ public abstract class MapReducerBase<X> implements
   protected OSHEntityFilter getPreFilter() {
     return this.preFilters.isEmpty()
         ? oshEntity -> true
-        : oshEntity -> {
-          for (SerializablePredicate<OSHEntity> filter : this.preFilters) {
-            if (!filter.test(oshEntity)) {
-              return false;
-            }
-          }
-          return true;
-        };
+            : oshEntity -> {
+              for (SerializablePredicate<OSHEntity> filter : this.preFilters) {
+                if (!filter.test(oshEntity)) {
+                  return false;
+                }
+              }
+              return true;
+            };
   }
 
   // Helper that chains multiple osmEntity filters together
   protected OSMEntityFilter getFilter() {
     return this.filters.isEmpty()
         ? osmEntity -> true
-        : osmEntity -> {
-          for (SerializablePredicate<OSMEntity> filter : this.filters) {
-            if (!filter.test(osmEntity)) {
-              return false;
-            }
-          }
-          return true;
-        };
+            : osmEntity -> {
+              for (SerializablePredicate<OSMEntity> filter : this.filters) {
+                if (!filter.test(osmEntity)) {
+                  return false;
+                }
+              }
+              return true;
+            };
   }
 
   // get all cell ids covered by the current area of interest's bounding box
