@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.common.collect.Iterables;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.Test;
  * Tests the collect method of the OSHDB API.
  */
 class TestCollect {
-  private final OSHDBH2 oshdb;
+  private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
       OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);

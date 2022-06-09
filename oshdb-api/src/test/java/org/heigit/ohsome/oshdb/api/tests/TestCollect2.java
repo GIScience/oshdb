@@ -1,12 +1,10 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import com.google.common.collect.Iterables;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.improve.OSHDBJdbcImprove;

@@ -14,11 +14,11 @@ import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 
-public abstract class MapReducerImprove<X> implements MapReducer<X>{
+abstract class MapReducerImprove<X> implements MapReducer<X> {
   protected final SerializableFunction<OSHEntity, Stream<X>> transform;
 
 
-  public MapReducerImprove(SerializableFunction<OSHEntity, Stream<X>> transform) {
+  protected MapReducerImprove(SerializableFunction<OSHEntity, Stream<X>> transform) {
     this.transform = transform;
   }
 
@@ -36,7 +36,7 @@ public abstract class MapReducerImprove<X> implements MapReducer<X>{
     return of(fnt);
   }
 
-  public <R> MapReducer<R> flatMap(SerializableBiFunction<OSHEntity, Stream<X>, Stream<R>> map){
+  public <R> MapReducer<R> flatMap(SerializableBiFunction<OSHEntity, Stream<X>, Stream<R>> map) {
     SerializableFunction<OSHEntity, Stream<R>> fnt = osh -> map.apply(osh, transform.apply(osh));
     return of(fnt);
   }

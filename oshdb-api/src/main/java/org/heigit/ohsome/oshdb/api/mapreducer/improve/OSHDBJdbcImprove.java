@@ -33,7 +33,6 @@ import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
-import org.locationtech.jts.awt.PointShapeFactory.X;
 
 /**
  * OSHDB database backend connector to a JDBC database file.
@@ -78,7 +77,7 @@ public class OSHDBJdbcImprove extends OSHDBJdbc {
     private OSHDBView<?> view;
 
     public MapReducerJdbcImprove(OSHDBJdbcImprove oshdb,
-        SerializableFunction<OSHEntity, Stream<X>> transform, OSHDBView view) {
+        SerializableFunction<OSHEntity, Stream<X>> transform, OSHDBView<?> view) {
       super(transform);
       this.oshdb = oshdb;
       this.view = view;
@@ -95,6 +94,7 @@ public class OSHDBJdbcImprove extends OSHDBJdbc {
       return Streams.stream(view.getCellIdRanges())
           .flatMap(this::getOshCellsStream)
           .flatMap(grid -> Streams.stream(grid.getEntities()))
+          .filter(view::preFilter)
           .map(osh ->  Stream.of(osh).flatMap(transform)
               .reduce(identitySupplier.get(), accumulator, combiner))
           .reduce(combiner).orElseGet(identitySupplier);
@@ -105,6 +105,7 @@ public class OSHDBJdbcImprove extends OSHDBJdbc {
       return Streams.stream(view.getCellIdRanges())
         .flatMap(this::getOshCellsStream)
         .flatMap(grid -> Streams.stream(grid.getEntities()))
+        .filter(view::preFilter)
         .flatMap(osh ->  Stream.of(osh).flatMap(transform));
     }
 

@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,34 +14,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
-import org.heigit.ohsome.oshdb.filter.AndOperator;
-import org.heigit.ohsome.oshdb.filter.Filter;
-import org.heigit.ohsome.oshdb.filter.FilterExpression;
-import org.heigit.ohsome.oshdb.filter.FilterParser;
-import org.heigit.ohsome.oshdb.filter.GeometryTypeFilter;
-import org.heigit.ohsome.oshdb.filter.TagFilterEquals;
-import org.heigit.ohsome.oshdb.filter.TagFilterEqualsAny;
-import org.heigit.ohsome.oshdb.filter.TypeFilter;
 import org.heigit.ohsome.oshdb.index.XYGridTree;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
@@ -153,19 +141,19 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
       this.filters = view.getFilters();
 
       view.getFilterExpressions()
-        .forEach(f -> {
-          if (isOSMEntitySnapshotViewQuery()) {
-            filter(x -> {
-              OSMEntitySnapshot s = (OSMEntitySnapshot) x;
-              return f.applyOSMEntitySnapshot(s);
-            });
-          } else if (isOSMContributionViewQuery()) {
-            filter(x -> {
-              OSMContribution c = (OSMContribution) x;
-              return f.applyOSMContribution(c);
-            });
-          }
-        });
+          .forEach(f -> {
+            if (isOSMEntitySnapshotViewQuery()) {
+              filter(x -> {
+                OSMEntitySnapshot s = (OSMEntitySnapshot) x;
+                return f.applyOSMEntitySnapshot(s);
+              });
+            } else if (isOSMContributionViewQuery()) {
+              filter(x -> {
+                OSMContribution c = (OSMContribution) x;
+                return f.applyOSMContribution(c);
+              });
+            }
+          });
     } catch (Exception e) {
       throw new OSHDBException(e);
     }
@@ -191,70 +179,9 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
   protected abstract MapReducerBase<X> copy();
 
   // -----------------------------------------------------------------------------------------------
-  // "Setting" methods and associated internal helpers
-  // -----------------------------------------------------------------------------------------------
-
-  // -----------------------------------------------------------------------------------------------
-  // Filtering methods
-  // -----------------------------------------------------------------------------------------------
-
-//  private void applyFilterExpression(FilterExpression f) {
-//    preFilters.add(f::applyOSH);
-//    filters.add(f::applyOSM);
-//    // no grouping -> directly filter using the geometries of the snapshot / contribution
-//    if (isOSMEntitySnapshotViewQuery()) {
-//      filter(x -> {
-//        OSMEntitySnapshot s = (OSMEntitySnapshot) x;
-//        return f.applyOSMEntitySnapshot(s);
-//      });
-//    } else if (isOSMContributionViewQuery()) {
-//      filter(x -> {
-//        OSMContribution c = (OSMContribution) x;
-//        return f.applyOSMContribution(c);
-//      });
-//    }
-//    optimizeFilters(this, f);
-//  }
-//
-//  protected MapReducerBase<X> osmTypeInternal(Set<OSMType> typeFilter) {
-//    var ret = this.copy();
-//    typeFilter = Sets.intersection(ret.typeFilter, typeFilter);
-//    if (typeFilter.isEmpty()) {
-//      ret.typeFilter = EnumSet.noneOf(OSMType.class);
-//    } else {
-//      ret.typeFilter = EnumSet.copyOf(typeFilter);
-//    }
-//    return ret;
-//  }
-//
-//  @Contract(pure = true)
-//  private MapReducerBase<X> osmTag(OSHDBTag tag) {
-//    MapReducerBase<X> ret = this.copy();
-//    ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tag.getKey()));
-//    ret.filters.add(osmEntity -> osmEntity.getTags().hasTagValue(tag.getKey(), tag.getValue()));
-//    return ret;
-//  }
-//
-//  @Contract(pure = true)
-//  private MapReducerBase<X> osmTag(OSHDBTagKey tagKey) {
-//    MapReducerBase<X> ret = this.copy();
-//    ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tagKey));
-//    ret.filters.add(osmEntity -> osmEntity.getTags().hasTagKey(tagKey));
-//    return ret;
-//  }
-
-  // -----------------------------------------------------------------------------------------------
   // "map", "flatMap" transformation methods
   // -----------------------------------------------------------------------------------------------
 
-  /**
-   * Set an arbitrary `map` transformation function.
-   *
-   * @param mapper function that will be applied to each data entry (osm entity snapshot or
-   *        contribution)
-   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
-   * @return a modified copy of this MapReducer object operating on the transformed type (&lt;R&gt;)
-   */
   @Override
   @Contract(pure = true)
   public <R> MapReducerBase<R> map(SerializableFunction<X, R> mapper) {
@@ -974,85 +901,6 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
       }
     }
   }
-
-//  /**
-//   * Performs optimizations when filtering by a filter expression.
-//   *
-//   * <p>It is not always optimal to apply filter expressions directly "out of the box", because
-//   * it is using the flexible `osmEntityFilter` in the general case. If a filter expression can
-//   * be rewritten to use the more performant, but less flexible, OSHDB filters (i.e., `osmTag` or
-//   * `osmType`) this can result in a large performance boost.</p>
-//   *
-//   * <p>Currently, the following two optimizations are performed (but more could be feasibly be
-//   * added in the future:</p>
-//   *
-//   * <p><b>basic optimizations:</b> includes simple filter expressions witch can be directly
-//   * transformed to an (and-chain) of OSHDB filters (like OSM Tags or Types</p>
-//   *
-//   * @param mapRed the mapReducer whis the given filter was already applied on.
-//   * @param filter the filter to optimize.
-//   * @param <O> the type of the mapReducer to optimize (can be anything).
-//   * @return a mapReducer with the same semantics as the original one, after some optimizations
-//   *         were applied.
-//   */
-//  private <O> MapReducerBase<O> optimizeFilters(MapReducerBase<O> mapRed, FilterExpression filter) {
-//    // basic optimizations
-//    mapRed = optimizeFilters0(mapRed, filter);
-//    // more advanced optimizations that rely on analyzing the DNF of a filter expression
-//    try {
-//      mapRed = optimizeFilters1(mapRed, filter);
-//    } catch (IllegalStateException ignored) {
-//      // if a filter cannot be normalized -> just don't perform this optimization step
-//    }
-//    return mapRed;
-//  }
-//
-//  private <O> MapReducerBase<O> optimizeFilters0(MapReducerBase<O> mapRed,
-//      FilterExpression filter) {
-//    // basic optimizations (“low hanging fruit”):
-//    // single filters, and-combination of single filters, etc.
-//    if (filter instanceof TagFilterEquals) {
-//      return mapRed.osmTag(((TagFilterEquals) filter).getTag());
-//    } else if (filter instanceof TagFilterEqualsAny) {
-//      OSHDBTagKey key = ((TagFilterEqualsAny) filter).getTag();
-//      return mapRed.osmTag(key);
-//    } else if (filter instanceof TypeFilter) {
-//      return mapRed.osmTypeInternal(EnumSet.of(((TypeFilter) filter).getType()));
-//    } else if (filter instanceof AndOperator) {
-//      return optimizeFilters0(optimizeFilters0(mapRed,
-//          ((AndOperator) filter).getLeftOperand()),
-//          ((AndOperator) filter).getRightOperand());
-//    }
-//    return mapRed;
-//  }
-//
-//  private <O> MapReducerBase<O> optimizeFilters1(MapReducerBase<O> mapRed,
-//      FilterExpression filter) {
-//    // more advanced optimizations that rely on analyzing the DNF of a filter expression
-//    List<List<Filter>> filterNormalized = filter.normalize();
-//    // collect all OSMTypes in all of the clauses
-//    EnumSet<OSMType> allTypes = EnumSet.noneOf(OSMType.class);
-//    for (List<Filter> andSubFilter : filterNormalized) {
-//      EnumSet<OSMType> subTypes = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
-//      for (Filter subFilter : andSubFilter) {
-//        if (subFilter instanceof TypeFilter) {
-//          subTypes.retainAll(EnumSet.of(((TypeFilter) subFilter).getType()));
-//        } else if (subFilter instanceof GeometryTypeFilter) {
-//          subTypes.retainAll(((GeometryTypeFilter) subFilter).getOSMTypes());
-//        }
-//      }
-//      allTypes.addAll(subTypes);
-//    }
-//    mapRed = mapRed.osmTypeInternal(allTypes);
-//    // (todo) intelligently group queried tags
-//    /*
-//     * here, we could optimize a few situations further: when a specific tag or key is used in all
-//     * branches of the filter: run mapRed.osmTag the set of tags which are present in any branches:
-//     * run mapRed.osmTag(list) (note that for this all branches need to have at least one
-//     * TagFilterEquals or TagFilterEqualsAny) related: https://github.com/GIScience/oshdb/pull/210
-//     */
-//    return mapRed;
-//  }
 
   private String currentDate() {
     var formatter = new SimpleDateFormat("yyyy-MM-dd");

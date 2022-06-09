@@ -268,8 +268,10 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    *         `combiner` function, after all `mapper` results have been aggregated (in the
    *         `accumulator` and `combiner` steps)
    */
-  SortedMap<U, X> reduce(SerializableSupplier<X> identitySupplier,
-      SerializableBinaryOperator<X> accumulator);
+  default SortedMap<U, X> reduce(SerializableSupplier<X> identitySupplier,
+      SerializableBinaryOperator<X> accumulator) {
+    return this.reduce(identitySupplier, accumulator::apply, accumulator);
+  }
 
   @FunctionalInterface
   public interface Aggregator<U extends Comparable<U> & Serializable, X, Y> {

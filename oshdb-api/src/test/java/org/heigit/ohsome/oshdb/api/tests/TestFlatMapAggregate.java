@@ -2,18 +2,14 @@ package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.OSHDBTag;
-import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMContributionView;

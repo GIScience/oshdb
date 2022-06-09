@@ -37,7 +37,10 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
+import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
+import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
+import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
@@ -74,6 +77,7 @@ public abstract class OSHDBView<T> {
       new OSHDBTimestamps("2008-01-01", currentDate(), OSHDBTimestamps.Interval.MONTHLY);
   protected OSHDBBoundingBox bboxFilter = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
   protected Geometry polyFilter = null;
+  protected FastBboxOutsidePolygon bboxOutsidePolygon;
   protected EnumSet<OSMType> typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
   protected final List<SerializablePredicate<OSHEntity>> preFilters = new ArrayList<>();
   protected final List<SerializablePredicate<OSMEntity>> filters = new ArrayList<>();
@@ -113,12 +117,17 @@ public abstract class OSHDBView<T> {
     return bboxFilter;
   }
 
-  public final Geometry getPolyFilter() {
-    return polyFilter;
+  @SuppressWarnings("unchecked") // all setters only accept Polygonal geometries
+  public <P extends Geometry & Polygonal> P getPolyFilter() {
+    return (P) this.polyFilter;
   }
 
   public final List<SerializablePredicate<OSMEntity>> getFilters() {
     return filters;
+  }
+
+  public OSMEntityFilter getFilter() {
+    return filters.isEmpty() ? x -> true : osm -> filters.stream().allMatch(f -> f.test(osm));
   }
 
   public final List<FilterExpression> getFilterExpressions() {
@@ -154,20 +163,6 @@ public abstract class OSHDBView<T> {
     return this;
   }
 
-  public TagInterpreter getTagInterpreter() throws IOException, ParseException {
-    if (tagInterpreter == null) {
-      return new DefaultTagInterpreter(this.getTagTranslator());
-    }
-    return tagInterpreter;
-  }
-
-  private FilterParser getFilterParser() {
-    if (filterParser == null) {
-      filterParser = new FilterParser(getTagTranslator());
-    }
-    return filterParser;
-  }
-
   /**
    * Set the area of interest to the given bounding box. Only objects inside or clipped by this bbox
    * will be passed on to the analysis' `mapper` function.
@@ -181,6 +176,7 @@ public abstract class OSHDBView<T> {
     } else {
       this.polyFilter = clip(this.polyFilter, bboxFilter);
       this.bboxFilter = boundingBoxOf(this.polyFilter.getEnvelopeInternal());
+      this.bboxOutsidePolygon = new FastBboxOutsidePolygon(getPolyFilter());
     }
     return this;
   }
@@ -199,8 +195,10 @@ public abstract class OSHDBView<T> {
       this.polyFilter = clip(polygonFilter, this.polyFilter);
     }
     this.bboxFilter = boundingBoxOf(this.polyFilter.getEnvelopeInternal());
+    this.bboxOutsidePolygon = new FastBboxOutsidePolygon(getPolyFilter());
     return this;
   }
+
 
   /**
    * Set the timestamps for which to perform the analysis. <p> Depending on the *View*, this has
@@ -289,6 +287,21 @@ public abstract class OSHDBView<T> {
   public OSHDBView<T> filter(String f) {
     filter(getFilterParser().parse(f));
     return this;
+  }
+
+
+  public TagInterpreter getTagInterpreter() throws IOException, ParseException {
+    if (tagInterpreter == null) {
+      return new DefaultTagInterpreter(this.getTagTranslator());
+    }
+    return tagInterpreter;
+  }
+
+  private FilterParser getFilterParser() {
+    if (filterParser == null) {
+      filterParser = new FilterParser(getTagTranslator());
+    }
+    return filterParser;
   }
 
   private String currentDate() {
@@ -389,6 +402,16 @@ public abstract class OSHDBView<T> {
     return preFilters;
   }
 
+  public OSHEntityFilter getPreFilter() {
+    return preFilters.isEmpty() ? x -> true : osh -> preFilters.stream().allMatch(f -> f.test(osh));
+  }
+
+  public boolean preFilter(OSHEntity osh) {
+    return osh.getBoundable().intersects(bboxFilter)
+        && (preFilters.isEmpty() || preFilters.stream().allMatch(f -> f.test(osh)))
+        && (polyFilter == null || bboxOutsidePolygon.test(osh.getBoundable()));
+  }
+
   public EnumSet<OSMType> getTypeFilter() {
     return typeFilter;
   }
@@ -404,4 +427,5 @@ public abstract class OSHDBView<T> {
     }
     return grid.bbox2CellIdRanges(this.bboxFilter, true);
   }
+
 }

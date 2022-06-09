@@ -269,12 +269,16 @@ public class CellIterator implements Serializable {
     return iterateByTimestamps(Streams.stream(cellData), allFullyInside);
   }
 
-  private Stream<? extends OSHEntity> filter(Stream<? extends OSHEntity> cellData,
+  public Stream<? extends OSHEntity> filter(Stream<? extends OSHEntity> cellData,
       boolean allFullyInside) {
     return cellData
-        .filter(oshEntity -> allFullyInside || oshEntity.getBoundable().intersects(boundingBox))
-        .filter(oshEntityPreFilter)
-        .filter(oshEntity -> allFullyInside || !isBoundByPolygon
+        .filter(oshEntity -> filter(oshEntity, allFullyInside));
+  }
+
+  public boolean filter(OSHEntity oshEntity, boolean allFullyInside) {
+    return (allFullyInside || oshEntity.getBoundable().intersects(boundingBox))
+        && (oshEntityPreFilter.test(oshEntity))
+        && (allFullyInside || !isBoundByPolygon
             || !bboxOutsidePolygon.test(oshEntity.getBoundable()));
   }
 

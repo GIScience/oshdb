@@ -28,7 +28,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
   }
 
   // copy constructor
-  private MapReducerJdbcSinglethread(MapReducerJdbcSinglethread obj) {
+  private MapReducerJdbcSinglethread(MapReducerJdbcSinglethread<X> obj) {
     super(obj);
   }
 

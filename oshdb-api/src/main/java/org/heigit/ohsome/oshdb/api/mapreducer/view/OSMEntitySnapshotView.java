@@ -1,9 +1,15 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.view;
 
+import java.io.IOException;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.improve.OSHDBJdbcImprove;
+import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshotImpl;
+import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
+import org.json.simple.parser.ParseException;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * Returns the state of OSM elements at specific given points in time.
@@ -22,30 +28,19 @@ public class OSMEntitySnapshotView extends OSHDBView<OSMEntitySnapshot> {
     return new OSMEntitySnapshotView(oshdb, keytables);
   }
 
-  public static OSMEntitySnapshotView on(OSHDBJdbc oshdb) {
-    return new OSMEntitySnapshotView(oshdb, oshdb);
+  public static OSMEntitySnapshotView on(OSHDBDatabase oshdb) {
+    return new OSMEntitySnapshotView(oshdb, null);
   }
 
-  //  @Override
-  //  public MapReducer<OSMEntitySnapshot> on(OSHDBDatabase oshdb) {
-  //    //    OSHEntityFilter preFilter = x -> true;
-  //    //    OSMEntityFilter filter = x -> true;
-  //    //    SortedSet<OSHDBTimestamp> timestamps = null;
-  //    //    OSHDBBoundingBox bbox = null;
-  //    //    Polygon poly = null;
-  //    //    TagInterpreter tagInterpreter2 = null;
-  //    //
-  //    //    var cellIterator = new CellIterator(
-  //    //        timestamps,
-  //    //        bbox, poly,
-  //    //        tagInterpreter2, preFilter, filter, false);
-  //    //
-  //    //    MapReducer<OSHEntity> mapReducer = null; // oshdb.createMapReducer(this);
-  //    //    return mapReducer
-  //    //        .flatMap(osh -> cellIterator.iterateByTimestamps(osh, false)) // filtering
-  //    //        .map(data -> (OSMEntitySnapshot) new OSMEntitySnapshotImpl(data));
-  //    return oshdb.createMapReducer(this);
-  //  }
+  private MapReducer<OSMEntitySnapshot> improve(OSHDBJdbcImprove oshdb)
+      throws IOException, ParseException {
+    var cellIterator = new CellIterator(tstamps.get(), bboxFilter, (Polygon) polyFilter,
+        getTagInterpreter(), getPreFilter(), getFilter(), false);
+
+    return oshdb.createMapReducerImprove(this)
+        .flatMap(osh -> cellIterator.iterateByTimestamps(osh, false))
+        .map(data -> (OSMEntitySnapshot) new OSMEntitySnapshotImpl(data));
+  }
 
   @Override
   public ViewType type() {
