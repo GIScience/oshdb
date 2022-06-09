@@ -6,6 +6,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 import java.util.Set;
@@ -24,7 +25,7 @@ import org.junit.jupiter.api.Test;
  * Test flat map method of the MapAggregator class of the OSHDB API.
  */
 class TestFlatMapAggregate {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
@@ -36,11 +37,11 @@ class TestFlatMapAggregate {
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution(OSHDBTimestamps timestamps)
       throws Exception {
-    return OSMContributionView.view()
+    return OSMContributionView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*")
         .timestamps(timestamps)
-        .on(oshdb);
+        .view();
   }
 
   @Test
@@ -48,28 +49,11 @@ class TestFlatMapAggregate {
     SortedMap<Long, Set<Entry<Integer, Integer>>> result =
         createMapReducerOSMContribution(timestamps72)
         .flatMap(
-            contribution -> {
-//              return Stream.of(contribution)
-//                .map(OSMContribution::getEntityAfter)
-//                .filter(e -> e.getId() != 617308093)
-//                .flatMap(e -> e.getTags().stream()
-//                    .map(tag -> Map.entry(e.getId(), Map.entry(tag.getKey(), tag.getValue()))));
-
-
-
-              if (contribution.getEntityAfter().getId() != 617308093) {
-                  return Stream.empty();
-                }
-              List<Entry<Long, Entry<Integer, Integer>>> ret = new ArrayList<>();
-              for (OSHDBTag tag : contribution.getEntityAfter().getTags()) {
-                ret.add(new SimpleImmutableEntry<>(
-                    contribution.getEntityAfter().getId(),
-                    new SimpleImmutableEntry<>(tag.getKey(), tag.getValue())
-                ));
-              }
-              return ret.stream();
-            }
-        )
+            contribution -> Stream.of(contribution)
+                .map(OSMContribution::getEntityAfter)
+                .filter(e -> e.getId() == 617308093)
+                .flatMap(e -> e.getTags().stream()
+                    .map(tag -> Map.entry(e.getId(), Map.entry(tag.getKey(), tag.getValue())))))
         .aggregateBy(Entry::getKey)
         .map(Entry::getValue)
         .reduce(
@@ -82,8 +66,7 @@ class TestFlatMapAggregate {
               Set<Entry<Integer, Integer>> ret = new HashSet<>(x);
               ret.addAll(y);
               return ret;
-            }
-        );
+            });
 
     assertEquals(1, result.entrySet().size());
     assertEquals(2, result.get(617308093L).size());

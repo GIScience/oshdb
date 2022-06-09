@@ -19,7 +19,6 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
-import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
 /**
  * OSHDB database backend connector to a JDBC database file.
@@ -50,7 +49,7 @@ public class OSHDBJdbc extends OSHDBDatabase {
   }
 
   @Override
-  public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(OSHDBView<X> view) {
+  public <X> MapReducer<X> createMapReducer(OSHDBView<X> view) {
     try {
       Collection<String> expectedTables = Stream.of(OSMType.values())
           .map(TableNames::forOSMType).filter(Optional::isPresent).map(Optional::get)
@@ -69,7 +68,7 @@ public class OSHDBJdbc extends OSHDBDatabase {
     } catch (SQLException e) {
       throw new OSHDBException(e);
     }
-    view.keytables(this);
+
     MapReducer<X> mapReducer;
     if (this.useMultithreading) {
       mapReducer = new MapReducerJdbcMultithread<>(this, view);

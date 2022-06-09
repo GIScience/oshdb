@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
  * Test flat map method of the MapReducer class of the OSHDB API.
  */
 class TestFlatMapReduce {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
@@ -38,11 +38,11 @@ class TestFlatMapReduce {
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution(OSHDBTimestamps timestamps)
       throws Exception {
-    return OSMContributionView.view()
+    return OSMContributionView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*")
         .timestamps(timestamps)
-        .on(oshdb);
+        .view();
   }
 
   @Test

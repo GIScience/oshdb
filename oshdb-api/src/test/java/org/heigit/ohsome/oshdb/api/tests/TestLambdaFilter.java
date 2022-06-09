@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
  * Tests lambda functions as filters.
  */
 class TestLambdaFilter {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
@@ -31,7 +31,7 @@ class TestLambdaFilter {
   }
 
   private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.view()
+    return OSMContributionView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -41,7 +41,7 @@ class TestLambdaFilter {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
-        .on(oshdb)
+        .view()
         .filter(contribution -> contribution
             .getContributionTypes()
             .contains(ContributionType.GEOMETRY_CHANGE))
@@ -58,7 +58,7 @@ class TestLambdaFilter {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
-        .on(oshdb)
+        .view()
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .filter(contribution -> contribution
             .getContributionTypes()

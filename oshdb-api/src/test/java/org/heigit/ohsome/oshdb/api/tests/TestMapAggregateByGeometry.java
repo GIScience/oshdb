@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Polygon;
  * Test aggregateByGeometry method of the OSHDB API.
  */
 class TestMapAggregateByGeometry {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2015-12-01");
@@ -43,13 +43,13 @@ class TestMapAggregateByGeometry {
   }
 
   private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.view()
+    return OSMContributionView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:way and highway=*");
   }
 
   private OSHDBView<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.view()
+    return OSMEntitySnapshotView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:way and highway=*");
   }
@@ -75,7 +75,7 @@ class TestMapAggregateByGeometry {
   void testOSMContribution() throws Exception {
     SortedMap<String, Integer> resultCount = createMapReducerOSMContribution()
         .timestamps(timestamps2)
-        .on(oshdb)
+        .view()
         .aggregateByGeometry(getSubRegions())
         .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
@@ -84,7 +84,7 @@ class TestMapAggregateByGeometry {
 
     SortedMap<String, Double> resultSumLength = createMapReducerOSMContribution()
         .timestamps(timestamps2)
-        .on(oshdb)
+        .view()
         .aggregateByGeometry(getSubRegions())
         .map(OSMContribution::getGeometryAfter)
         .map(Geo::lengthOf)
@@ -102,7 +102,7 @@ class TestMapAggregateByGeometry {
   void testOSMEntitySnapshot() throws Exception {
     SortedMap<String, Integer> resultCount = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
-        .on(oshdb)
+        .view()
         .aggregateByGeometry(getSubRegions())
         .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
@@ -111,7 +111,7 @@ class TestMapAggregateByGeometry {
 
     SortedMap<String, Double> resultSumLength = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
-        .on(oshdb)
+        .view()
         .aggregateByGeometry(getSubRegions())
         .map(OSMEntitySnapshot::getGeometry)
         .map(Geo::lengthOf)
@@ -129,7 +129,7 @@ class TestMapAggregateByGeometry {
   void testZerofill() throws Exception {
     SortedMap<String, Long> resultZerofilled = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
-        .on(oshdb)
+        .view()
         .aggregateByGeometry(getSubRegions())
         .count();
     assertEquals(4, resultZerofilled.entrySet().size());
@@ -141,7 +141,7 @@ class TestMapAggregateByGeometry {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
-            .on(oshdb)
+            .view()
             .aggregateByTimestamp()
             .aggregateByGeometry(getSubRegions())
             .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
@@ -161,7 +161,7 @@ class TestMapAggregateByGeometry {
     SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, Integer> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
-            .on(oshdb)
+            .view()
             .aggregateByGeometry(getSubRegions())
             .aggregateByTimestamp()
             .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
@@ -179,21 +179,21 @@ class TestMapAggregateByGeometry {
   @Test
   void testCombinedWithAggregateByTimestampOrder() throws Exception {
     SortedMap<OSHDBCombinedIndex<String, OSHDBTimestamp>, List<Long>> resultGeomTime =
-        OSMEntitySnapshotView.view()
+        OSMEntitySnapshotView.on(oshdb)
             .areaOfInterest(bbox)
             .timestamps(timestamps2)
             .filter("type:way and highway=*")
-            .on(oshdb)
+            .view()
             .aggregateByGeometry(getSubRegions())
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
             .collect();
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, String>, List<Long>> resultTimeGeom =
-        OSMEntitySnapshotView.view()
+        OSMEntitySnapshotView.on(oshdb)
             .areaOfInterest(bbox)
             .timestamps(timestamps2)
             .filter("type:way and highway=*")
-            .on(oshdb)
+            .view()
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .aggregateByGeometry(getSubRegions())
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())

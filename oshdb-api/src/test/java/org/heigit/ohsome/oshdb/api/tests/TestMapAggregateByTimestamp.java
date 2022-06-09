@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
  * Test aggregateByTimestamp method of the OSHDB API.
  */
 class TestMapAggregateByTimestamp {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox =
       OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);
@@ -37,13 +37,13 @@ class TestMapAggregateByTimestamp {
   }
 
   private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.view()
+    return OSMContributionView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
   }
 
   private OSHDBView<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.view()
+    return OSMEntitySnapshotView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
   }
@@ -53,7 +53,7 @@ class TestMapAggregateByTimestamp {
     // single timestamp
     SortedMap<OSHDBTimestamp, Long> result1 = createMapReducerOSMContribution()
         .timestamps(timestamps2)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .map(contribution -> 1)
         .aggregate(Agg::sumInt);
@@ -65,7 +65,7 @@ class TestMapAggregateByTimestamp {
     // multiple timestamps
     SortedMap<OSHDBTimestamp, Long> result2 = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .map(contribution -> 1)
         .aggregate(Agg::sumInt);;
@@ -85,13 +85,13 @@ class TestMapAggregateByTimestamp {
     // check if it produces the same result as the automatic aggregateByTimestamp()
     SortedMap<OSHDBTimestamp, Long> resultAuto = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .map(contribution -> 1)
         .aggregate(Agg::sumInt);
     SortedMap<OSHDBTimestamp, Long> resultCustom = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp(OSMContribution::getTimestamp)
         .map(contribution -> 1)
         .aggregate(Agg::sumInt);
@@ -110,7 +110,7 @@ class TestMapAggregateByTimestamp {
     // most basic custom timestamp index possible -> map all to one single timestamp
     SortedMap<OSHDBTimestamp, Long> resultCustom = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp(ignored -> timestamps1.get().first())
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);;
@@ -124,7 +124,7 @@ class TestMapAggregateByTimestamp {
     // single timestamp
     SortedMap<OSHDBTimestamp, Long> result1 = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps1)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
@@ -135,7 +135,7 @@ class TestMapAggregateByTimestamp {
     // two timestamps
     SortedMap<OSHDBTimestamp, Long> result2 = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps2)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
@@ -145,7 +145,7 @@ class TestMapAggregateByTimestamp {
     // multiple timestamps
     SortedMap<OSHDBTimestamp, Long> result72 = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
@@ -160,13 +160,13 @@ class TestMapAggregateByTimestamp {
     // check if it produces the same result as the automatic aggregateByTimestamp()
     SortedMap<OSHDBTimestamp, Long> resultAuto = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
     SortedMap<OSHDBTimestamp, Long> resultCustom = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
@@ -185,7 +185,7 @@ class TestMapAggregateByTimestamp {
     // most basic custom timestamp index possible -> map all to one single timestamp
     SortedMap<OSHDBTimestamp, Long> resultCustom = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp(ignored -> timestamps1.get().first())
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
@@ -199,13 +199,13 @@ class TestMapAggregateByTimestamp {
     // check if it produces the same result whether the map function was set before or after aggr.
     SortedMap<OSHDBTimestamp, Long> result1 = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .map(x -> 7)
         .aggregate(Agg::sumInt);
     SortedMap<OSHDBTimestamp, Long> result2 = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .map(x -> 7)
         .aggregateByTimestamp()
         .aggregate(Agg::sumInt);
@@ -225,7 +225,7 @@ class TestMapAggregateByTimestamp {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, Long> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
-            .on(oshdb)
+            .view()
             .aggregateByTimestamp()
             .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
@@ -245,7 +245,7 @@ class TestMapAggregateByTimestamp {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, List<Long>> result =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
-            .on(oshdb)
+            .view()
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
@@ -253,7 +253,7 @@ class TestMapAggregateByTimestamp {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, List<Long>> resultAuto =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
-            .on(oshdb)
+            .view()
             .aggregateByTimestamp()
             .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
@@ -266,7 +266,7 @@ class TestMapAggregateByTimestamp {
     SortedMap<OSHDBCombinedIndex<OSMType, OSHDBTimestamp>, List<Long>> resultIndexTime =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
-            .on(oshdb)
+            .view()
             .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())
@@ -274,7 +274,7 @@ class TestMapAggregateByTimestamp {
     SortedMap<OSHDBCombinedIndex<OSHDBTimestamp, OSMType>, List<Long>> resultTimeIndex =
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps2)
-            .on(oshdb)
+            .view()
             .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
             .aggregateBy(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getType())
             .map(osmEntitySnapshot -> osmEntitySnapshot.getEntity().getId())

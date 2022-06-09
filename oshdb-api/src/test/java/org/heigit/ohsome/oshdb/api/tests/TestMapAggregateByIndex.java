@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  * Test aggregate by custom index method of the OSHDB API.
  */
 class TestMapAggregateByIndex {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2015-12-01");
@@ -37,13 +37,13 @@ class TestMapAggregateByIndex {
   }
 
   private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.view()
+    return OSMContributionView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
 
   private OSHDBView<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.view()
+    return OSMEntitySnapshotView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -53,7 +53,7 @@ class TestMapAggregateByIndex {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps2)
         .filter("id:617308093")
-        .on(oshdb)
+        .view()
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .map(OSMContribution::getContributorUserId)
         .reduce(
@@ -80,7 +80,7 @@ class TestMapAggregateByIndex {
     SortedMap<Long, Set<Integer>> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
         .filter("id:617308093")
-        .on(oshdb)
+        .view()
         .aggregateBy(snapshot -> snapshot.getEntity().getId())
         .map(snapshot -> snapshot.getEntity().getUserId())
         .reduce(
@@ -108,7 +108,7 @@ class TestMapAggregateByIndex {
     SortedMap<Long, Long> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
-        .on(oshdb)
+        .view()
         .aggregateBy(
             contribution -> contribution.getEntityAfter().getId(),
             Collections.singletonList(-1L)
@@ -123,7 +123,7 @@ class TestMapAggregateByIndex {
     // totally empty result
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .filter(x -> false)
         .aggregateBy(
             contribution -> contribution.getEntityAfter().getId(),
@@ -142,7 +142,7 @@ class TestMapAggregateByIndex {
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
             .filter("id:617308093")
-            .on(oshdb)
+            .view()
             .aggregateBy(snapshot -> snapshot.getEntity().getId())
             .aggregateBy(snapshot -> snapshot.getEntity().getType())
             .count();
@@ -159,7 +159,7 @@ class TestMapAggregateByIndex {
         createMapReducerOSMEntitySnapshot()
             .timestamps(timestamps1)
             .filter("id:617308093")
-            .on(oshdb)
+            .view()
             .aggregateBy(snapshot -> snapshot.getEntity().getId())
             .aggregateBy(snapshot -> snapshot.getEntity().getType())
             .aggregateBy(snapshot -> snapshot.getEntity().getUserId())

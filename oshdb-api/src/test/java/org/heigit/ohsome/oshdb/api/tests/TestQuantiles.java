@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
  * Tests the quantiles reducer of the OSHDB API.
  */
 class TestQuantiles {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox =
       OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);
@@ -55,11 +55,11 @@ class TestQuantiles {
   // MapReducer
 
   private MapReducer<OSMEntitySnapshot> createMapReducer() {
-    return OSMEntitySnapshotView.view()
+    return OSMEntitySnapshotView.on(oshdb)
         .timestamps(timestamps1)
         .areaOfInterest(bbox)
         .filter("type:way and building=yes")
-        .on(oshdb);
+        .view();
   }
 
   @Test
@@ -115,11 +115,11 @@ class TestQuantiles {
   // MapAggregator
 
   private MapAggregator<OSHDBTimestamp, OSMEntitySnapshot> createMapAggregator() {
-    return OSMEntitySnapshotView.view()
+    return OSMEntitySnapshotView.on(oshdb)
         .timestamps(timestamps2)
         .areaOfInterest(bbox)
         .filter("type:way and building=yes")
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp();
   }
 

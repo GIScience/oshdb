@@ -109,7 +109,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   }
 
   @Override
-  public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(OSHDBView<X> view) {
+  public <X> MapReducer<X> createMapReducer(OSHDBView<X> view) {
     MapReducer<X> mapReducer;
     Collection<String> allCaches = this.getIgnite().cacheNames();
     Collection<String> expectedCaches = Stream.of(OSMType.values())

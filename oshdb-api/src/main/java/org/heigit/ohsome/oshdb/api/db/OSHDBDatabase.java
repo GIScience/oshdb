@@ -5,7 +5,6 @@ import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
-import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
 /**
  * OSHDB database backend connector.
@@ -22,7 +21,7 @@ public abstract class OSHDBDatabase implements AutoCloseable {
    *        MapReducer
    * @return a new mapReducer object operating on the given OSHDB backend
    */
-  public abstract <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(OSHDBView<X> view)
+  public abstract <X> MapReducer<X> createMapReducer(OSHDBView<X> view)
       throws OSHDBException;
 
   /**

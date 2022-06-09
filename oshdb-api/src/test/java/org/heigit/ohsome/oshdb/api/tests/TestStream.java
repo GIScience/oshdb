@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
  * Tests the stream method of the OSHDB API.
  */
 class TestStream {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox =
       OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);
@@ -28,7 +28,7 @@ class TestStream {
   }
 
   private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView.view()
+    return OSMContributionView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
   }
@@ -38,7 +38,7 @@ class TestStream {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .stream()
         .forEach(contribution -> {
           result.put(contribution.getEntityAfter().getId(), true);
@@ -51,7 +51,7 @@ class TestStream {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .on(oshdb)
+        .view()
         .aggregateByTimestamp()
         .stream()
         .forEach(entry ->

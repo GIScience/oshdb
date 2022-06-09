@@ -16,7 +16,7 @@ import org.locationtech.jts.geom.Polygon;
  * Tests osm data filters.
  */
 class TestOSMDataFilters {
-  private final OSHDBDatabase oshdb;
+  private final OSHDBH2 oshdb;
 
   private final OSHDBBoundingBox bbox =
       OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);
@@ -27,7 +27,7 @@ class TestOSMDataFilters {
   }
 
   private OSMEntitySnapshotView createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.view();
+    return OSMEntitySnapshotView.on(oshdb);
   }
 
   // filter: area of interest
@@ -38,7 +38,7 @@ class TestOSMDataFilters {
         .filter("type:node")
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
-        .on(oshdb)
+        .view()
         .count();
     assertEquals(2, result.intValue());
   }
@@ -49,7 +49,7 @@ class TestOSMDataFilters {
         .filter("type:node")
         .areaOfInterest(OSHDBGeometryBuilder.getGeometry(bbox))
         .timestamps(timestamps1)
-        .on(oshdb)
+        .view()
         .count();
     assertEquals(2, result.intValue());
   }
@@ -63,7 +63,7 @@ class TestOSMDataFilters {
             OSHDBGeometryBuilder.getGeometry(bbox)
         }))
         .timestamps(timestamps1)
-        .on(oshdb)
+        .view()
         .count();
     assertEquals(2, result.intValue());
   }
