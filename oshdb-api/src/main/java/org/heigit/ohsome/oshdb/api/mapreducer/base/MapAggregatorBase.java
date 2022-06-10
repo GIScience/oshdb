@@ -1,20 +1,12 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
-import com.google.common.collect.Lists;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
@@ -35,7 +27,6 @@ import org.locationtech.jts.geom.Polygonal;
 class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
     implements MapAggregator<U, X> {
   private MapReducerBase<IndexValuePair<U, X>> mapReducer;
-  private final List<Collection<? extends Comparable>> zerofill;
 
   /**
    * Basic constructor.
@@ -47,18 +38,15 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
    *        (also if they don't appear in the requested data)
    */
   MapAggregatorBase(MapReducerBase<X> mapReducer,
-      SerializableBiFunction<X, Object, U> indexer, Collection<U> zerofill) {
+      SerializableBiFunction<X, Object, U> indexer) {
     this.mapReducer =
         mapReducer.map((data, root) -> new IndexValuePair<>(indexer.apply(data, root), data));
-    this.zerofill = new ArrayList<>(1);
-    this.zerofill.add(zerofill);
   }
 
   // "copy/transform" constructor
   MapAggregatorBase(MapAggregatorBase<U, ?> obj,
       MapReducerBase<IndexValuePair<U, X>> mapReducer) {
     this.mapReducer = mapReducer;
-    this.zerofill = new ArrayList<>(obj.zerofill);
   }
 
   /**
@@ -91,29 +79,23 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
   // MapAggregator specific methods
   // ---------------------------------------------------------------------------------------------
 
+  @Override
   public <V extends Comparable<V> & Serializable>
       MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-        SerializableFunction<X, V> indexer, Collection<V> zerofill) {
-    MapAggregatorBase<OSHDBCombinedIndex<U, V>, X> res =
-        this.mapIndex((indexData, ignored) -> new OSHDBCombinedIndex<>(indexData.getKey(),
+        SerializableFunction<X, V> indexer) {
+    return this.mapIndex((indexData, ignored) -> new OSHDBCombinedIndex<>(indexData.getKey(),
             indexer.apply(indexData.getValue())));
-    res.zerofill.add(zerofill);
-    return res;
   }
 
   // Some internal methods can also aggregate using the "root" object of the mapreducer's view.
   private <V extends Comparable<V> & Serializable>
       MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-        SerializableBiFunction<X, Object, V> indexer, Collection<V> zerofill) {
-    MapAggregatorBase<OSHDBCombinedIndex<U, V>, X> res =
-        this.mapIndex((indexData, root) -> new OSHDBCombinedIndex<>(indexData.getKey(),
+        SerializableBiFunction<X, Object, V> indexer) {
+    return this.mapIndex((indexData, root) -> new OSHDBCombinedIndex<>(indexData.getKey(),
             indexer.apply(indexData.getValue(), root)));
-    res.zerofill.add(zerofill);
-    return res;
   }
 
   @Override
-  @Contract(pure = true)
   public MapAggregator<OSHDBCombinedIndex<U, OSHDBTimestamp>, X> aggregateByTimestamp() {
     // by timestamp indexing function -> for some views we need to match the input data to the
     // list
@@ -128,7 +110,7 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
           + "for OSMContribution and OSMEntitySnapshot "
           + "-> try using aggregateByTimestamp(customTimestampIndex) instead");
     }
-    return this.aggregateBy(indexer, this.mapReducer.getZerofillTimestamps());
+    return this.aggregateBy(indexer);
   }
 
   @Override
@@ -141,13 +123,14 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
     return this.aggregateBy(data -> {
       // match timestamps to the given timestamp list
       OSHDBTimestamp aggregationTimestamp = indexer.apply(data);
-      if (aggregationTimestamp == null || aggregationTimestamp.compareTo(minTime) < 0
+      if (aggregationTimestamp == null
+          || aggregationTimestamp.compareTo(minTime) < 0
           || aggregationTimestamp.compareTo(maxTime) > 0) {
         throw new OSHDBInvalidTimestampException(
             "Aggregation timestamp outside of time query interval.");
       }
       return timestamps.floor(aggregationTimestamp);
-    }, this.mapReducer.getZerofillTimestamps());
+    });
   }
 
   @Override
@@ -161,10 +144,10 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
     MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
     if (mapReducer.isOSMContributionViewQuery()) {
       ret = this.flatMap((ignored, root) -> gs.splitOSMContribution((OSMContribution) root))
-          .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
+          .aggregateBy(Entry::getKey).map(Entry::getValue);
     } else if (mapReducer.isOSMEntitySnapshotViewQuery()) {
       ret = this.flatMap((ignored, root) -> gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root))
-          .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
+          .aggregateBy(Entry::getKey).map(Entry::getValue);
     } else {
       throw new UnsupportedOperationException(
           String.format(MapReducerBase.UNIMPLEMENTED_DATA_VIEW, this.mapReducer.viewType));
@@ -259,15 +242,6 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
           }
           return combined;
         });
-    // fill nodata entries with "0"
-    @SuppressWarnings("unchecked") // all zerofills must "add up" to <U>
-    Collection<U> allZerofills =
-        (Collection<U>) this.completeZerofill(result.keySet(), Lists.reverse(this.zerofill));
-    allZerofills.forEach(zerofillKey -> {
-      if (!result.containsKey(zerofillKey)) {
-        result.put(zerofillKey, identitySupplier.get());
-      }
-    });
     return result;
   }
 
@@ -289,38 +263,6 @@ class MapAggregatorBase<U extends Comparable<U> & Serializable, X>
       SerializableBiFunction<IndexValuePair<U, X>, Object, V> keyMapper) {
     return this.copyTransformKey(this.mapReducer.map(
         (inData, root) -> new IndexValuePair<>(keyMapper.apply(inData, root), inData.getValue())));
-  }
-
-  // calculate complete set of indices to use for zerofilling
-  @SuppressWarnings("rawtypes")
-  // called recursively: the exact types of the zerofills are not known at this point
-  private Collection<? extends Comparable> completeZerofill(Set<? extends Comparable> keys,
-      List<Collection<? extends Comparable>> zerofills) {
-    if (zerofills.isEmpty()) {
-      return Collections.emptyList();
-    }
-    SortedSet<Comparable> seen = new TreeSet<>(zerofills.get(0));
-    SortedSet<Comparable> nextLevelKeys = new TreeSet<>();
-    for (Comparable index : keys) {
-      Comparable v;
-      if (index instanceof OSHDBCombinedIndex) {
-        v = ((OSHDBCombinedIndex) index).getSecondIndex();
-        nextLevelKeys.add(((OSHDBCombinedIndex) index).getFirstIndex());
-      } else {
-        v = index;
-      }
-      seen.add(v);
-    }
-    if (zerofills.size() == 1) {
-      return seen;
-    } else {
-      Collection<? extends Comparable> nextLevel =
-          this.completeZerofill(nextLevelKeys, zerofills.subList(1, zerofills.size()));
-      @SuppressWarnings("unchecked") // we don't know the exact types of u and v at this point
-      Stream<OSHDBCombinedIndex> combinedZerofillIndices =
-          nextLevel.stream().flatMap(u -> seen.stream().map(v -> new OSHDBCombinedIndex(u, v)));
-      return combinedZerofillIndices.collect(Collectors.toList());
-    }
   }
 
   /**

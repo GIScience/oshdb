@@ -8,12 +8,11 @@ import java.util.Set;
 import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
-import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMContributionView;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -69,7 +68,7 @@ class TestHelpersOSMContributionView {
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
         .aggregate(Agg::sumInt);
 
-    assertEquals(71, result2.entrySet().size());
+    assertEquals(5, result2.entrySet().size());
     assertEquals(42, result2
         .values()
         .stream()
@@ -116,9 +115,9 @@ class TestHelpersOSMContributionView {
         .aggregateByTimestamp()
         .count();
 
-    assertEquals(71, result2.entrySet().size());
-    assertEquals(0, result2.get(result2.firstKey()).intValue());
-    assertEquals(0, result2.get(result2.lastKey()).intValue());
+    assertEquals(5, result2.entrySet().size());
+    assertEquals(1, result2.get(result2.firstKey()).intValue());
+    assertEquals(14, result2.get(result2.lastKey()).intValue());
 
     // total
     Long result3 = this.createMapReducer()
@@ -160,8 +159,8 @@ class TestHelpersOSMContributionView {
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
         .aggregate(Agg::average);
 
-    assertEquals(71, result2.entrySet().size());
-    assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
+    assertEquals(5, result2.entrySet().size());
+    assertEquals(1.0, result2.get(result2.firstKey()), DELTA);
     assertEquals(3, result2
         .entrySet()
         .stream()
@@ -206,8 +205,8 @@ class TestHelpersOSMContributionView {
         ))
         .aggregate(Agg::weightedAverage);
 
-    assertEquals(71, result2.entrySet().size());
-    assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
+    assertEquals(5, result2.entrySet().size());
+    assertEquals(1.0, result2.get(result2.firstKey()), DELTA);
     assertEquals(3, result2
         .entrySet()
         .stream()
@@ -250,8 +249,8 @@ class TestHelpersOSMContributionView {
         .map(contribution -> contribution.getEntityAfter().getId())
         .aggregate(Agg::uniq);
 
-    assertEquals(71, result2.entrySet().size());
-    assertEquals(0, result2.get(result2.firstKey()).size());
+    assertEquals(5, result2.entrySet().size());
+    assertEquals(1, result2.get(result2.firstKey()).size());
     assertEquals(42, result2.values().stream().reduce(new HashSet<>(), (acc, cur) -> {
       acc = new HashSet<>(acc);
       acc.addAll(cur);

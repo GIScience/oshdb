@@ -10,9 +10,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
+import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.improve.OSHDBJdbcImprove;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -21,14 +22,14 @@ import org.junit.jupiter.api.Test;
  * Test flat map method of the MapAggregator class of the OSHDB API.
  */
 class TestFlatMapAggregate {
-  private final OSHDBH2 oshdb;
+  private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
   TestFlatMapAggregate() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBJdbcImprove("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution(OSHDBTimestamps timestamps)

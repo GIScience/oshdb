@@ -1,6 +1,5 @@
 package org.heigit.ohsome.oshdb.util.mappable;
 
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.locationtech.jts.geom.Geometry;
@@ -9,12 +8,6 @@ import org.locationtech.jts.geom.Geometry;
  * Information about a single OSM object at a specific point in time ("snapshot").
  */
 public interface OSMEntitySnapshot extends OSHDBMapReducible, Comparable<OSMEntitySnapshot> {
-  /**
-   * The timestamp for which the snapshot of this data entity has been obtained.
-   *
-   * @return snapshot timestamp as an OSHDBTimestamp object
-   */
-  OSHDBTimestamp getTimestamp();
 
   /**
    * The geometry of this entity at the snapshot's timestamp clipped to the requested area of

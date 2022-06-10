@@ -42,7 +42,7 @@ import org.locationtech.jts.io.WKBWriter;
  *
  * @param <U> an arbitrary index type to identify supplied sub-regions
  */
-class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serializable {
+public class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private STRtree spatialIndex = new STRtree();
@@ -53,7 +53,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
 
   private Map<U, ? extends Geometry> subregions;
 
-  <P extends Geometry & Polygonal> GeometrySplitter(Map<U, P> subregions) {
+  public <P extends Geometry & Polygonal> GeometrySplitter(Map<U, P> subregions) {
     PreparedGeometryFactory pgf = new PreparedGeometryFactory();
     subregions.forEach((index, geometry) -> {
       spatialIndex.insert(geometry.getEnvelopeInternal(), index);

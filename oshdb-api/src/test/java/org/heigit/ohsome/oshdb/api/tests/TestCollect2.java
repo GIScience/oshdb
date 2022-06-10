@@ -7,8 +7,8 @@ import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.improve.OSHDBJdbcImprove;
-import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMContributionView;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -25,9 +25,7 @@ class TestCollect2 {
       OSHDBTimestamps.Interval.MONTHLY);
 
   TestCollect2() throws Exception {
-    oshdb = new OSHDBJdbcImprove("org.h2.Driver",
-        "jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
-        "sa", "");
+    oshdb = new OSHDBJdbcImprove("./src/test/resources/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution(OSHDBTimestamps timestamps)
@@ -67,6 +65,14 @@ class TestCollect2 {
     assertEquals(42, result
         .stream()
         .collect(Collectors.toSet()).size());
+  }
+
+  @Test
+  void testFlatMapSum() throws Exception {
+    var result = this.createMapReducerOSMContribution(timestamps72)
+        .flatMap(contribution -> Stream.of(contribution.getEntityAfter().getId()))
+        .count();
+    assertEquals(70, result);
   }
 
 //  @Test

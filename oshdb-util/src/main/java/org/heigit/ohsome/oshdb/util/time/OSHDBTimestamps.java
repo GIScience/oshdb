@@ -7,7 +7,6 @@ import java.time.chrono.ChronoZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -160,7 +159,7 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
    *
    * @return a list of unix timestamps (measured in seconds)
    */
-  public SortedSet<OSHDBTimestamp> get() {
+  public TreeSet<OSHDBTimestamp> get() {
     Stream<ZonedDateTime> times;
     if (period != null) {
       times = getTimestampsAsEpochSeconds(start, end, period, fromEnd).stream();

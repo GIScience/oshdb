@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.improve.OSHDBJdbcImprove;
+import org.heigit.ohsome.oshdb.api.mapreducer.snapshot.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
-import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMContributionView;
-import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Polygon;
  * Test aggregateByGeometry method of the OSHDB API.
  */
 class TestMapAggregateByGeometry {
-  private final OSHDBH2 oshdb;
+  private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2015-12-01");
@@ -39,7 +39,7 @@ class TestMapAggregateByGeometry {
   private static final double DELTA = 1e-4;
 
   TestMapAggregateByGeometry() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBJdbcImprove("./src/test/resources/test-data");
   }
 
   private OSHDBView<OSMContribution> createMapReducerOSMContribution() throws Exception {
@@ -79,18 +79,19 @@ class TestMapAggregateByGeometry {
         .aggregateByGeometry(getSubRegions())
         .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
-    assertEquals(4, resultCount.entrySet().size());
+    assertEquals(3, resultCount.entrySet().size());
     assertTrue(resultCount.get("total") <= resultCount.get("left") + resultCount.get("right"));
 
     SortedMap<String, Double> resultSumLength = createMapReducerOSMContribution()
         .timestamps(timestamps2)
         .view()
         .aggregateByGeometry(getSubRegions())
-        .map(OSMContribution::getGeometryAfter)
-        .map(Geo::lengthOf)
+        .map(contrib -> Geo.lengthOf(contrib.getGeometryAfter()))
+//        .map(OSMContribution::getGeometryAfter)
+//        .map(Geo::lengthOf)
         .reduce(() -> 0.0, Double::sum);
 
-    assertEquals(4, resultSumLength.entrySet().size());
+    assertEquals(3, resultSumLength.entrySet().size());
     assertEquals(
         resultSumLength.get("total"),
         resultSumLength.get("left") + resultSumLength.get("right"),
@@ -106,7 +107,7 @@ class TestMapAggregateByGeometry {
         .aggregateByGeometry(getSubRegions())
         .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
-    assertEquals(4, resultCount.entrySet().size());
+    assertEquals(3, resultCount.entrySet().size());
     assertTrue(resultCount.get("total") <= resultCount.get("left") + resultCount.get("right"));
 
     SortedMap<String, Double> resultSumLength = createMapReducerOSMEntitySnapshot()
@@ -117,23 +118,12 @@ class TestMapAggregateByGeometry {
         .map(Geo::lengthOf)
         .reduce(() -> 0.0, Double::sum);
 
-    assertEquals(4, resultSumLength.entrySet().size());
+    assertEquals(3, resultSumLength.entrySet().size());
     assertEquals(
         resultSumLength.get("total"),
         resultSumLength.get("left") + resultSumLength.get("right"),
         DELTA
     );
-  }
-
-  @Test
-  void testZerofill() throws Exception {
-    SortedMap<String, Long> resultZerofilled = createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps1)
-        .view()
-        .aggregateByGeometry(getSubRegions())
-        .count();
-    assertEquals(4, resultZerofilled.entrySet().size());
-    assertEquals(3, resultZerofilled.values().stream().filter(x -> x > 0).count());
   }
 
   @Test
@@ -146,14 +136,13 @@ class TestMapAggregateByGeometry {
             .aggregateByGeometry(getSubRegions())
             .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
-    assertEquals(4, result.entrySet().size());
+    assertEquals(3, result.entrySet().size());
     Set<String> keys = result.keySet().stream()
         .map(OSHDBCombinedIndex::getSecondIndex)
         .collect(Collectors.toSet());
     assertTrue(keys.contains("left"));
     assertTrue(keys.contains("right"));
     assertTrue(keys.contains("total"));
-    assertTrue(keys.contains("null island"));
   }
 
   @Test
@@ -166,14 +155,13 @@ class TestMapAggregateByGeometry {
             .aggregateByTimestamp()
             .reduce(() -> 0, (x, ignored) -> x + 1, Integer::sum);
 
-    assertEquals(4, result.entrySet().size());
+    assertEquals(3, result.entrySet().size());
     Set<String> keys = result.keySet().stream()
         .map(OSHDBCombinedIndex::getFirstIndex)
         .collect(Collectors.toSet());
     assertTrue(keys.contains("left"));
     assertTrue(keys.contains("right"));
     assertTrue(keys.contains("total"));
-    assertTrue(keys.contains("null island"));
   }
 
   @Test

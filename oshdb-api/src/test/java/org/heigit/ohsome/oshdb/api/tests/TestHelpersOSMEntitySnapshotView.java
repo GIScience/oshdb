@@ -6,12 +6,11 @@ import java.util.Set;
 import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
+import org.heigit.ohsome.oshdb.api.mapreducer.snapshot.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
-import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -61,8 +60,8 @@ class TestHelpersOSMEntitySnapshotView {
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
 
-    assertEquals(72, result2.entrySet().size());
-    assertEquals(0, result2.get(result2.firstKey()));
+    assertEquals(51, result2.entrySet().size());
+    assertEquals(1, result2.get(result2.firstKey()));
     assertEquals(42, result2.get(result2.lastKey()));
 
     // total
@@ -105,8 +104,8 @@ class TestHelpersOSMEntitySnapshotView {
         .aggregateByTimestamp()
         .count();
 
-    assertEquals(72, result2.entrySet().size());
-    assertEquals(0, result2.get(result2.firstKey()).intValue());
+    assertEquals(51, result2.entrySet().size());
+    assertEquals(1, result2.get(result2.firstKey()).intValue());
     assertEquals(42, result2.get(result2.lastKey()).intValue());
 
     // total
@@ -147,8 +146,8 @@ class TestHelpersOSMEntitySnapshotView {
         .map(snapshot -> snapshot.getEntity().getId() % 2)
         .aggregate(Agg::average);
 
-    assertEquals(72, result2.entrySet().size());
-    assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
+    assertEquals(51, result2.entrySet().size());
+    assertEquals(1.0, result2.get(result2.firstKey()), DELTA);
     assertEquals(0.5, result2.get(result2.lastKey()).doubleValue(), DELTA);
 
     // custom aggregation identifier
@@ -188,8 +187,8 @@ class TestHelpersOSMEntitySnapshotView {
         ))
         .aggregate(Agg::weightedAverage);
 
-    assertEquals(72, result2.entrySet().size());
-    assertEquals(Double.NaN, result2.get(result2.firstKey()), DELTA);
+    assertEquals(51, result2.entrySet().size());
+    assertEquals(1.0, result2.get(result2.firstKey()), DELTA);
     assertEquals(1.0, result2.get(result2.lastKey()).doubleValue(), DELTA);
 
     // custom aggregation identifier
@@ -228,8 +227,8 @@ class TestHelpersOSMEntitySnapshotView {
         .map(snapshot -> snapshot.getEntity().getId())
         .aggregate(Agg::uniq);
 
-    assertEquals(72, result2.entrySet().size());
-    assertEquals(0, result2.get(result2.firstKey()).size());
+    assertEquals(51, result2.entrySet().size());
+    assertEquals(1, result2.get(result2.firstKey()).size());
     assertEquals(42, result2.get(result2.lastKey()).size());
 
     // total

@@ -1,10 +1,15 @@
 package org.heigit.ohsome.oshdb.api.db;
 
 import java.util.OptionalLong;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 
 /**
  * OSHDB database backend connector.
@@ -23,6 +28,38 @@ public abstract class OSHDBDatabase implements AutoCloseable {
    */
   public abstract <X> MapReducer<X> createMapReducer(OSHDBView<X> view)
       throws OSHDBException;
+
+
+  /**
+   * @param <X> intermediate result type
+   * @param <Y> final result type
+   * @param view View object with settings
+   * @param transform transformation for a partition
+   * @param identity
+   * @param accumulator
+   * @param combiner
+   * @return
+   */
+  public <X, Y> Y query(OSHDBView<?> view,
+      SerializableFunction<Stream<OSHEntity>, X> transform,
+      Y identity,
+      BiFunction<Y, X, Y> accumulator,
+      BinaryOperator<Y> combiner) {
+    throw new UnsupportedOperationException();
+  }
+
+
+
+  /**
+   * @param <X>
+   * @param view
+   * @param transform
+   * @return
+   */
+  public <X> Stream<X> query(OSHDBView<?> view,
+      SerializableFunction<Stream<OSHEntity>, Stream<X>> transform) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Returns metadata about the given OSHDB.

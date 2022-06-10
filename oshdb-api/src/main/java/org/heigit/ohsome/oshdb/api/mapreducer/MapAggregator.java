@@ -1,9 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
-import static java.util.Collections.emptyList;
-
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,15 +19,41 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 
 public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
+
   /**
-   * Sets up aggregation by another custom index.
+   * Set an arbitrary `map` transformation function.
    *
-   * @param indexer a callback function that returns an index object for each given data
-   * @param zerofill a collection of values that are expected to be present in the result
-   * @return a MapAggregatorByIndex object with the new index applied as well
+   * @param mapper function that will be applied to each data entry (osm entity snapshot or
+   *        contribution)
+   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
+   * @return a modified copy of this MapAggregator object operating on the transformed type R
    */
-  <V extends Comparable<V> & Serializable> MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-      SerializableFunction<X, V> indexer, Collection<V> zerofill);
+  <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper);
+
+  /**
+   * Set an arbitrary `flatMap` transformation function, which returns list with an arbitrary number
+   * of results per input data entry.
+   *
+   * <p>
+   * The results of this function will be "flattened", meaning that they can be for example
+   * transformed again by setting additional `map` functions.
+   * </p>
+   *
+   * @param flatMapper function that will be applied to each data entry (osm entity snapshot or
+   *        contribution) and returns a list of results
+   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
+   * @return a modified copy of this MapAggregator object operating on the transformed type R
+   */
+  <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Stream<R>> flatMapper);
+
+  /**
+   * Adds a custom arbitrary filter that gets executed in the current transformation chain.
+   *
+   * @param f the filter function that determines if the respective data should be passed on (when f
+   *        returns true) or discarded (when f returns false)
+   * @return a modified copy of this object (can be used to chain multiple commands together)
+   */
+  MapAggregator<U, X> filter(SerializablePredicate<X> f);
 
   /**
    * Sets up aggregation by another custom index.
@@ -39,11 +62,11 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    * @param <V> the type of the values used to aggregate
    * @return a MapAggregatorByIndex object with the new index applied as well
    */
-  default <V extends Comparable<V> & Serializable>
+  <V extends Comparable<V> & Serializable>
       MapAggregator<OSHDBCombinedIndex<U, V>, X> aggregateBy(
-        SerializableFunction<X, V> indexer) {
-    return this.aggregateBy(indexer, emptyList());
-  }
+        SerializableFunction<X, V> indexer);
+
+
 
   /**
    * Sets up automatic aggregation by timestamp.
@@ -146,40 +169,7 @@ public interface MapAggregator<U extends Comparable<U> & Serializable, X> {
    */
   Stream<Map.Entry<U, X>> stream();
 
-  /**
-   * Set an arbitrary `map` transformation function.
-   *
-   * @param mapper function that will be applied to each data entry (osm entity snapshot or
-   *        contribution)
-   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
-   * @return a modified copy of this MapAggregator object operating on the transformed type R
-   */
-  <R> MapAggregator<U, R> map(SerializableFunction<X, R> mapper);
 
-  /**
-   * Set an arbitrary `flatMap` transformation function, which returns list with an arbitrary number
-   * of results per input data entry.
-   *
-   * <p>
-   * The results of this function will be "flattened", meaning that they can be for example
-   * transformed again by setting additional `map` functions.
-   * </p>
-   *
-   * @param flatMapper function that will be applied to each data entry (osm entity snapshot or
-   *        contribution) and returns a list of results
-   * @param <R> an arbitrary data type which is the return type of the transformation `map` function
-   * @return a modified copy of this MapAggregator object operating on the transformed type R
-   */
-  <R> MapAggregator<U, R> flatMap(SerializableFunction<X, Stream<R>> flatMapper);
-
-  /**
-   * Adds a custom arbitrary filter that gets executed in the current transformation chain.
-   *
-   * @param f the filter function that determines if the respective data should be passed on (when f
-   *        returns true) or discarded (when f returns false)
-   * @return a modified copy of this object (can be used to chain multiple commands together)
-   */
-  MapAggregator<U, X> filter(SerializablePredicate<X> f);
 
   /**
    * Map-reduce routine with built-in aggregation.

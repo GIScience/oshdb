@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.util.mappable;
 
 import java.util.EnumSet;
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
@@ -11,13 +10,6 @@ import org.locationtech.jts.geom.Geometry;
  * A modification ("contribution") of a single OSM object.
  */
 public interface OSMContribution extends OSHDBMapReducible, Comparable<OSMContribution> {
-
-  /**
-   * Returns the timestamp at which this data modification has happened.
-   *
-   * @return the modification timestamp as a OSHDBTimestamp object
-   */
-  OSHDBTimestamp getTimestamp();
 
   /**
    * Returns the geometry of the entity before this modification clipped to the requested area of

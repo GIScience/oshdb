@@ -241,42 +241,13 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
   // Sets how the input data is "grouped", or the output data is "aggregated" into separate chunks.
   // -----------------------------------------------------------------------------------------------
 
-  /**
-   * Sets a custom aggregation function that is used to group output results into.
-   *
-   * @param indexer a function that will be called for each input element and returns a value that
-   *        will be used to group the results by
-   * @param <U> the data type of the values used to aggregate the output. has to be a comparable
-   *        type
-   * @param zerofill a collection of values that are expected to be present in the result
-   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
-   *         etc.) of the current MapReducer object
-   */
   @Override
-  @Contract(pure = true)
   public <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
-      SerializableFunction<X, U> indexer,
-      Collection<U> zerofill) {
-    return new MapAggregatorBase<>(this, (data, ignored) -> indexer.apply(data), zerofill);
+      SerializableFunction<X, U> indexer) {
+    return new MapAggregatorBase<>(this, (data, ignored) -> indexer.apply(data));
   }
 
-  /**
-   * Sets up automatic aggregation by timestamp.
-   *
-   * <p>In the OSMEntitySnapshotView, the snapshots' timestamp will be used directly to aggregate
-   * results into. In the OSMContributionView, the timestamps of the respective data modifications
-   * will be matched to corresponding time intervals (that are defined by the `timestamps` setting
-   * here).</p>
-   *
-   * <p>Cannot be used together with the `groupByEntity()` setting enabled.</p>
-   *
-   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
-   *         etc.) of the current MapReducer object
-   * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has
-   *         been activated
-   */
   @Override
-  @Contract(pure = true)
   public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp() {
     // by timestamp indexing function -> for some views we need to match the input data to the list
     SerializableBiFunction<X, Object, OSHDBTimestamp> indexer;
@@ -291,21 +262,9 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
               + "OSMEntitySnapshot -> try using aggregateByTimestamp(customTimestampIndex) instead"
           );
     }
-    return new MapAggregatorBase<>(this, indexer, this.getZerofillTimestamps());
+    return new MapAggregatorBase<>(this, indexer);
   }
 
-  /**
-   * Sets up aggregation by a custom time index.
-   *
-   * <p>The timestamps returned by the supplied indexing function are matched to the corresponding
-   * time intervals.</p>
-   *
-   * @param indexer a callback function that return a timestamp object for each given data. Note
-   *                that if this function returns timestamps outside of the supplied timestamps()
-   *                interval results may be undefined
-   * @return a MapAggregator object with the equivalent state (settings,
-   *         filters, map function, etc.) of the current MapReducer object
-   */
   @Override
   public MapAggregator<OSHDBTimestamp, X> aggregateByTimestamp(
       SerializableFunction<X, OSHDBTimestamp> indexer) {
@@ -322,25 +281,10 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
             "Aggregation timestamp outside of time query interval.");
       }
       return timestamps.floor(aggregationTimestamp);
-    }, getZerofillTimestamps());
+    });
   }
 
-  /**
-   * Sets up automatic aggregation by geometries.
-   *
-   * <p>Cannot be used together with the `groupByEntity()` setting enabled.</p>
-   *
-   * @param geometries an associated list of polygons and identifiers
-   * @param <U> the type of the identifers used to aggregate
-   * @param <P> a polygonal geometry type
-   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
-   *         etc.) of the current MapReducer object
-   * @throws UnsupportedOperationException if this is called when the `groupByEntity()` mode has
-   *         been activated
-   * @throws UnsupportedOperationException when called after any map or flatMap functions are set
-   */
   @Override
-  @Contract(pure = true)
   public <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal>
          MapAggregator<U, X> aggregateByGeometry(Map<U, P> geometries)
       throws UnsupportedOperationException {
@@ -356,7 +300,7 @@ public abstract class MapReducerBase<X> implements MapReducer<X> {
           UNIMPLEMENTED_DATA_VIEW, this.viewType));
     }
     MapAggregator<U, ?> mapAgg = mapRed
-        .aggregateBy(Entry::getKey, geometries.keySet())
+        .aggregateBy(Entry::getKey)
         .map(Entry::getValue);
     @SuppressWarnings("unchecked") // no mapper functions have been applied so the type is still X
     MapAggregator<U, X> result = (MapAggregator<U, X>) mapAgg;

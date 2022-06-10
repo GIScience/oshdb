@@ -1,18 +1,18 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.OSHDBCombinedIndex;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.snapshot.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
-import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMContributionView;
-import org.heigit.ohsome.oshdb.api.mapreducer.view.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
@@ -70,9 +70,9 @@ class TestMapAggregateByTimestamp {
         .map(contribution -> 1)
         .aggregate(Agg::sumInt);;
 
-    assertEquals(71, result2.entrySet().size());
-    assertEquals(0, result2.get(result2.firstKey()).intValue());
-    assertEquals(0, result2.get(result2.lastKey()).intValue());
+    assertEquals(5, result2.entrySet().size());
+    assertEquals(1, result2.get(result2.firstKey()).intValue());
+    assertEquals(14, result2.get(result2.lastKey()).intValue());
     assertEquals(39, result2
         .entrySet()
         .stream()
@@ -106,20 +106,6 @@ class TestMapAggregateByTimestamp {
   }
 
   @Test
-  void testOSMContributionCustom() throws Exception {
-    // most basic custom timestamp index possible -> map all to one single timestamp
-    SortedMap<OSHDBTimestamp, Long> resultCustom = createMapReducerOSMContribution()
-        .timestamps(timestamps72)
-        .view()
-        .aggregateByTimestamp(ignored -> timestamps1.get().first())
-        .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);;
-
-    assertEquals(71, resultCustom.entrySet().size());
-    assertEquals(1, resultCustom.entrySet().stream().filter(entry -> entry.getValue() > 0).count());
-  }
-
-  @Test
   void testOSMEntitySnapshot() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Long> result1 = createMapReducerOSMEntitySnapshot()
@@ -150,8 +136,8 @@ class TestMapAggregateByTimestamp {
         .map(snapshot -> 1)
         .aggregate(Agg::sumInt);
 
-    assertEquals(72, result72.entrySet().size());
-    assertEquals(0, result72.get(result72.firstKey()).intValue());
+    assertEquals(51, result72.entrySet().size());
+    assertEquals(1, result72.get(result72.firstKey()).intValue());
     assertEquals(42, result72.get(result72.lastKey()).intValue());
   }
 
@@ -178,20 +164,6 @@ class TestMapAggregateByTimestamp {
           resultCustom.get(t).intValue()
       );
     }
-  }
-
-  @Test
-  void testOSMEntitySnapshotCustom() throws Exception {
-    // most basic custom timestamp index possible -> map all to one single timestamp
-    SortedMap<OSHDBTimestamp, Long> resultCustom = createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps72)
-        .view()
-        .aggregateByTimestamp(ignored -> timestamps1.get().first())
-        .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
-
-    assertEquals(72, resultCustom.entrySet().size());
-    assertEquals(1, resultCustom.entrySet().stream().filter(entry -> entry.getValue() > 0).count());
   }
 
   @Test

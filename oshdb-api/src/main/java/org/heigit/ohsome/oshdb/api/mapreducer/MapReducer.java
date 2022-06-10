@@ -1,9 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer;
 
-import static java.util.Collections.emptyList;
-
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +16,7 @@ import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygonal;
 
-public interface MapReducer<X> extends Serializable {
+public interface MapReducer<X> {
 
   /**
    * Returns if the current backend can be canceled (e.g. in a query timeout).
@@ -67,20 +64,6 @@ public interface MapReducer<X> extends Serializable {
   // -----------------------------------------------------------------------------------------------
 
   /**
-   * Sets a custom aggregation function that is used to group output results into.
-   *
-   * @param indexer a function that will be called for each input element and returns a value that
-   *        will be used to group the results by
-   * @param <U> the data type of the values used to aggregate the output. has to be a comparable
-   *        type
-   * @param zerofill a collection of values that are expected to be present in the result
-   * @return a MapAggregator object with the equivalent state (settings, filters, map function,
-   *         etc.) of the current MapReducer object
-   */
-  <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
-      SerializableFunction<X, U> indexer, Collection<U> zerofill);
-
-  /**
    * Sets a custom aggregation function that is used to (further) group output results into.
    *
    * @param indexer a function that will be called for each input element and returns a value that
@@ -89,10 +72,8 @@ public interface MapReducer<X> extends Serializable {
    * @return a MapAggregator object with the equivalent state (settings, filters, map function,
    *         etc.) of the current MapReducer object
    */
-  default <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
-      SerializableFunction<X, U> indexer) {
-    return this.aggregateBy(indexer, emptyList());
-  }
+  <U extends Comparable<U> & Serializable> MapAggregator<U, X> aggregateBy(
+      SerializableFunction<X, U> indexer);
 
   /**
    * Sets up automatic aggregation by timestamp.
