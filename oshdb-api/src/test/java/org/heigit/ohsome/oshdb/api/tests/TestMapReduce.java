@@ -57,7 +57,7 @@ abstract class TestMapReduce {
         .filter("id:617308093")
         .view()
         .map(OSMContribution::getContributorUserId)
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids
@@ -70,7 +70,7 @@ abstract class TestMapReduce {
         .view()
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     // should be 5: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids

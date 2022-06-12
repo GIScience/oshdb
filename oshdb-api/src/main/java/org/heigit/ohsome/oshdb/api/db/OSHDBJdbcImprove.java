@@ -1,4 +1,4 @@
-package org.heigit.ohsome.oshdb.api.mapreducer.improve;
+package org.heigit.ohsome.oshdb.api.db;
 
 import static java.util.stream.Collectors.toList;
 
@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
@@ -51,14 +50,14 @@ public class OSHDBJdbcImprove extends OSHDBJdbc {
   @Override
   public <X> Stream<X> query(OSHDBView<?> view,
       SerializableFunction<Stream<OSHEntity>, Stream<X>> transform) {
-
+    var filter = view.getPreFilter();
     return Streams.stream(view.getCellIdRanges())
       .parallel()
         .flatMap(range -> getOshCellsStream(range, view))
         .map(GridOSHEntity::getEntities)
         .map(Streams::stream)
         .map(stream -> stream.map(OSHEntity.class::cast))
-        .map(stream -> stream.filter(view::preFilter))
+        .map(stream -> stream.filter(filter))
         .map(transform)
         .map(stream -> stream.collect(toList()))
       .sequential()
@@ -71,14 +70,14 @@ public class OSHDBJdbcImprove extends OSHDBJdbc {
       Y identity,
       BiFunction<Y, X, Y> accumulator,
       BinaryOperator<Y> combiner) {
-
+    var filter = view.getPreFilter();
     return Streams.stream(view.getCellIdRanges())
       .parallel()
         .flatMap(range -> getOshCellsStream(range, view))
         .map(GridOSHEntity::getEntities)
         .map(Streams::stream)
         .map(stream -> stream.map(OSHEntity.class::cast))
-        .map(stream -> stream.filter(view::preFilter))
+        .map(stream -> stream.filter(filter))
         .map(transform)
       .sequential()
       .reduce(identity, accumulator, combiner);

@@ -58,7 +58,7 @@ public class Agg {
    * @return the total count
    */
   public static Long count(MapReducer<?> mr) {
-    return mr.map(x -> 1L).aggregate(Agg::sumLong);
+    return mr.map(x -> 1L).reduce(Agg::sumLong);
   }
 
   /**
@@ -68,7 +68,7 @@ public class Agg {
    */
   public static <U extends Comparable<U> & Serializable> SortedMap<U, Long> count(
       MapAggregator<U, ?> mr) {
-    return mr.map(x -> 1L).aggregate(Agg::sumLong);
+    return mr.map(x -> 1L).reduce(Agg::sumLong);
   }
 
   /**
@@ -111,7 +111,7 @@ public class Agg {
    * @return the set of distinct values
    */
   public static Integer countUniq(MapReducer<?> mr) {
-    return mr.aggregate(Agg::uniq).size();
+    return mr.reduce(Agg::uniq).size();
   }
 
   /**
@@ -127,7 +127,7 @@ public class Agg {
   public static <U extends Comparable<U> & Serializable, T> SortedMap<U, Integer> countUniq(
       MapAggregator<U, T> mr) {
     var result = new TreeMap<U, Integer>();
-    mr.aggregate(Agg::uniq).forEach((k, v) -> result.put(k, v.size()));
+    mr.reduce(Agg::uniq).forEach((k, v) -> result.put(k, v.size()));
     return result;
   }
 
@@ -169,12 +169,12 @@ public class Agg {
    * @return the average of the current data
    */
   public static double average(MapReducer<? extends Number> mr) {
-    return mr.map(WeightedValue::new).aggregate(Agg::weightedAverage);
+    return mr.map(WeightedValue::new).reduce(Agg::weightedAverage);
   }
 
   public static <U extends Comparable<U> & Serializable> SortedMap<U, Double> average(
       MapAggregator<U, ? extends Number> mr) {
-    return mr.map(WeightedValue::new).aggregate(Agg::weightedAverage);
+    return mr.map(WeightedValue::new).reduce(Agg::weightedAverage);
   }
 
   static <T> Set<T> uniqIdentitySupplier() {

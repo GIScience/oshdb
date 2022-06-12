@@ -35,6 +35,7 @@ import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
+import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
@@ -49,6 +50,7 @@ import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 
 /**
@@ -426,6 +428,15 @@ public abstract class OSHDBView<T> {
       return emptyList();
     }
     return grid.bbox2CellIdRanges(this.bboxFilter, true);
+  }
+
+  public CellIterator getCellIterator() {
+    try {
+      return new CellIterator(tstamps.get(), bboxFilter, (Polygon) polyFilter,
+          getTagInterpreter(), getPreFilter(), getFilter(), false);
+    } catch (IOException | ParseException e) {
+      throw new OSHDBException();
+    }
   }
 
 }

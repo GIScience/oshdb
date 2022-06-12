@@ -46,7 +46,7 @@ class TestLambdaFilter {
             .getContributionTypes()
             .contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     // should be 3: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids, but last two didn't modify the node's coordinates

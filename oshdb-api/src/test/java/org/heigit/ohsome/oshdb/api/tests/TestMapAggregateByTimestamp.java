@@ -56,7 +56,7 @@ class TestMapAggregateByTimestamp {
         .view()
         .aggregateByTimestamp()
         .map(contribution -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
 
     assertEquals(1, result1.entrySet().size());
@@ -68,7 +68,7 @@ class TestMapAggregateByTimestamp {
         .view()
         .aggregateByTimestamp()
         .map(contribution -> 1)
-        .aggregate(Agg::sumInt);;
+        .reduce(Agg::sumInt);;
 
     assertEquals(5, result2.entrySet().size());
     assertEquals(1, result2.get(result2.firstKey()).intValue());
@@ -88,13 +88,13 @@ class TestMapAggregateByTimestamp {
         .view()
         .aggregateByTimestamp()
         .map(contribution -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
     SortedMap<OSHDBTimestamp, Long> resultCustom = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .view()
         .aggregateByTimestamp(OSMContribution::getTimestamp)
         .map(contribution -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(resultAuto.entrySet().size(), resultCustom.entrySet().size());
     for (OSHDBTimestamp t : resultAuto.keySet()) {
@@ -113,7 +113,7 @@ class TestMapAggregateByTimestamp {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(42, result1.get(result1.firstKey()).intValue());
@@ -124,7 +124,7 @@ class TestMapAggregateByTimestamp {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(2, result2.entrySet().size());
 
@@ -134,7 +134,7 @@ class TestMapAggregateByTimestamp {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(51, result72.entrySet().size());
     assertEquals(1, result72.get(result72.firstKey()).intValue());
@@ -149,13 +149,13 @@ class TestMapAggregateByTimestamp {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
     SortedMap<OSHDBTimestamp, Long> resultCustom = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps72)
         .view()
         .aggregateByTimestamp(OSMEntitySnapshot::getTimestamp)
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(resultAuto.entrySet().size(), resultCustom.entrySet().size());
     for (OSHDBTimestamp t : resultAuto.keySet()) {
@@ -174,13 +174,13 @@ class TestMapAggregateByTimestamp {
         .view()
         .aggregateByTimestamp()
         .map(x -> 7)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
     SortedMap<OSHDBTimestamp, Long> result2 = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .view()
         .map(x -> 7)
         .aggregateByTimestamp()
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(result1, result2);
     assertEquals(result1.entrySet().size(), result2.entrySet().size());

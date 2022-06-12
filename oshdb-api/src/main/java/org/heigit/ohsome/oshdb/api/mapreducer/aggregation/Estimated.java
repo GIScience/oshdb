@@ -30,7 +30,7 @@ public class Estimated {
    * @return estimated median
    */
   public static double median(MapReducer<? extends Number> mr) {
-    return mr.aggregate(Estimated::digest).quantile(0.5);
+    return mr.reduce(Estimated::digest).quantile(0.5);
   }
 
   /**
@@ -46,7 +46,7 @@ public class Estimated {
   public static <U extends Comparable<U> & Serializable> SortedMap<U, Double>
       median(MapAggregator<U, ? extends Number> mr) {
     var result = new TreeMap<U, Double>();
-    mr.aggregate(Estimated::digest).forEach((k, v) -> result.put(k, v.quantile(0.5)));
+    mr.reduce(Estimated::digest).forEach((k, v) -> result.put(k, v.quantile(0.5)));
     return result;
   }
 
@@ -63,7 +63,7 @@ public class Estimated {
    * @return an Aggergator for estimated quantile boundary
    */
   public static double quantile(MapReducer<? extends Number> mr, double q) {
-    return mr.aggregate(Estimated::quantiles).applyAsDouble(q);
+    return mr.reduce(Estimated::quantiles).applyAsDouble(q);
   }
 
   /**
@@ -81,7 +81,7 @@ public class Estimated {
   public static <U extends Comparable<U> & Serializable> SortedMap<U, Double>
       quantile(MapAggregator<U, ? extends Number> mr, double q) {
     var result = new TreeMap<U, Double>();
-    mr.aggregate(Estimated::quantiles).forEach((k, v) -> result.put(k, v.applyAsDouble(q)));
+    mr.reduce(Estimated::quantiles).forEach((k, v) -> result.put(k, v.applyAsDouble(q)));
     return result;
   }
 
@@ -96,7 +96,7 @@ public class Estimated {
    * @return a function that computes estimated quantile boundaries
    */
   public static DoubleUnaryOperator quantiles(MapReducer<? extends Number> mr) {
-    return mr.aggregate(Estimated::digest)::quantile;
+    return mr.reduce(Estimated::digest)::quantile;
   }
 
   /**
@@ -112,7 +112,7 @@ public class Estimated {
   public static <U extends Comparable<U> & Serializable> SortedMap<U, DoubleUnaryOperator>
       quantiles(MapAggregator<U, ? extends Number> mr) {
     var result = new TreeMap<U, DoubleUnaryOperator>();
-    mr.aggregate(Estimated::digest).forEach((k, v) -> result.put(k, v::quantile));
+    mr.reduce(Estimated::digest).forEach((k, v) -> result.put(k, v::quantile));
     return result;
   }
 
@@ -128,7 +128,7 @@ public class Estimated {
    * @return Aggregator for estimated quantile boundaries
    */
   public static List<Double> quantiles(MapReducer<? extends Number> mr, Iterable<Double> qs) {
-    var digest = mr.aggregate(Estimated::digest);
+    var digest = mr.reduce(Estimated::digest);
     return stream(qs).map(digest::quantile).collect(toList());
   }
 
@@ -146,7 +146,7 @@ public class Estimated {
   public static <U extends Comparable<U> & Serializable> SortedMap<U, List<Double>> quantiles(
       MapAggregator<U, ? extends Number> mr, Iterable<Double> qs) {
     var result = new TreeMap<U, List<Double>>();
-    mr.aggregate(Estimated::digest)
+    mr.reduce(Estimated::digest)
         .forEach((k, v) -> result.put(k, stream(qs).map(v::quantile).collect(toList())));
     return result;
   }

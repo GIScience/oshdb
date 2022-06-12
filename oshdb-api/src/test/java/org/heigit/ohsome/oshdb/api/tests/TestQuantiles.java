@@ -68,7 +68,7 @@ class TestQuantiles {
         .map(s -> s.getGeometry().getCoordinates().length);
     List<Integer> fullResult = mr.collect();
     Collections.sort(fullResult);
-    Double median = mr.aggregate(Estimated::median);
+    Double median = mr.reduce(Estimated::median);
     assertApproximateQuantiles(fullResult, 0.5, median);
   }
 
@@ -105,7 +105,7 @@ class TestQuantiles {
     Collections.sort(fullResult);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    DoubleUnaryOperator quantilesFunction = mr.aggregate(Estimated::quantiles);
+    DoubleUnaryOperator quantilesFunction = mr.reduce(Estimated::quantiles);
 
     for (Double q : qs) {
       assertApproximateQuantiles(fullResult, q, quantilesFunction.applyAsDouble(q));
@@ -181,7 +181,7 @@ class TestQuantiles {
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
     SortedMap<OSHDBTimestamp, DoubleUnaryOperator> quantilesFunctions =
-        mr.aggregate(Estimated::quantiles);
+        mr.reduce(Estimated::quantiles);
 
     quantilesFunctions.forEach((ts, quantilesFunction) -> {
       for (Double q : qs) {

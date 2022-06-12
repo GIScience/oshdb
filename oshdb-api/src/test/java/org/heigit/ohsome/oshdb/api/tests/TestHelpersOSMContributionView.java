@@ -53,7 +53,7 @@ class TestHelpersOSMContributionView {
             .getContributionTypes()
             .contains(ContributionType.TAG_CHANGE)
             ? 1 : 0)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
 
     assertEquals(1, result1.entrySet().size());
@@ -66,7 +66,7 @@ class TestHelpersOSMContributionView {
         .aggregateByTimestamp()
         .map(contribution ->
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(5, result2.entrySet().size());
     assertEquals(42, result2
@@ -80,7 +80,7 @@ class TestHelpersOSMContributionView {
         .view()
         .map(contribution ->
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(42, result3.intValue());
 
@@ -90,7 +90,7 @@ class TestHelpersOSMContributionView {
         .view()
         .aggregateBy(contribution -> contribution.getContributionTypes().toString())
         .map(contribution -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(42, result4.get(EnumSet.of(ContributionType.CREATION).toString()));
     assertEquals(null, result4.get(EnumSet.of(ContributionType.DELETION).toString()));
@@ -146,7 +146,7 @@ class TestHelpersOSMContributionView {
         .view()
         .map(contribution ->
             contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0)
-        .aggregate(Agg::average);
+        .reduce(Agg::average);
 
     assertEquals(1.0, result1.doubleValue(), DELTA);
 
@@ -157,7 +157,7 @@ class TestHelpersOSMContributionView {
         .aggregateByTimestamp()
         .map(contribution ->
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0)
-        .aggregate(Agg::average);
+        .reduce(Agg::average);
 
     assertEquals(5, result2.entrySet().size());
     assertEquals(1.0, result2.get(result2.firstKey()), DELTA);
@@ -175,7 +175,7 @@ class TestHelpersOSMContributionView {
             .getContributionTypes()
             .contains(ContributionType.CREATION))
         .map(contribution -> contribution.getEntityAfter().getId() % 2)
-        .aggregate(Agg::average);
+        .reduce(Agg::average);
 
     assertEquals(0.5, result4.get(true).doubleValue(), DELTA);
   }
@@ -190,7 +190,7 @@ class TestHelpersOSMContributionView {
             contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0,
             2 * (contribution.getEntityAfter().getId() % 2)
         ))
-        .aggregate(Agg::weightedAverage);
+        .reduce(Agg::weightedAverage);
 
     assertEquals(1.0, result1.doubleValue(), DELTA);
 
@@ -203,7 +203,7 @@ class TestHelpersOSMContributionView {
             contribution.getContributionTypes().contains(ContributionType.CREATION) ? 1 : 0,
             2 * (contribution.getEntityAfter().getId() % 2)
         ))
-        .aggregate(Agg::weightedAverage);
+        .reduce(Agg::weightedAverage);
 
     assertEquals(5, result2.entrySet().size());
     assertEquals(1.0, result2.get(result2.firstKey()), DELTA);
@@ -223,7 +223,7 @@ class TestHelpersOSMContributionView {
             contribution.getEntityAfter().getId() % 2,
             2 * (contribution.getEntityAfter().getId() % 2)
         ))
-        .aggregate(Agg::weightedAverage);
+        .reduce(Agg::weightedAverage);
 
     assertEquals(1.0, result4.get(true).doubleValue(), DELTA);
   }
@@ -236,7 +236,7 @@ class TestHelpersOSMContributionView {
         .view()
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(14, result1.get(result1.firstKey()).size());
@@ -247,7 +247,7 @@ class TestHelpersOSMContributionView {
         .view()
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(5, result2.entrySet().size());
     assertEquals(1, result2.get(result2.firstKey()).size());
@@ -262,7 +262,7 @@ class TestHelpersOSMContributionView {
         .timestamps(timestamps72)
         .view()
         .map(contribution -> contribution.getEntityAfter().getId())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(42, result3.size());
 
@@ -272,7 +272,7 @@ class TestHelpersOSMContributionView {
         .view()
         .aggregateBy(contribution -> contribution.getEntityAfter().getId() % 2 == 0)
         .map(contribution -> contribution.getEntityAfter().getId())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(21, result4.get(true).size());
     assertEquals(21, result4.get(false).size());
@@ -282,7 +282,7 @@ class TestHelpersOSMContributionView {
         .timestamps(timestamps2)
         .view()
         .map(x -> null)
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
     assertEquals(result5.size(), 1);
   }
 

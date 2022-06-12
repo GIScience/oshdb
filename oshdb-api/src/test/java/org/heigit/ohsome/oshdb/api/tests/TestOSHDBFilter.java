@@ -64,7 +64,7 @@ class TestOSHDBFilter {
         .filter("type:way and geometry:polygon and building=*")
         .view()
         .map(x -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
 
     assertEquals(42, result.intValue());
@@ -73,7 +73,7 @@ class TestOSHDBFilter {
         .filter("type:way and geometry:polygon and building=*")
         .view()
         .map(x -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(42, result.intValue());
   }

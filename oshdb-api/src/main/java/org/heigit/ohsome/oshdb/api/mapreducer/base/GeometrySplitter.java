@@ -198,6 +198,14 @@ public class GeometrySplitter<U extends Comparable<U> & Serializable> implements
         });
   }
 
+  public Stream<Entry<U, OSMEntitySnapshot>> split(OSMEntitySnapshot data) {
+    return splitOSMEntitySnapshot(data);
+  }
+
+  public Stream<Entry<U, OSMContribution>> split(OSMContribution data) {
+    return splitOSMContribution(data);
+  }
+
   private static Geometry faultTolerantIntersection(Geometry subject, FastPolygonOperations poop) {
     try {
       return poop.intersection(subject);

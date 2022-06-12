@@ -14,10 +14,10 @@ import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+import org.heigit.ohsome.oshdb.api.db.OSHDBJdbcImprove;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
-import org.heigit.ohsome.oshdb.api.mapreducer.improve.OSHDBJdbcImprove;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ class TestFlatMapReduce {
     input.add(3);
     Set<Integer> result = createMapReducerOSMContribution(timestamps72)
         .flatMap(contribution -> input.stream())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(input, result);
   }
@@ -95,7 +95,7 @@ class TestFlatMapReduce {
     input.add(3);
     Set<Integer> result = createMapReducerOSMContribution(timestamps72)
         .flatMap(contribution -> input.stream())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(input, result);
   }

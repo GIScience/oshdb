@@ -47,7 +47,7 @@ class TestHelpersOSMEntitySnapshotView {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(42, result1.get(result1.firstKey()));
@@ -58,7 +58,7 @@ class TestHelpersOSMEntitySnapshotView {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(51, result2.entrySet().size());
     assertEquals(1, result2.get(result2.firstKey()));
@@ -69,7 +69,7 @@ class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .view()
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(42, result3.intValue());
 
@@ -79,7 +79,7 @@ class TestHelpersOSMEntitySnapshotView {
         .view()
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .map(snapshot -> 1)
-        .aggregate(Agg::sumInt);
+        .reduce(Agg::sumInt);
 
     assertEquals(21, result4.get(true));
     assertEquals(21, result4.get(false));
@@ -134,7 +134,7 @@ class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .view()
         .map(snapshot -> snapshot.getEntity().getId() % 2)
-        .aggregate(Agg::average);
+        .reduce(Agg::average);
 
     assertEquals(0.5, result1.doubleValue(), DELTA);
 
@@ -144,7 +144,7 @@ class TestHelpersOSMEntitySnapshotView {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> snapshot.getEntity().getId() % 2)
-        .aggregate(Agg::average);
+        .reduce(Agg::average);
 
     assertEquals(51, result2.entrySet().size());
     assertEquals(1.0, result2.get(result2.firstKey()), DELTA);
@@ -156,7 +156,7 @@ class TestHelpersOSMEntitySnapshotView {
         .view()
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .map(snapshot -> snapshot.getEntity().getId() % 2)
-        .aggregate(Agg::average);;
+        .reduce(Agg::average);;
 
     assertEquals(0.0, result4.get(true).doubleValue(), DELTA);
     assertEquals(1.0, result4.get(false).doubleValue(), DELTA);
@@ -172,7 +172,7 @@ class TestHelpersOSMEntitySnapshotView {
             snapshot.getEntity().getId() % 2,
             1 * (snapshot.getEntity().getId() % 2)
         ))
-        .aggregate(Agg::weightedAverage);
+        .reduce(Agg::weightedAverage);
 
     assertEquals(1.0, result1.doubleValue(), DELTA);
 
@@ -185,7 +185,7 @@ class TestHelpersOSMEntitySnapshotView {
             snapshot.getEntity().getId() % 2,
             2 * (snapshot.getEntity().getId() % 2)
         ))
-        .aggregate(Agg::weightedAverage);
+        .reduce(Agg::weightedAverage);
 
     assertEquals(51, result2.entrySet().size());
     assertEquals(1.0, result2.get(result2.firstKey()), DELTA);
@@ -200,7 +200,7 @@ class TestHelpersOSMEntitySnapshotView {
             snapshot.getEntity().getId() % 2,
             2 * (snapshot.getEntity().getId() % 2)
         ))
-        .aggregate(Agg::weightedAverage);
+        .reduce(Agg::weightedAverage);
 
     assertEquals(Double.NaN, result4.get(true).doubleValue(), DELTA);
     assertEquals(1.0, result4.get(false).doubleValue(), DELTA);
@@ -214,7 +214,7 @@ class TestHelpersOSMEntitySnapshotView {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> snapshot.getEntity().getId())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(1, result1.entrySet().size());
     assertEquals(42, result1.get(result1.firstKey()).size());
@@ -225,7 +225,7 @@ class TestHelpersOSMEntitySnapshotView {
         .view()
         .aggregateByTimestamp()
         .map(snapshot -> snapshot.getEntity().getId())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(51, result2.entrySet().size());
     assertEquals(1, result2.get(result2.firstKey()).size());
@@ -236,7 +236,7 @@ class TestHelpersOSMEntitySnapshotView {
         .timestamps(timestamps1)
         .view()
         .map(snapshot -> snapshot.getEntity().getId())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(42, result3.size());
 
@@ -246,7 +246,7 @@ class TestHelpersOSMEntitySnapshotView {
         .view()
         .aggregateBy(snapshot -> snapshot.getEntity().getId() % 2 == 0)
         .map(snapshot -> snapshot.getEntity().getId())
-        .aggregate(Agg::uniq);
+        .reduce(Agg::uniq);
 
     assertEquals(21, result4.get(true).size());
     assertEquals(21, result4.get(false).size());
