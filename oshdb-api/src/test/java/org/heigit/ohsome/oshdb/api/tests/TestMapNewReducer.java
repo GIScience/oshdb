@@ -12,7 +12,7 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
 
-class TestMapNewReducer {
+abstract class TestMapNewReducer {
   final OSHDBDatabase oshdb;
   OSHDBJdbc keytables = null;
 
