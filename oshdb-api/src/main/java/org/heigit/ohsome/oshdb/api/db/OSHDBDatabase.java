@@ -1,8 +1,14 @@
 package org.heigit.ohsome.oshdb.api.db;
 
 import java.util.OptionalLong;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
 /**
@@ -21,6 +27,18 @@ public abstract class OSHDBDatabase implements AutoCloseable {
    * @return a new mapReducer object operating on the given OSHDB backend
    */
   public abstract <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass);
+
+
+  public <X, Y> Y query(OSHDBView<?> view,
+      SerializableFunction<Stream<OSHEntity>, X> transform,
+      Y identity, BiFunction<Y, X, Y> accumulator, BinaryOperator<Y> combiner) {
+    throw new UnsupportedOperationException();
+  }
+
+  public <X> Stream<X> query(OSHDBView<?> view,
+      SerializableFunction<Stream<OSHEntity>, Stream<X>> transform) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Returns metadata about the given OSHDB.

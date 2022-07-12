@@ -1,23 +1,41 @@
 package org.heigit.ohsome.oshdb.api.db;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.base.Joiner;
+import com.google.common.collect.Streams;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Spliterators;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcMultithread;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcSinglethread;
+import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
+import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
+import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
+import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
 /**
@@ -54,7 +72,7 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
       Collection<String> expectedTables = Stream.of(OSMType.values())
           .map(TableNames::forOSMType).filter(Optional::isPresent).map(Optional::get)
           .map(t -> t.toString(this.prefix()).toLowerCase())
-          .collect(Collectors.toList());
+          .collect(toList());
       List<String> allTables = new LinkedList<>();
       var metaData = getConnection().getMetaData();
       try (var rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
@@ -111,5 +129,109 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
   @Override
   public void close() throws Exception {
     this.connection.close();
+  }
+
+  @Override
+  public <X, Y> Y query(OSHDBView<?> view, SerializableFunction<Stream<OSHEntity>, X> transform,
+      Y identity, BiFunction<Y, X, Y> accumulator, BinaryOperator<Y> combiner) {
+    var filter = view.getPreFilter();
+    return parallel(Streams.stream(view.getCellIdRanges()),
+        stream -> stream.flatMap(range -> getOshCellsStream(range, view))
+        .map(GridOSHEntity::getEntities)
+        .map(Streams::stream)
+        .map(entities -> entities.map(OSHEntity.class::cast))
+        .map(entities -> entities.filter(filter))
+        .map(transform))
+    .reduce(identity, accumulator, combiner);
+  }
+
+  @Override
+  public <X> Stream<X> query(OSHDBView<?> view,
+      SerializableFunction<Stream<OSHEntity>, Stream<X>> transform) {
+    var filter = view.getPreFilter();
+    return Streams.stream(view.getCellIdRanges())
+      .parallel()
+        .flatMap(range -> getOshCellsStream(range, view))
+        .map(GridOSHEntity::getEntities)
+        .map(Streams::stream)
+        .map(stream -> stream.map(OSHEntity.class::cast))
+        .map(stream -> stream.filter(filter))
+        .map(transform)
+        .flatMap(stream -> stream)
+        //.map(stream -> stream.collect(toList()))
+      .sequential()
+      //.flatMap(Collection::stream)
+      ;
+  }
+
+  private <X,Y> Stream<Y> parallel(Stream<X> stream, Function<Stream<X>, Stream<Y>> map){
+    if (multithreading()) {
+      return map.apply(stream.parallel()).sequential();
+    }
+    return map.apply(stream);
+  }
+
+  protected Stream<GridOSHEntity> getOshCellsStream(CellIdRange cellIdRange, OSHDBView<?> view) {
+    try {
+      if (view.getTypeFilter().isEmpty()) {
+        return Stream.empty();
+      }
+      var oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange, view);
+      if (!oshCellsRawData.next()) {
+        return Stream.empty();
+      }
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+          new Iterator<GridOSHEntity>() {
+            @Override
+            public boolean hasNext() {
+              try {
+                return !oshCellsRawData.isClosed();
+              } catch (SQLException e) {
+                throw new OSHDBException(e);
+              }
+            }
+
+            @Override
+            public GridOSHEntity next() {
+              try {
+                if (!hasNext()) {
+                  throw new NoSuchElementException();
+                }
+                GridOSHEntity data = readOshCellRawData(oshCellsRawData);
+                if (!oshCellsRawData.next()) {
+                  oshCellsRawData.close();
+                }
+                return data;
+              } catch (Exception e) {
+                throw new OSHDBException(e);
+              }
+            }
+          }, 0
+          ), false).onClose(() -> {try { oshCellsRawData.close(); } catch (SQLException e) {}});
+    } catch (SQLException e) {
+      throw new OSHDBException(e);
+    }
+  }
+
+  protected ResultSet getOshCellsRawDataFromDb(CellIdRange cellIdRange, OSHDBView<?> view)
+      throws SQLException {
+    String sqlQuery = view.getTypeFilter().stream()
+        .map(osmType ->
+        TableNames.forOSMType(osmType).map(tn -> tn.toString(prefix()))
+            )
+        .filter(Optional::isPresent).map(Optional::get)
+        .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
+        .collect(Collectors.joining(" union all "));
+    PreparedStatement pstmt = getConnection().prepareStatement(sqlQuery);
+    pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
+    pstmt.setLong(2, cellIdRange.getStart().getId());
+    pstmt.setLong(3, cellIdRange.getEnd().getId());
+    return pstmt.executeQuery();
+  }
+
+  protected GridOSHEntity readOshCellRawData(ResultSet oshCellsRawData)
+      throws IOException, ClassNotFoundException, SQLException {
+    return (GridOSHEntity)
+        (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
   }
 }
