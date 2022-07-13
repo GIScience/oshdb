@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
 import java.util.stream.Stream;
-import org.heigit.ohsome.oshdb.api.mapreducer.NewMapAggregator;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
@@ -10,13 +9,20 @@ import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 
 public class MapReducerOSHEntity<X> extends MapReducerBase<OSHEntity, X> {
 
+
   MapReducerOSHEntity(OSHDBView<?> view,
       SerializableFunction<OSHEntity, Stream<X>> transform) {
-    super(view, x -> Stream.of(x), transform);
+    this(view, Stream::of, transform);
+  }
+
+  private MapReducerOSHEntity(OSHDBView<?> view,
+      SerializableFunction<OSHEntity, Stream<OSHEntity>> base,
+      SerializableFunction<OSHEntity, Stream<X>> transform) {
+    super(view, base, transform);
   }
 
   private <R> MapReducerOSHEntity<R> with(SerializableFunction<OSHEntity, Stream<R>> transform) {
-    return new MapReducerOSHEntity(view, transform);
+    return new MapReducerOSHEntity<>(view, base, transform);
   }
 
   @Override
@@ -47,8 +53,7 @@ public class MapReducerOSHEntity<X> extends MapReducerBase<OSHEntity, X> {
   }
 
   @Override
-  public <U> NewMapAggregator<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
-    // TODO Auto-generated method stub
+  public <U> MapAggregatorOSHEntity<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
     return null;
   }
 }

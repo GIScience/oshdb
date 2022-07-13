@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.snapshot;
 
 import static java.util.Map.entry;
-import java.util.Map;
+
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
@@ -14,13 +14,13 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 
 public class MapReducerSnapshot<X> extends MapReducerBase<OSMEntitySnapshot, X> {
 
-  public MapReducerSnapshot(OSHDBView<?> view,
+  MapReducerSnapshot(OSHDBView<?> view,
       SerializableFunction<OSHEntity, Stream<OSMEntitySnapshot>> base,
       SerializableFunction<OSMEntitySnapshot, Stream<X>> transform) {
     super(view, base, transform);
   }
 
-  private <R> MapReducerSnapshot<R> with(SerializableFunction<OSMEntitySnapshot, Stream<R>> transform){
+  private <R> MapReducerSnapshot<R> with(SerializableFunction<OSMEntitySnapshot, Stream<R>> transform) {
     return new MapReducerSnapshot<>(view, base, transform);
   }
 
@@ -51,7 +51,7 @@ public class MapReducerSnapshot<X> extends MapReducerBase<OSMEntitySnapshot, X> 
 
   @Override
   public <U> MapAggregatorSnapshot<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
-    return new MapAggregatorSnapshot<>(map(x -> Map.entry(indexer.apply(x), x)));
+    return new MapAggregatorSnapshot<>(map(x -> entry(indexer.apply(x), x)));
   }
 
   public MapAggregatorSnapshot<OSHDBTimestamp, X> aggregateByTimestamp() {

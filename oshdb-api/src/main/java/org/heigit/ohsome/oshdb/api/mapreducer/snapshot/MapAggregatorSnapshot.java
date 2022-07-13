@@ -18,23 +18,29 @@ public class MapAggregatorSnapshot<U, X> extends MapAggregatorBase<OSMEntitySnap
     this.mr = mr;
   }
 
+  private <V, R> MapAggregatorSnapshot<V, R> with(MapReducerSnapshot<Entry<V, R>> mr) {
+    return new MapAggregatorSnapshot<>(mr);
+  }
+
   @Override
   public <R> MapAggregatorSnapshot<U, R> map(SerializableFunction<X, R> map) {
-    return new MapAggregatorSnapshot<>(mr.map(ux -> entry(ux.getKey(), map.apply(ux.getValue()))));
+    return with(mr.map(entryMap(map)));
   }
 
   @Override
   public <R> MapAggregatorSnapshot<U, R> flatMap(SerializableFunction<X, Stream<R>> map) {
-    return new MapAggregatorSnapshot<>(mr.flatMap(ux -> map.apply(ux.getValue()).map(r -> entry(ux.getKey(), r))));
+    return with(mr.flatMap(entryFlatMap(map)));
   }
 
   @Override
   public <V> MapAggregatorSnapshot<CombinedIndex<U, V>, X> aggregateBy(
       SerializableFunction<X, V> indexer) {
-    return new MapAggregatorSnapshot<>(mr.map(ux -> entry(new CombinedIndex<U, V>(ux.getKey(), indexer.apply(ux.getValue())), ux.getValue())));
+    return with(mr.map(
+        ux ->
+        entry(new CombinedIndex<U, V>(ux.getKey(), indexer.apply(ux.getValue())), ux.getValue())));
   }
 
   public MapAggregatorSnapshot<CombinedIndex<U, OSHDBTimestamp>, X> aggregateByTimestamp() {
-    return new MapAggregatorSnapshot<>(mr.mapBase((s, ux) -> entry(new CombinedIndex(ux.getKey(), s.getTimestamp()), ux.getValue())));
+    return with(mr.mapBase((s, ux) -> entry(new CombinedIndex(ux.getKey(), s.getTimestamp()), ux.getValue())));
   }
 }

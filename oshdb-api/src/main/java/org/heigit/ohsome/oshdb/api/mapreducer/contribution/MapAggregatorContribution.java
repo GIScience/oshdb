@@ -14,28 +14,31 @@ public class MapAggregatorContribution<U, X> extends MapAggregatorBase<OSMContri
 
   private final MapReducerContribution<Entry<U, X>> mr;
 
-  MapAggregatorContribution(MapReducerContribution<Entry<U,X>> mr) {
+  MapAggregatorContribution(MapReducerContribution<Entry<U, X>> mr) {
     this.mr = mr;
+  }
+
+  private <V, R> MapAggregatorContribution<V, R> with(MapReducerContribution<Entry<V, R>> mr) {
+    return new MapAggregatorContribution<>(mr);
   }
 
   @Override
   public <R> MapAggregatorContribution<U, R> map(SerializableFunction<X, R> map) {
-    return new MapAggregatorContribution<>(mr.map(ux -> entry(ux.getKey(), map.apply(ux.getValue()))));
+    return with(mr.map(entryMap(map)));
   }
 
   @Override
   public <R> MapAggregatorContribution<U, R> flatMap(SerializableFunction<X, Stream<R>> map) {
-    return new MapAggregatorContribution<>(mr.flatMap(ux -> map.apply(ux.getValue()).map(r -> entry(ux.getKey(), r))));
+    return with(mr.flatMap(entryFlatMap(map)));
   }
 
   @Override
-  public <V> MapAggregatorContribution<CombinedIndex<U, V>, X> aggregateBy(
-      SerializableFunction<X, V> indexer) {
-    return new MapAggregatorContribution<>(mr.map(ux -> entry(new CombinedIndex<U, V>(ux.getKey(), indexer.apply(ux.getValue())), ux.getValue())));
+  public <V> MapAggregatorContribution<CombinedIndex<U, V>, X> aggregateBy(SerializableFunction<X, V> indexer) {
+    return with(mr.map(ux -> entry(new CombinedIndex<U, V>(ux.getKey(), indexer.apply(ux.getValue())), ux.getValue())));
   }
 
   public MapAggregatorContribution<CombinedIndex<U, OSHDBTimestamp>, X> aggregateByTimestamp() {
-    return new MapAggregatorContribution<>(mr.mapBase((s, ux) -> entry(new CombinedIndex(ux.getKey(), s.getTimestamp()), ux.getValue())));
+    return with(mr.mapBase((s, ux) -> entry(new CombinedIndex(ux.getKey(), s.getTimestamp()), ux.getValue())));
   }
 
 }

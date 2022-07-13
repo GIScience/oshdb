@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.api.tests;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
+import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
@@ -68,6 +69,14 @@ abstract class TestMapNewReducer {
         .groupByEntity()
         .map(List::size)
         .reduce(Agg::sumInt));
+
+    // "groupByEntity"
+    assertEquals(7, createMapReducerOSMContribution()
+        .timestamps(timestamps72)
+        .filter("id:617308093")
+        .view()
+        .groupByEntity(s -> Stream.of(s.count()))
+        .reduce(Agg::sumLong));
   }
 
 }

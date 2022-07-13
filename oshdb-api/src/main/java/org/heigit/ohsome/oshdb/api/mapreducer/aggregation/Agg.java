@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
-import org.heigit.ohsome.oshdb.api.mapreducer.NewMapReducer;
+import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
 
 public class Agg {
   private Agg() {
@@ -16,7 +16,7 @@ public class Agg {
    *
    * @return the sum of the current data
    */
-  public static Long sumLong(NewMapReducer<Long> mr) {
+  public static Long sumLong(MapReducerBase<?, Long> mr) {
     return mr.reduce(() -> 0L, Long::sum, Long::sum);
   }
 
@@ -25,7 +25,7 @@ public class Agg {
    *
    * @return the sum of the current data
    */
-  public static Long sumInt(NewMapReducer<Integer> mr) {
+  public static Long sumInt(MapReducerBase<?, Integer> mr) {
     return mr.reduce(() -> 0L, Long::sum, Long::sum);
   }
 
@@ -39,7 +39,7 @@ public class Agg {
    *
    * @return the set of distinct values
    */
-  public static <T> Set<T> uniq(NewMapReducer<T> mr) {
+  public static <T> Set<T> uniq(MapReducerBase<?, T> mr) {
     return mr.reduce(Agg::uniqIdentitySupplier, Agg::uniqAccumulator, Agg::uniqCombiner);
   }
 
