@@ -57,9 +57,8 @@ public abstract class MapReducerBase<B, X> {
 
   public <S> S reduce(SerializableSupplier<S> identity,
       SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) {
-    var transformer = base.andThen(b -> b.flatMap(transform));
-    return view.oshdb.query(view,
-        entities -> entities.flatMap(transformer).reduce(identity.get(), accumulator, combiner),
+    return view.oshdb.query(view, osh -> base.apply(osh).flatMap(transform)
+        .reduce(identity.get(), accumulator, combiner),
         identity.get(), combiner, combiner);
   }
 
@@ -72,8 +71,7 @@ public abstract class MapReducerBase<B, X> {
   }
 
   public Stream<X> stream() {
-    var transformer = base.andThen(b -> b.flatMap(transform));
-    return view.oshdb.query(view, entities -> entities.flatMap(transformer));
+    return view.oshdb.query(view, osh -> base.apply(osh).flatMap(transform));
   }
 
   public long count() {

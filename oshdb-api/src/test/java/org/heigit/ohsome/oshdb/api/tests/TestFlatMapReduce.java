@@ -3,19 +3,16 @@ package org.heigit.ohsome.oshdb.api.tests;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -34,9 +31,8 @@ class TestFlatMapReduce {
     oshdb = new OSHDBH2("../data/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private OSMContributionView createMapReducerOSMContribution() throws Exception {
+    return new OSMContributionView(oshdb, null)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -45,16 +41,12 @@ class TestFlatMapReduce {
   void test() throws Exception {
     Set<Entry<Integer, Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMap(contribution -> {
-          if (contribution.getEntityAfter().getId() != 617308093) {
-            return new ArrayList<>();
-          }
-          List<Entry<Integer, Integer>> ret = new ArrayList<>();
-          for (OSHDBTag tag : contribution.getEntityAfter().getTags()) {
-            ret.add(new SimpleImmutableEntry<>(tag.getKey(), tag.getValue()));
-          }
-          return ret;
-        })
+        .view()
+        .flatMap(contribution -> Stream.of(contribution)
+            .map(OSMContribution::getEntityAfter)
+            .filter(entity -> entity.getId() == 617308093)
+            .flatMap(entity -> entity.getTags().stream())
+            .map(tag -> Map.entry(tag.getKey(), tag.getValue())))
         .reduce(
             HashSet::new,
             (x, y) -> {
@@ -79,21 +71,8 @@ class TestFlatMapReduce {
     input.add(3);
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMap(contribution -> input)
-        .uniq();
-
-    assertEquals(input, result);
-  }
-
-  @Test
-  void testIterable() throws Exception {
-    Set<Integer> input = new TreeSet<>();
-    input.add(1);
-    input.add(2);
-    input.add(3);
-    Set<Integer> result = createMapReducerOSMContribution()
-        .timestamps(timestamps72)
-        .flatMap(contribution -> input.stream()::iterator)
+        .view()
+        .flatMap(contribution -> input.stream())
         .uniq();
 
     assertEquals(input, result);

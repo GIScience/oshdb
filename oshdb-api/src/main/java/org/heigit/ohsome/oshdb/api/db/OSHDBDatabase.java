@@ -30,13 +30,13 @@ public abstract class OSHDBDatabase implements AutoCloseable {
 
 
   public <X, Y> Y query(OSHDBView<?> view,
-      SerializableFunction<Stream<OSHEntity>, X> transform,
+      SerializableFunction<OSHEntity, X> transform,
       Y identity, BiFunction<Y, X, Y> accumulator, BinaryOperator<Y> combiner) {
     throw new UnsupportedOperationException();
   }
 
   public <X> Stream<X> query(OSHDBView<?> view,
-      SerializableFunction<Stream<OSHEntity>, Stream<X>> transform) {
+      SerializableFunction<OSHEntity, Stream<X>> transform) {
     throw new UnsupportedOperationException();
   }
 

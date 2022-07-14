@@ -28,8 +28,7 @@ abstract class TestMapNewReducer {
   }
 
   protected OSMContributionView createMapReducerOSMContribution() throws Exception {
-    var view = new OSMContributionView(oshdb, keytables);
-    return view
+    return new OSMContributionView(oshdb, keytables)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }

@@ -7,18 +7,18 @@ import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.mapreducer.CombinedIndex;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapAggregatorBase;
+import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 
 public class MapAggregatorSnapshot<U, X> extends MapAggregatorBase<OSMEntitySnapshot, U, X> {
 
-  private final MapReducerSnapshot<Entry<U, X>> mr;
-
-  MapAggregatorSnapshot(MapReducerSnapshot<Entry<U,X>> mr) {
-    this.mr = mr;
+  MapAggregatorSnapshot(MapReducerBase<OSMEntitySnapshot, Entry<U, X>> mr) {
+    super(mr);
   }
 
-  private <V, R> MapAggregatorSnapshot<V, R> with(MapReducerSnapshot<Entry<V, R>> mr) {
+  private <V, R> MapAggregatorSnapshot<V, R> with(MapReducerBase<OSMEntitySnapshot, Entry<V, R>> mr) {
     return new MapAggregatorSnapshot<>(mr);
   }
 
@@ -30,6 +30,11 @@ public class MapAggregatorSnapshot<U, X> extends MapAggregatorBase<OSMEntitySnap
   @Override
   public <R> MapAggregatorSnapshot<U, R> flatMap(SerializableFunction<X, Stream<R>> map) {
     return with(mr.flatMap(entryFlatMap(map)));
+  }
+
+  @Override
+  public MapAggregatorBase<OSMEntitySnapshot, U, X> filter(SerializablePredicate<X> predicate) {
+    return with(mr.filter(entryFilter(predicate)));
   }
 
   @Override

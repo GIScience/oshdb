@@ -7,18 +7,20 @@ import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.mapreducer.CombinedIndex;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapAggregatorBase;
+import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
+import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 
 public class MapAggregatorContribution<U, X> extends MapAggregatorBase<OSMContribution, U, X> {
 
-  private final MapReducerContribution<Entry<U, X>> mr;
+  //private final MapReducerContribution<Entry<U, X>> mr;
 
-  MapAggregatorContribution(MapReducerContribution<Entry<U, X>> mr) {
-    this.mr = mr;
+  MapAggregatorContribution(MapReducerBase<OSMContribution, Entry<U, X>> mr) {
+    super(mr);
   }
 
-  private <V, R> MapAggregatorContribution<V, R> with(MapReducerContribution<Entry<V, R>> mr) {
+  private <V, R> MapAggregatorContribution<V, R> with(MapReducerBase<OSMContribution, Entry<V, R>> mr) {
     return new MapAggregatorContribution<>(mr);
   }
 
@@ -30,6 +32,11 @@ public class MapAggregatorContribution<U, X> extends MapAggregatorBase<OSMContri
   @Override
   public <R> MapAggregatorContribution<U, R> flatMap(SerializableFunction<X, Stream<R>> map) {
     return with(mr.flatMap(entryFlatMap(map)));
+  }
+
+  @Override
+  public MapAggregatorContribution<U, X> filter(SerializablePredicate<X> predicate) {
+    return with(mr.filter(entryFilter(predicate)));
   }
 
   @Override

@@ -131,44 +131,62 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
     this.connection.close();
   }
 
+  static class Collector<T, R> {
+    private final BiFunction<R, T, R> accumulator;
+    private final BinaryOperator<R> combiner;
+
+    private R r;
+
+    Collector(R r, BiFunction<R, T, R> accumulator, BinaryOperator<R> combiner) {
+      this.r = r;
+      this.accumulator = accumulator;
+      this.combiner = combiner;
+    }
+
+    public void accumulate(T t) {
+      r = accumulator.apply(r, t);
+    }
+
+    public Collector<T, R> combine(Collector<T, R> other) {
+      r = combiner.apply(r, other.r);
+      return this;
+    }
+
+    public R get() {
+      return r;
+    }
+  }
+
   @Override
-  public <X, Y> Y query(OSHDBView<?> view, SerializableFunction<Stream<OSHEntity>, X> transform,
+  public <X, Y> Y query(OSHDBView<?> view, SerializableFunction<OSHEntity, X> transform,
       Y identity, BiFunction<Y, X, Y> accumulator, BinaryOperator<Y> combiner) {
     var filter = view.getPreFilter();
-    return parallel(Streams.stream(view.getCellIdRanges()),
-        stream -> stream.flatMap(range -> getOshCellsStream(range, view))
+    return Streams.stream(view.getCellIdRanges())
+        .flatMap(range -> getOshCellsStream(range, view))
         .map(GridOSHEntity::getEntities)
-        .map(Streams::stream)
-        .map(entities -> entities.map(OSHEntity.class::cast))
-        .map(entities -> entities.filter(filter))
-        .map(transform))
-    .reduce(identity, accumulator, combiner);
+        .flatMap(Streams::stream)
+        .parallel()
+          .map(OSHEntity.class::cast)
+          .filter(filter)
+          .map(transform)
+        .collect(() -> new Collector<>(identity, accumulator, combiner),
+            Collector::accumulate,
+            Collector::combine)
+         .get();
   }
 
   @Override
   public <X> Stream<X> query(OSHDBView<?> view,
-      SerializableFunction<Stream<OSHEntity>, Stream<X>> transform) {
+      SerializableFunction<OSHEntity, Stream<X>> transform) {
     var filter = view.getPreFilter();
     return Streams.stream(view.getCellIdRanges())
-      .parallel()
         .flatMap(range -> getOshCellsStream(range, view))
         .map(GridOSHEntity::getEntities)
-        .map(Streams::stream)
-        .map(stream -> stream.map(OSHEntity.class::cast))
-        .map(stream -> stream.filter(filter))
-        .map(transform)
-        .flatMap(stream -> stream)
-        //.map(stream -> stream.collect(toList()))
-      .sequential()
-      //.flatMap(Collection::stream)
-      ;
-  }
-
-  private <X,Y> Stream<Y> parallel(Stream<X> stream, Function<Stream<X>, Stream<Y>> map){
-    if (multithreading()) {
-      return map.apply(stream.parallel()).sequential();
-    }
-    return map.apply(stream);
+        .flatMap(Streams::stream)
+        .parallel()
+        .map(OSHEntity.class::cast)
+        .filter(filter)
+        .flatMap(transform);
   }
 
   protected Stream<GridOSHEntity> getOshCellsStream(CellIdRange cellIdRange, OSHDBView<?> view) {
