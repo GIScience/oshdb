@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
+import com.google.common.collect.Streams;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -33,6 +34,11 @@ public class MapReducerOSHEntity<X> extends MapReducerBase<OSHEntity, X> {
   @Override
   public <R> MapReducerOSHEntity<R> flatMap(SerializableFunction<X, Stream<R>> mapper) {
     return with(apply(sx -> sx.flatMap(mapper)));
+  }
+
+  @Override
+  public <R> MapReducerBase<OSHEntity, R> flatMapIterable(SerializableFunction<X, Iterable<R>> mapper) {
+    return flatMap(x -> Streams.stream(mapper.apply(x)));
   }
 
   @Override

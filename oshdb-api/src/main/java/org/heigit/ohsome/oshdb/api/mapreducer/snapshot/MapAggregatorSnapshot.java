@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.snapshot;
 
 import static java.util.Map.entry;
-
+import com.google.common.collect.Streams;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
@@ -23,13 +23,19 @@ public class MapAggregatorSnapshot<U, X> extends MapAggregatorBase<OSMEntitySnap
   }
 
   @Override
-  public <R> MapAggregatorSnapshot<U, R> map(SerializableFunction<X, R> map) {
-    return with(mr.map(entryMap(map)));
+  public <R> MapAggregatorSnapshot<U, R> map(SerializableFunction<X, R> mapper) {
+    return with(mr.map(entryMap(mapper)));
   }
 
   @Override
-  public <R> MapAggregatorSnapshot<U, R> flatMap(SerializableFunction<X, Stream<R>> map) {
-    return with(mr.flatMap(entryFlatMap(map)));
+  public <R> MapAggregatorSnapshot<U, R> flatMap(SerializableFunction<X, Stream<R>> mapper) {
+    return with(mr.flatMap(entryFlatMap(mapper)));
+  }
+
+  @Override
+  public <R> MapAggregatorBase<OSMEntitySnapshot, U, R> flatMapIterable(
+      SerializableFunction<X, Iterable<R>> mapper) {
+    return flatMap(x -> Streams.stream(mapper.apply(x)));
   }
 
   @Override
@@ -42,7 +48,7 @@ public class MapAggregatorSnapshot<U, X> extends MapAggregatorBase<OSMEntitySnap
       SerializableFunction<X, V> indexer) {
     return with(mr.map(
         ux ->
-        entry(new CombinedIndex<U, V>(ux.getKey(), indexer.apply(ux.getValue())), ux.getValue())));
+        entry(new CombinedIndex<>(ux.getKey(), indexer.apply(ux.getValue())), ux.getValue())));
   }
 
   public MapAggregatorSnapshot<CombinedIndex<U, OSHDBTimestamp>, X> aggregateByTimestamp() {

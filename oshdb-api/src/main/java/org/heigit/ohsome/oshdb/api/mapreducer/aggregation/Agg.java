@@ -2,8 +2,10 @@ package org.heigit.ohsome.oshdb.api.mapreducer.aggregation;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
+import org.heigit.ohsome.oshdb.api.mapreducer.base.MapAggregatorBase;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
 
 public class Agg {
@@ -27,6 +29,10 @@ public class Agg {
    */
   public static Long sumInt(MapReducerBase<?, Integer> mr) {
     return mr.reduce(() -> 0L, Long::sum, Long::sum);
+  }
+
+  public static <U> Map<U, Long> sumInt(MapAggregatorBase<?, U, Integer> ma) {
+    return ma.reduce(() ->  0L, Long::sum, Long::sum);
   }
 
   /**

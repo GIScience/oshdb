@@ -3,8 +3,11 @@ package org.heigit.ohsome.oshdb.api.mapreducer.base;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.mapreducer.CombinedIndex;
+import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
@@ -21,6 +24,8 @@ public abstract class MapAggregatorBase<B, U, X> {
   public abstract <R> MapAggregatorBase<B, U, R> map(SerializableFunction<X, R> map);
 
   public abstract <R> MapAggregatorBase<B, U, R> flatMap(SerializableFunction<X, Stream<R>> map);
+
+  public abstract <R> MapAggregatorBase<B, U, R> flatMapIterable(SerializableFunction<X, Iterable<R>> map);
 
   public abstract MapAggregatorBase<B, U, X> filter(SerializablePredicate<X> predicate);
 
@@ -44,9 +49,22 @@ public abstract class MapAggregatorBase<B, U, X> {
     return this.reduce(identity, accumulator::apply, accumulator);
   }
 
+  public <S> Map<U, S>  reduce(Function<MapAggregatorBase<B, U, X>, Map<U, S>> reducer){
+    return reducer.apply(this);
+  }
+
   public Stream<Entry<U, X>> stream() {
     return mr.stream();
   }
+
+  public void forEach(BiConsumer<U, X> consumer) {
+    stream().forEach(entry -> consumer.accept(entry.getKey(), entry.getValue()));
+  }
+
+  public Map<U, Long> count() {
+    return map(x -> 1).reduce(Agg::sumInt);
+  }
+
 
   protected <R> SerializableFunction<Entry<U, X>, Entry<U,R>> entryMap(SerializableFunction<X, R> map) {
     return ux -> Map.entry(ux.getKey(), map.apply(ux.getValue()));

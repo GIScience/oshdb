@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
+import com.google.common.collect.Streams;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.mapreducer.CombinedIndex;
@@ -14,13 +15,18 @@ public class MapAggregatorOSHEntity<U, X> extends MapAggregatorBase<OSHEntity, U
   }
 
   @Override
-  public <R> MapAggregatorOSHEntity<U, R> map(SerializableFunction<X, R> map) {
+  public <R> MapAggregatorOSHEntity<U, R> map(SerializableFunction<X, R> mapper) {
     return null;
   }
 
   @Override
-  public <R> MapAggregatorOSHEntity<U, R> flatMap(SerializableFunction<X, Stream<R>> map) {
+  public <R> MapAggregatorOSHEntity<U, R> flatMap(SerializableFunction<X, Stream<R>> mapper) {
     return null;
+  }
+
+  @Override
+  public <R> MapAggregatorBase<OSHEntity, U, R> flatMapIterable( SerializableFunction<X, Iterable<R>> mapper) {
+    return flatMap(x -> Streams.stream(mapper.apply(x)));
   }
 
   @Override

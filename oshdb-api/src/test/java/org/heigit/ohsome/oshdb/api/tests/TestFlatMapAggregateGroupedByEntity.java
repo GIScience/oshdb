@@ -11,8 +11,7 @@ import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -34,19 +33,19 @@ class TestFlatMapAggregateGroupedByEntity {
     oshdb = new OSHDBH2("../data/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private OSMContributionView createMapReducerOSMContribution() throws Exception {
+    return new OSMContributionView(oshdb, null)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
 
   @Test
   void test() throws Exception {
-    SortedMap<Long, Integer> result = createMapReducerOSMContribution()
+    var result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
+        .view()
         .groupByEntity()
-        .flatMap(contributions -> {
+        .flatMapIterable(contributions -> {
           if (contributions.get(0).getEntityAfter().getId() != 617308093) {
             return new ArrayList<>();
           }

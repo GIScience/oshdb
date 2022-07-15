@@ -15,7 +15,7 @@ import org.locationtech.jts.geom.Polygon;
 public class OSMEntitySnapshotView extends OSHDBView<OSMEntitySnapshotView> {
 
 
-  protected OSMEntitySnapshotView(OSHDBDatabase oshdb, OSHDBJdbc keytables) {
+  public OSMEntitySnapshotView(OSHDBDatabase oshdb, OSHDBJdbc keytables) {
     super(oshdb, keytables);
   }
 

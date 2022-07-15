@@ -1,7 +1,10 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.contribution;
 
+import static java.util.Map.entry;
+import com.google.common.collect.Streams;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -33,6 +36,12 @@ public class MapReducerContribution<X> extends MapReducerBase<OSMContribution, X
   }
 
   @Override
+  public <R> MapReducerBase<OSMContribution, R> flatMapIterable(
+      SerializableFunction<X, Iterable<R>> mapper) {
+    return flatMap(x -> Streams.stream(mapper.apply(x)));
+  }
+
+  @Override
   public MapReducerContribution<X> filter(SerializablePredicate<X> predicate) {
     return with(apply(x -> x.filter(predicate)));
   }
@@ -52,5 +61,9 @@ public class MapReducerContribution<X> extends MapReducerBase<OSMContribution, X
   @Override
   public <U> MapAggregatorContribution<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
     return new MapAggregatorContribution<>(map(x -> Map.entry(indexer.apply(x), x)));
+  }
+
+  public MapAggregatorContribution<OSHDBTimestamp, X> aggregateByTimestamp() {
+    return new MapAggregatorContribution<>(mapBase((s, x) -> entry(s.getTimestamp(), x)));
   }
 }

@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
 import static java.util.stream.Collectors.toList;
-
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
@@ -31,6 +31,8 @@ public abstract class MapReducerBase<B, X> {
   public abstract <R> MapReducerBase<B, R> map(SerializableFunction<X, R> mapper);
 
   public abstract <R> MapReducerBase<B, R> flatMap(SerializableFunction<X, Stream<R>> mapper);
+
+  public abstract <R> MapReducerBase<B, R> flatMapIterable(SerializableFunction<X, Iterable<R>> mapper);
 
   public abstract MapReducerBase<B, X> filter(SerializablePredicate<X> predicate);
 
@@ -66,12 +68,16 @@ public abstract class MapReducerBase<B, X> {
     return this.reduce(identity, accumulator::apply, accumulator);
   }
 
-  public <S> S reduce(Function<MapReducerBase<B, X>, S> aggregator) {
-    return aggregator.apply(this);
+  public <S> S reduce(Function<MapReducerBase<B, X>, S> reducer) {
+    return reducer.apply(this);
   }
 
   public Stream<X> stream() {
     return view.oshdb.query(view, osh -> base.apply(osh).flatMap(transform));
+  }
+
+  public void forEach(Consumer<X> consumer) {
+    stream().forEach(consumer);
   }
 
   public long count() {
