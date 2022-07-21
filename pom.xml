@@ -33,6 +33,7 @@
     <jts.version>1.18.2</jts.version>
     <wololo.version>0.17.0</wololo.version>
     <ignite.version>2.13.0</ignite.version>
+    <!-- h2.version has to be in sync with ignite.version -->
     <h2.version>1.4.197</h2.version>
     <postgresql.version>42.4.0</postgresql.version>
     <slf4j.version>1.7.36</slf4j.version>
