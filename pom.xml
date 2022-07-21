@@ -29,13 +29,13 @@
   </modules>
 
   <properties>
-    <guava.version>30.1.1-jre</guava.version>
+    <guava.version>31.1-jre</guava.version>
     <jts.version>1.18.2</jts.version>
-    <wololo.version>0.16.1</wololo.version>
-    <ignite.version>2.10.0</ignite.version>
+    <wololo.version>0.17.0</wololo.version>
+    <ignite.version>2.13.0</ignite.version>
     <h2.version>1.4.197</h2.version>
-    <postgresql.version>42.1.4</postgresql.version>
-    <slf4j.version>1.7.32</slf4j.version>
+    <postgresql.version>42.4.0</postgresql.version>
+    <slf4j.version>1.7.36</slf4j.version>
     <junit.version>5.8.2</junit.version>
     <rxjava2.version>2.1.9</rxjava2.version>
     <jetbrainsannotations.version>13.0</jetbrainsannotations.version>

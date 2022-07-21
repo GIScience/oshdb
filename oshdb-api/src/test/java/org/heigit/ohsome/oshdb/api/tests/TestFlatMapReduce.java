@@ -31,7 +31,7 @@ class TestFlatMapReduce {
       OSHDBTimestamps.Interval.MONTHLY);
 
   TestFlatMapReduce() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../data/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {

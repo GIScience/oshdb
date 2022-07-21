@@ -52,7 +52,7 @@ abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
     final String prefix = "tests";
     oshdb.prefix(prefix);
 
-    OSHDBH2 oshdbH2 = new OSHDBH2("../oshdb-api/src/test/resources/test-data");
+    OSHDBH2 oshdbH2 = new OSHDBH2("../data/test-data");
     this.keytables = oshdbH2;
 
     Ignite ignite = ((OSHDBIgnite) this.oshdb).getIgnite();

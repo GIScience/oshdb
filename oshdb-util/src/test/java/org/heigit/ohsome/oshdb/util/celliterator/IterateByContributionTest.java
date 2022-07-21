@@ -40,7 +40,7 @@ class IterateByContributionTest {
 
     // connect to the "Big"DB
     IterateByContributionTest.conn = DriverManager.getConnection(
-        "jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
+        "jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
         "sa",
         ""
     );

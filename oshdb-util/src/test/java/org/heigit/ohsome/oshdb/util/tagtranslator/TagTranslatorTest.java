@@ -32,7 +32,7 @@ class TagTranslatorTest {
 
     // connect to the test data DB
     TagTranslatorTest.conn =
-        DriverManager.getConnection("jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
+        DriverManager.getConnection("jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
             "sa", "");
   }
 

@@ -26,7 +26,7 @@ class TestOSMDataFilters {
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
 
   TestOSMDataFilters() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../data/test-data");
   }
 
   private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {

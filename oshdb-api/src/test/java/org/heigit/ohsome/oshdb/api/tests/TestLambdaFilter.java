@@ -28,7 +28,7 @@ class TestLambdaFilter {
   private static final double DELTA = 1e-8;
 
   TestLambdaFilter() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../data/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
