@@ -234,7 +234,7 @@ public class TagTranslator implements AutoCloseable {
         valueIdQuery.setString(2, tag.getValue());
         try (ResultSet values = valueIdQuery.executeQuery()) {
           if (!values.next()) {
-            LOG.debug("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
+            LOG.info("Unable to find tag {}={} in keytables.", tag.getKey(), tag.getValue());
             tagInt = new OSHDBTag(
                 this.getOSHDBTagKeyOf(tag.getKey()).toInt(), getFakeId(tag.getValue()));
           } else {
@@ -329,7 +329,7 @@ public class TagTranslator implements AutoCloseable {
         roleIdQuery.setString(1, role.toString());
         try (ResultSet roles = roleIdQuery.executeQuery()) {
           if (!roles.next()) {
-            LOG.debug("Unable to find role {} in keytables.", role);
+            LOG.info("Unable to find role {} in keytables.", role);
             roleInt = OSHDBRole.of(getFakeId(role.toString()));
           } else {
             roleInt = OSHDBRole.of(roles.getInt("ID"));
