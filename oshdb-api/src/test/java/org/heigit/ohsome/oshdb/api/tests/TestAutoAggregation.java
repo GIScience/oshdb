@@ -1,12 +1,12 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
@@ -170,7 +170,9 @@ class TestAutoAggregation {
         SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) throws Exception {
-      return Streams.stream(mapper.apply(nodes.stream().map(n -> snapshot(n)).toList()))
+      return Streams.stream(mapper.apply(nodes.stream()
+          .map(n -> snapshot(n))
+          .collect(Collectors.toList())))
           .reduce(identitySupplier.get(), accumulator, combiner);
     }
 
