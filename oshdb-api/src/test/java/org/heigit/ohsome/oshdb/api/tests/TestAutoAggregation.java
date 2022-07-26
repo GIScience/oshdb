@@ -6,6 +6,7 @@ import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
@@ -45,27 +46,44 @@ class TestAutoAggregation {
   private static final OSHDBDatabase oshdb = new OSHDBDatabaseMock();
 
   @Test
-  void testAggregateByGeometryThenMap() throws UnsupportedOperationException, Exception {
+  void testAggregateByGeometryThenMapSum() throws UnsupportedOperationException, Exception {
     var geometries = Map.of("TEST", area);
     var mr = new MapReducerMock<>(oshdb, OSMEntitySnapshot.class);
 
-    var result = mr.timestamps("2020-01-01").aggregateByGeometry(geometries)
-        .map(s -> s.getEntity().getUserId()).sum();
+    SortedMap<String, Number> result = mr.timestamps("2020-01-01").aggregateByGeometry(geometries)
+        .map(s -> s.getEntity().getUserId())
+        .sum();
 
     assertEquals(1, result.size());
     assertEquals(23, result.get("TEST").intValue());
   }
 
   @Test
-  void testMapThenAggregateByGeometry() throws UnsupportedOperationException, Exception {
+  void testMapThenAggregateByGeometrySum() throws UnsupportedOperationException, Exception {
     var geometries = Map.of("TEST", area);
     var mr = new MapReducerMock<>(oshdb, OSMEntitySnapshot.class);
 
-    var result = mr.timestamps("2020-01-01").map(s -> s.getEntity().getUserId())
-        .aggregateByGeometry(geometries).sum();
+    SortedMap<String, Number> result = mr.timestamps("2020-01-01")
+        .map(s -> s.getEntity().getUserId())
+        .aggregateByGeometry(geometries)
+        .sum();
 
     assertEquals(1, result.size());
     assertEquals(23, result.get("TEST").intValue());
+  }
+
+  @Test
+  void testMapThenAggregateByGeometryCollect() throws UnsupportedOperationException, Exception {
+    var geometries = Map.of("TEST", area);
+    var mr = new MapReducerMock<>(oshdb, OSMEntitySnapshot.class);
+
+    SortedMap<String, List<Integer>> result = mr.timestamps("2020-01-01")
+        .map(s -> s.getEntity().getUserId())
+        .aggregateByGeometry(geometries)
+        .collect();
+
+    assertEquals(1, result.size());
+    assertEquals(23, result.get("TEST").get(0));
   }
 
   /**
