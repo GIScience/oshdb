@@ -35,7 +35,7 @@ class TestMapAggregateByTimestamp {
       OSHDBTimestamps.Interval.MONTHLY);
 
   TestMapAggregateByTimestamp() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+    oshdb = new OSHDBH2("../data/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {

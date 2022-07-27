@@ -90,8 +90,8 @@ public class TagTranslator implements AutoCloseable {
 
     // create prepared statements for querying tags from keytables
     try {
-      keyIdQuery = conn.prepareStatement(format("select ID from %s where KEY.TXT = ?;", E_KEY));
-      keyTxtQuery = conn.prepareStatement(format("select TXT from %s where KEY.ID = ?;", E_KEY));
+      keyIdQuery = conn.prepareStatement(format("select ID from %s where TXT = ?;", E_KEY));
+      keyTxtQuery = conn.prepareStatement(format("select TXT from %s where ID = ?;", E_KEY));
       valueIdQuery = conn.prepareStatement(format("select k.ID as KEYID,kv.VALUEID as VALUEID"
           + " from %s kv"
           + " inner join %s k on k.ID = kv.KEYID"
@@ -143,7 +143,7 @@ public class TagTranslator implements AutoCloseable {
         keyIdQuery.setString(1, key.toString());
         try (ResultSet keys = keyIdQuery.executeQuery()) {
           if (!keys.next()) {
-            LOG.info("Unable to find tag key {} in keytables.", key);
+            LOG.debug("Unable to find tag key {} in keytables.", key);
             keyInt = new OSHDBTagKey(getFakeId(key.toString()));
           } else {
             keyInt = new OSHDBTagKey(keys.getInt("ID"));

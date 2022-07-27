@@ -16,7 +16,7 @@ class TestFlatMapReduceGroupedByEntityOSHDBH2Singlethread extends
    */
   TestFlatMapReduceGroupedByEntityOSHDBH2Singlethread() throws Exception {
     super(
-        (new OSHDBH2("./src/test/resources/test-data")).multithreading(false)
+        (new OSHDBH2("../data/test-data")).multithreading(false)
     );
   }
 }

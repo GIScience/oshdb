@@ -24,7 +24,7 @@ class TestStream {
       OSHDBTimestamps.Interval.MONTHLY);
 
   TestStream() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data").multithreading(false);
+    oshdb = new OSHDBH2("../data/test-data").multithreading(false);
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {

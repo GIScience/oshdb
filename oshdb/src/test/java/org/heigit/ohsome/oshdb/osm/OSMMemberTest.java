@@ -58,7 +58,7 @@ class OSMMemberTest {
   @Test
   void testToString() {
     OSMMember instance = new OSMMember(1L, OSMType.WAY, 1);
-    String expResult = "T:WAY ID:1 R:1";
+    String expResult = "T:way ID:1 R:1";
     String result = instance.toString();
     assertEquals(expResult, result);
   }

@@ -34,7 +34,7 @@ abstract class FilterTest {
   void setup() throws SQLException, ClassNotFoundException, OSHDBKeytablesNotFoundException {
     Class.forName("org.h2.Driver");
     this.tagTranslator = new TagTranslator(DriverManager.getConnection(
-        "jdbc:h2:./src/test/resources/keytables;ACCESS_MODE_DATA=r",
+        "jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
         "sa", ""
     ));
     this.parser = new FilterParser(this.tagTranslator);
