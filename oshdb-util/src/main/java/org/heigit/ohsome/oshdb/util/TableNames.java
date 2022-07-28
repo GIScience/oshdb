@@ -11,7 +11,7 @@ public enum TableNames {
   /**
    * Table holding keys in keytables.
    */
-  E_KEY("\"key\""),
+  E_KEY("key"),
   /**
    * Table holding keysvalues in keytables.
    */
