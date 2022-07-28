@@ -84,6 +84,7 @@ abstract class TestMapReduce {
         .groupByEntity()
         .map(List::size)
         .reduce(Reduce::sumInt)
+        .intValue()
     );
   }
 
@@ -118,6 +119,7 @@ abstract class TestMapReduce {
         .groupByEntity()
         .map(List::size)
         .reduce(Reduce::sumInt)
+        .intValue()
     );
   }
 
