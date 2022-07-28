@@ -3,13 +3,13 @@ package org.heigit.ohsome.oshdb.api.tests;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.reduction.Reduce;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -31,9 +31,8 @@ class TestLambdaFilter {
     oshdb = new OSHDBH2("../data/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private OSMContributionView createMapReducerOSMContribution() throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -43,11 +42,12 @@ class TestLambdaFilter {
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
+        .on(oshdb)
         .filter(contribution -> contribution
             .getContributionTypes()
             .contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)
-        .uniq();
+        .reduce(Reduce::uniq);
 
     // should be 3: first version doesn't have the highway tag, remaining 7 versions have 5
     // different contributor user ids, but last two didn't modify the node's coordinates
@@ -56,15 +56,16 @@ class TestLambdaFilter {
 
   @Test
   void testAggregateFilter() throws Exception {
-    SortedMap<Long, Set<Integer>> result = createMapReducerOSMContribution()
+    Map<Long, Set<Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .filter("id:617308093")
+        .on(oshdb)
         .aggregateBy(contribution -> contribution.getEntityAfter().getId())
         .filter(contribution -> contribution
             .getContributionTypes()
             .contains(ContributionType.GEOMETRY_CHANGE))
         .map(OSMContribution::getContributorUserId)
-        .uniq();
+        .reduce(Reduce::uniq);
 
     assertEquals(1, result.entrySet().size());
     // should be 3: first version doesn't have the highway tag, remaining 7 versions have 5

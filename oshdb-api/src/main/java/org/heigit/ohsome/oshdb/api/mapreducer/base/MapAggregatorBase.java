@@ -1,35 +1,94 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.base;
 
+import static java.util.Map.entry;
+import static java.util.Optional.ofNullable;
+
+import com.google.common.collect.Streams;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.mapreducer.CombinedIndex;
-import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
+import org.heigit.ohsome.oshdb.api.mapreducer.reduction.Collector;
+import org.heigit.ohsome.oshdb.api.mapreducer.reduction.Reduce;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 
-public abstract class MapAggregatorBase<B, U, X> {
-  protected MapReducerBase<B, Entry<U, X>> mr;
+public class MapAggregatorBase<U, X> {
+  protected MapReducerBase<Entry<U, X>> mr;
 
-  protected MapAggregatorBase(MapReducerBase<B, Entry<U, X>> mr) {
+  public MapAggregatorBase(MapReducerBase<Entry<U, X>> mr) {
     this.mr = mr;
   }
 
-  public abstract <R> MapAggregatorBase<B, U, R> map(SerializableFunction<X, R> map);
+  private <V, R> MapAggregatorBase<V, R> with(MapReducerBase<Entry<V, R>> mr) {
+    return new MapAggregatorBase<>(mr);
+  }
 
-  public abstract <R> MapAggregatorBase<B, U, R> flatMap(SerializableFunction<X, Stream<R>> map);
+  public <R> MapAggregatorBase<U, R> map(SerializableFunction<X, R> mapper) {
+    return with(mr.flatMap(entryMap(mapper)));
+  }
 
-  public abstract <R> MapAggregatorBase<B, U, R> flatMapIterable(SerializableFunction<X, Iterable<R>> map);
+  public <R> MapAggregatorBase<U, R> flatMap(SerializableFunction<X, Stream<R>> mapper) {
+    return with(mr.flatMap(entryFlatMap(mapper)));
+  }
 
-  public abstract MapAggregatorBase<B, U, X> filter(SerializablePredicate<X> predicate);
+  public <R> MapAggregatorBase<U, R> flatMapIterable(SerializableFunction<X, Iterable<R>> mapper) {
+    return flatMap(x -> Streams.stream(mapper.apply(x)));
+  }
 
-  public abstract <V> MapAggregatorBase<B, CombinedIndex<U, V>, X> aggregateBy(SerializableFunction<X, V> indexer);
+  public MapAggregatorBase<U, X> filter(SerializablePredicate<X> predicate) {
+    return with(mr.filter(entryFilter(predicate)));
+  }
+
+  public <V> MapAggregatorBase<CombinedIndex<U, V>, X> aggregateBy(SerializableFunction<X, V> indexer) {
+    return with(mr.map(ux ->
+        entry(new CombinedIndex<>(ux.getKey(), indexer.apply(ux.getValue())), ux.getValue())));
+  }
+
+  /**
+   * Sets up aggregation by a custom time index.
+   *
+   * <p>The timestamps returned by the supplied indexing function are matched to the corresponding
+   * time intervals</p>
+   *
+   * @param indexer a callback function that returns a timestamp object for each given data.
+   *                Note that if this function returns timestamps outside of the supplied
+   *                timestamps() interval results may be undefined
+   * @return a MapAggregatorByTimestampAndIndex object with the equivalent state (settings,
+   *         filters, map function, etc.) of the current MapReducer object
+   */
+  public MapAggregatorBase<CombinedIndex<U, OSHDBTimestamp>, X> aggregateByTimestamp(
+      SerializableFunction<X, OSHDBTimestamp> indexer) {
+    final TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>(mr.view.getTimestamps().get());
+    final OSHDBTimestamp minTime = timestamps.first();
+    final OSHDBTimestamp maxTime = timestamps.last();
+    return this.aggregateBy(x -> {
+      // match timestamps to the given timestamp list
+      OSHDBTimestamp aggregationTimestamp = indexer.apply(x);
+      if (aggregationTimestamp == null
+          || aggregationTimestamp.compareTo(minTime) < 0
+          || aggregationTimestamp.compareTo(maxTime) > 0) {
+        throw new OSHDBInvalidTimestampException(
+            "Aggregation timestamp outside of time query interval.");
+      }
+      return timestamps.floor(aggregationTimestamp);
+    });
+  }
+
+
+  public MapReducerBase<Entry<U, X>> getMapReducer() {
+    return mr;
+  }
 
   public <S> Map<U, S> reduce(SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, X, S> accumulator, SerializableBinaryOperator<S> combiner) {
@@ -49,8 +108,12 @@ public abstract class MapAggregatorBase<B, U, X> {
     return this.reduce(identity, accumulator::apply, accumulator);
   }
 
-  public <S> Map<U, S>  reduce(Function<MapAggregatorBase<B, U, X>, Map<U, S>> reducer){
+  public <S> Map<U, S>  reduce(Function<MapAggregatorBase<U, X>, Map<U, S>> reducer) {
     return reducer.apply(this);
+  }
+
+  public <S> Map<U, S> collect(Function<MapAggregatorBase<U, X>, Map<U, S>> collector) {
+    return collector.apply(this);
   }
 
   public Stream<Entry<U, X>> stream() {
@@ -62,16 +125,17 @@ public abstract class MapAggregatorBase<B, U, X> {
   }
 
   public Map<U, Long> count() {
-    return map(x -> 1).reduce(Agg::sumInt);
+    return map(x -> 1).reduce(Reduce::sumInt);
   }
 
-
-  protected <R> SerializableFunction<Entry<U, X>, Entry<U,R>> entryMap(SerializableFunction<X, R> map) {
-    return ux -> Map.entry(ux.getKey(), map.apply(ux.getValue()));
+  protected <R> SerializableFunction<Entry<U, X>, Stream<Entry<U,R>>> entryMap(SerializableFunction<X, R> map) {
+    return ux -> ofNullable(map.apply(ux.getValue())).map(r -> entry(ux.getKey(), r)).stream();
   }
 
   protected <R> SerializableFunction<Entry<U, X>, Stream<Entry<U, R>>> entryFlatMap(SerializableFunction<X, Stream<R>> map){
-    return ux -> map.apply(ux.getValue()).map(r -> Map.entry(ux.getKey(), r));
+    return ux -> map.apply(ux.getValue())
+          .filter(Objects::nonNull)
+          .map(r -> entry(ux.getKey(), r));
   }
 
   protected SerializablePredicate<Entry<U, X>> entryFilter(SerializablePredicate<X> predicate) {

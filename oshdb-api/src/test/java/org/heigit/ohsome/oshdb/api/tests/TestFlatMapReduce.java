@@ -13,6 +13,7 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.reduction.Reduce;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class TestFlatMapReduce {
   }
 
   private OSMContributionView createMapReducerOSMContribution() throws Exception {
-    return new OSMContributionView(oshdb, null)
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -41,7 +42,7 @@ class TestFlatMapReduce {
   void test() throws Exception {
     Set<Entry<Integer, Integer>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .view()
+        .on(oshdb)
         .flatMap(contribution -> Stream.of(contribution)
             .map(OSMContribution::getEntityAfter)
             .filter(entity -> entity.getId() == 617308093)
@@ -71,9 +72,9 @@ class TestFlatMapReduce {
     input.add(3);
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .view()
+        .on(oshdb)
         .flatMap(contribution -> input.stream())
-        .uniq();
+        .reduce(Reduce::uniq);
 
     assertEquals(input, result);
   }

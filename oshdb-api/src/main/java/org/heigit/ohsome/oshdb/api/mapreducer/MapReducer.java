@@ -396,7 +396,7 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> timestamps(
       String isoDateFirst, String isoDateSecond, String... isoDateMore) {
-    SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
+    TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>();
     try {
       timestamps.add(
           new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateFirst).toEpochSecond()));
@@ -784,10 +784,10 @@ public abstract class MapReducer<X> implements
     MapReducer<? extends Entry<U, ? extends OSHDBMapReducible>> mapRed;
     if (isOSMContributionViewQuery()) {
       mapRed = this.flatMap((ignored, root) ->
-          gs.splitOSMContribution((OSMContribution) root).entrySet());
+          gs.split((OSMContribution) root).entrySet());
     } else if (isOSMEntitySnapshotViewQuery()) {
       mapRed = this.flatMap((ignored, root) ->
-          gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet());
+          gs.split((OSMEntitySnapshot) root).entrySet());
     } else {
       throw new UnsupportedOperationException(String.format(
           UNIMPLEMENTED_DATA_VIEW, this.viewClass));

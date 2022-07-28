@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.api.db;
 
+import java.io.IOException;
 import java.util.OptionalLong;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -10,6 +11,10 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
+import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
+import org.json.simple.parser.ParseException;
 
 /**
  * OSHDB database backend connector.
@@ -28,6 +33,11 @@ public abstract class OSHDBDatabase implements AutoCloseable {
    */
   public abstract <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass);
 
+  public abstract TagTranslator getTagTranslator();
+
+  public TagInterpreter getTagInterpreter() throws IOException, ParseException {
+    return new DefaultTagInterpreter(this.getTagTranslator());
+  }
 
   public <X, Y> Y query(OSHDBView<?> view,
       SerializableFunction<OSHEntity, X> transform,

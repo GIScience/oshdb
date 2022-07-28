@@ -15,14 +15,14 @@ public interface OSHDBTimestampList extends Serializable {
    *
    * @return a sorted set of oshdb timestamps
    */
-  SortedSet<OSHDBTimestamp> get();
+  TreeSet<OSHDBTimestamp> get();
 
   /**
    * Convenience method that converts the timestamp list into raw unix timestamps (long values).
    *
    * @return this list of timestamps as raw unix timestamps (measured in seconds)
    */
-  default SortedSet<Long> getRawUnixTimestamps() {
+  default TreeSet<Long> getRawUnixTimestamps() {
     return this.get().stream()
         .map(OSHDBTimestamp::getEpochSecond)
         .collect(Collectors.toCollection(TreeSet::new));

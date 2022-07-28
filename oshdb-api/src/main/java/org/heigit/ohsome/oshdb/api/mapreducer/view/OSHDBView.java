@@ -4,8 +4,6 @@ import static java.util.Collections.emptyList;
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.heigit.ohsome.oshdb.util.geometry.Geo.clip;
 import static org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder.boundingBoxOf;
-import static org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser.parseIsoDateTime;
-
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -15,12 +13,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.TreeSet;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.filter.AndOperator;
 import org.heigit.ohsome.oshdb.filter.Filter;
 import org.heigit.ohsome.oshdb.filter.FilterExpression;
@@ -34,14 +28,10 @@ import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
-import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
@@ -49,43 +39,28 @@ import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
 
 public abstract class OSHDBView<V extends OSHDBView> {
 
-  // settings and filters
-  protected OSHDBTimestampList tstamps =
-      new OSHDBTimestamps("2008-01-01", currentDate(), OSHDBTimestamps.Interval.MONTHLY);
   protected OSHDBBoundingBox bboxFilter = bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0);
   protected Geometry polyFilter = null;
   protected FastBboxOutsidePolygon bboxOutsidePolygon;
+  protected OSHDBTimestampList tstamps =
+      new OSHDBTimestamps("2008-01-01", currentDate(), OSHDBTimestamps.Interval.MONTHLY);
+
+
+
+
   protected EnumSet<OSMType> typeFilter = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
+  protected final List<String> filtersStrings = new ArrayList<>();
   protected final List<SerializablePredicate<OSHEntity>> preFilters = new ArrayList<>();
   protected final List<SerializablePredicate<OSMEntity>> filters = new ArrayList<>();
-  protected final List<FilterExpression> filterExpressions = new ArrayList<>();
 
-  protected TagTranslator tagTranslator = null;
+  //  protected TagTranslator tagTranslator = null;
   protected TagInterpreter tagInterpreter;
-  private FilterParser filterParser;
-
-  public final OSHDBDatabase oshdb;
-  public final OSHDBJdbc keytables;
-
-  protected OSHDBView(OSHDBDatabase oshdb, OSHDBJdbc keytables) {
-    this.oshdb = oshdb;
-    if (keytables == null && oshdb instanceof OSHDBJdbc) {
-      this.keytables = (OSHDBJdbc) oshdb;
-    } else {
-      this.keytables = keytables;
-    }
-  }
 
   protected abstract V instance();
-
-  public final OSHDBTimestampList getTimestamps() {
-    return tstamps;
-  }
 
   public final OSHDBBoundingBox getBboxFilter() {
     return bboxFilter;
@@ -96,6 +71,10 @@ public abstract class OSHDBView<V extends OSHDBView> {
     return (P) this.polyFilter;
   }
 
+  public final OSHDBTimestampList getTimestamps() {
+    return tstamps;
+  }
+
   public final List<SerializablePredicate<OSMEntity>> getFilters() {
     return filters;
   }
@@ -104,23 +83,19 @@ public abstract class OSHDBView<V extends OSHDBView> {
     return filters.isEmpty() ? x -> true : osm -> filters.stream().allMatch(f -> f.test(osm));
   }
 
-  public final List<FilterExpression> getFilterExpressions() {
-    return filterExpressions;
-  }
-
-  public final TagTranslator getTagTranslator() {
-    if (this.tagTranslator == null) {
-      try {
-        if (this.keytables == null) {
-          throw new OSHDBKeytablesNotFoundException();
-        }
-        this.tagTranslator = new TagTranslator(this.keytables.getConnection());
-      } catch (OSHDBKeytablesNotFoundException e) {
-        throw new OSHDBException(e);
-      }
-    }
-    return this.tagTranslator;
-  }
+  //  public final TagTranslator getTagTranslator() {
+  //    if (this.tagTranslator == null) {
+  //      try {
+  //        if (this.keytables == null) {
+  //          throw new OSHDBKeytablesNotFoundException();
+  //        }
+  //        this.tagTranslator = new TagTranslator(this.keytables.getConnection());
+  //      } catch (OSHDBKeytablesNotFoundException e) {
+  //        throw new OSHDBException(e);
+  //      }
+  //    }
+  //    return this.tagTranslator;
+  //  }
 
   /**
    * Sets the tagInterpreter to use in the analysis. The tagInterpreter is used internally to
@@ -173,80 +148,13 @@ public abstract class OSHDBView<V extends OSHDBView> {
     return instance();
   }
 
-
-  /**
-   * Set the timestamps for which to perform the analysis.
-   * <p>
-   * Depending on the *View*, this has slightly different semantics:
-   * </p>
-   * <ul>
-   * <li>For the OSMEntitySnapshotView it will set the time slices at which to take the "snapshots"
-   * </li>
-   * <li>For the OSMContributionView it will set the time interval in which to look for osm
-   * contributions (only the first and last timestamp of this list are contributing).</li>
-   * </ul>
-   * Additionally, these timestamps are used in the `aggregateByTimestamp` functionality.
-   *
-   * @param tstamps an object (implementing the OSHDBTimestampList interface) which provides the
-   *        timestamps to do the analysis for
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-
-  public V timestamps(OSHDBTimestampList tstamps) {
-    this.tstamps = tstamps;
-    return instance();
-  }
-
-  public V timestamps(String isoDateStart, String isoDateEnd,
-      OSHDBTimestamps.Interval interval) {
-    return this.timestamps(new OSHDBTimestamps(isoDateStart, isoDateEnd, interval));
-  }
-
-  /**
-   * Sets a single timestamp for which to perform the analysis at.
-   * <p>
-   * Useful in combination with the OSMEntitySnapshotView when not performing further aggregation by
-   * timestamp.
-   * </p>
-   * <p>
-   * See {@link #timestamps(OSHDBTimestampList)} for further information.
-   * </p>
-   *
-   * @param isoDate an ISO 8601 date string representing the date of the analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  public V timestamps(String isoDate) {
-    return this.timestamps(isoDate, isoDate);
-  }
-
-  /**
-   * Sets multiple arbitrary timestamps for which to perform the analysis.
-   * <p>
-   * Note for programmers wanting to use this method to supply an arbitrary number (n&gt;=1) of
-   * timestamps: You may supply the same time string multiple times, which will be de-duplicated
-   * internally. E.g. you can call the method like this:
-   * <code>.timestamps(dateArr[0], dateArr[0], dateArr)</code>
-   * </p>
-   * <p>
-   * See {@link #timestamps(OSHDBTimestampList)} for further information.
-   * </p>
-   *
-   * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
-   * @param isoDateSecond an ISO 8601 date string representing the second date of the analysis
-   * @param isoDateMore more ISO 8601 date strings representing the remaining timestamps of the
-   *        analysis
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  public V timestamps(String isoDateFirst, String isoDateSecond, String... isoDateMore) {
-    var timestamps = new TreeSet<OSHDBTimestamp>();
-    timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDateFirst).toEpochSecond()));
-    timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDateSecond).toEpochSecond()));
-    for (String isoDate : isoDateMore) {
-      timestamps.add(new OSHDBTimestamp(parseIsoDateTime(isoDate).toEpochSecond()));
+  protected void parseFilters(TagTranslator tagTranslator) {
+    var parser = new FilterParser(tagTranslator);
+    for (var filter : filtersStrings) {
+      var expression = parser.parse(filter);
+      filter(expression);
     }
-    return this.timestamps(() -> timestamps);
   }
-
 
   /**
    * Apply a custom filter expression to this query.
@@ -260,7 +168,6 @@ public abstract class OSHDBView<V extends OSHDBView> {
   public V filter(FilterExpression f) {
     preFilters.add(f::applyOSH);
     filters.add(f::applyOSM);
-    filterExpressions.add(f);
     optimizeFilters(f);
     return instance();
   }
@@ -274,26 +181,15 @@ public abstract class OSHDBView<V extends OSHDBView> {
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
   public V filter(String f) {
-    filter(getFilterParser().parse(f));
+    filtersStrings.add(f);
     return instance();
   }
 
-
   public TagInterpreter getTagInterpreter() throws IOException, ParseException {
-    if (tagInterpreter == null) {
-      return new DefaultTagInterpreter(this.getTagTranslator());
-    }
     return tagInterpreter;
   }
 
-  private FilterParser getFilterParser() {
-    if (filterParser == null) {
-      filterParser = new FilterParser(getTagTranslator());
-    }
-    return filterParser;
-  }
-
-  private String currentDate() {
+  protected String currentDate() {
     var formatter = new SimpleDateFormat("yyyy-MM-dd");
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return formatter.format(new Date());
@@ -393,15 +289,11 @@ public abstract class OSHDBView<V extends OSHDBView> {
      */
   }
 
-  public List<SerializablePredicate<OSHEntity>> getPreFilters() {
-    return preFilters;
-  }
-
   public OSHEntityFilter getPreFilter() {
     return preFilters.isEmpty() ? x -> true : osh -> preFilters.stream().allMatch(f -> f.test(osh));
   }
 
-  public boolean preFilter(OSHEntity osh) {
+  protected boolean preFilter(OSHEntity osh) {
     return osh.getBoundable().intersects(bboxFilter)
         && (preFilters.isEmpty() || preFilters.stream().allMatch(f -> f.test(osh)))
         && (polyFilter == null || bboxOutsidePolygon.test(osh.getBoundable()));
@@ -422,14 +314,4 @@ public abstract class OSHDBView<V extends OSHDBView> {
     }
     return grid.bbox2CellIdRanges(this.bboxFilter, true);
   }
-
-  public CellIterator getCellIterator() {
-    try {
-      return new CellIterator(tstamps.get(), bboxFilter, (Polygon) polyFilter, getTagInterpreter(),
-          getPreFilter(), getFilter(), false);
-    } catch (IOException | ParseException e) {
-      throw new OSHDBException();
-    }
-  }
-
 }

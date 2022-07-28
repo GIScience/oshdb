@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.concurrent.ConcurrentHashMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
@@ -25,7 +26,7 @@ class TestForEach {
   }
 
   private OSMContributionView createMapReducerOSMContribution() throws Exception {
-    return new OSMContributionView(oshdb, null)
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
   }
@@ -35,7 +36,7 @@ class TestForEach {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .view()
+        .on(oshdb)
         .forEach(contribution -> {
           result.put(contribution.getEntityAfter().getId(), true);
         });
@@ -47,7 +48,7 @@ class TestForEach {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .view()
+        .on(oshdb)
         .groupByEntity()
         .forEach(contributions -> {
           contributions.forEach(contribution -> {
@@ -62,7 +63,7 @@ class TestForEach {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .view()
+        .on(oshdb)
         .aggregateByTimestamp()
         .forEach((ts, contribution) -> result.put(contribution.getEntityAfter().getId(), true));
     assertEquals(42, result.entrySet().size());

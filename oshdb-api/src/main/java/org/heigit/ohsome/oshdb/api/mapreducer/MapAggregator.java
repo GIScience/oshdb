@@ -258,11 +258,11 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
     MapAggregator<OSHDBCombinedIndex<U, V>, ? extends OSHDBMapReducible> ret;
     if (mapReducer.isOSMContributionViewQuery()) {
       ret = this.flatMap((ignored, root) ->
-              gs.splitOSMContribution((OSMContribution) root).entrySet())
+              gs.split((OSMContribution) root).entrySet())
           .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
     } else if (mapReducer.isOSMEntitySnapshotViewQuery()) {
       ret = this.flatMap((ignored, root) ->
-              gs.splitOSMEntitySnapshot((OSMEntitySnapshot) root).entrySet())
+              gs.split((OSMEntitySnapshot) root).entrySet())
           .aggregateBy(Entry::getKey, geometries.keySet()).map(Entry::getValue);
     } else {
       throw new UnsupportedOperationException(String.format(

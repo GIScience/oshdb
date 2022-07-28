@@ -2,13 +2,12 @@ package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.mapreducer.aggregation.Agg;
 import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.reduction.Reduce;
 import org.heigit.ohsome.oshdb.api.mapreducer.snapshot.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -31,13 +30,13 @@ abstract class TestFlatMapReduceGroupedByEntity {
   }
 
   private OSMContributionView createMapReducerOSMContribution() throws Exception {
-    return new OSMContributionView(oshdb, null)
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
 
   private OSMEntitySnapshotView createMapReducerOSMEntitySnapshot() throws Exception {
-    return new OSMEntitySnapshotView(oshdb, null)
+    return OSMEntitySnapshotView.view()
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -46,7 +45,7 @@ abstract class TestFlatMapReduceGroupedByEntity {
   void testOSMContributionView() throws Exception {
     Number result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .view()
+        .on(oshdb)
         .groupByEntity()
         .flatMapIterable(contributions -> {
           if (contributions.get(0).getEntityAfter().getId() != 617308093) {
@@ -54,10 +53,10 @@ abstract class TestFlatMapReduceGroupedByEntity {
           }
           List<Integer> ret = new ArrayList<>();
           contributions
-              .stream()
-              .filter(c -> c.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE))
-              .map(ignored -> 1)
-              .forEach(ret::add);
+          .stream()
+          .filter(c -> c.getContributionTypes().contains(ContributionType.GEOMETRY_CHANGE))
+          .map(ignored -> 1)
+          .forEach(ret::add);
           ret.add(2); // just add another "2" for good measure ;-)
           return ret;
         })
@@ -65,7 +64,7 @@ abstract class TestFlatMapReduceGroupedByEntity {
             () -> 0,
             Integer::sum,
             Integer::sum
-        );
+            );
 
     assertEquals(5 + 2, result.intValue());
   }
@@ -74,13 +73,13 @@ abstract class TestFlatMapReduceGroupedByEntity {
   void testOSMEntitySnapshotView() throws Exception {
     Number result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .view()
+        .on(oshdb)
         .groupByEntity()
         .flatMapIterable(snapshots -> {
           if (snapshots.get(0).getEntity().getId() != 617308093) {
             return new ArrayList<>();
           }
-          List<Integer> ret = new ArrayList<>();
+          var ret = new ArrayList<Integer>();
           for (int i = 1; i < snapshots.size(); i++) {
             if (!snapshots.get(i - 1).getGeometry().equals(snapshots.get(i).getGeometry())) {
               ret.add(1);
@@ -89,7 +88,7 @@ abstract class TestFlatMapReduceGroupedByEntity {
           ret.add(2); // just add another "2" for good measure ;-)
           return ret;
         })
-        .reduce(Agg::sumInt);
+        .reduce(Reduce::sumInt);
 
     assertEquals(2 + 2, result.intValue());
   }

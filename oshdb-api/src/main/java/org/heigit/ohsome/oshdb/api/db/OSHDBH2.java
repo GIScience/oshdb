@@ -28,9 +28,7 @@ public class OSHDBH2 extends OSHDBJdbc {
    * @throws ClassNotFoundException if the H2 database driver is not installed on the system
    */
   public OSHDBH2(String databaseFile) throws SQLException, ClassNotFoundException {
-    super(
-        "org.h2.Driver",
-        "jdbc:h2:" + databaseFile.replaceAll("\\.mv\\.db$", "") + ";ACCESS_MODE_DATA=r"
+    super("jdbc:h2:" + databaseFile.replaceAll("\\.mv\\.db$", "") + ";ACCESS_MODE_DATA=r"
     );
   }
 

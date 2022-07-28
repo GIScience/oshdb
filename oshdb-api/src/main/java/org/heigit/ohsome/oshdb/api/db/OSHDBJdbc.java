@@ -1,7 +1,6 @@
 package org.heigit.ohsome.oshdb.api.db;
 
 import static java.util.stream.Collectors.toList;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.Streams;
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.util.Optional;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -34,9 +32,13 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 
 /**
  * OSHDB database backend connector to a JDBC database file.
@@ -44,21 +46,38 @@ import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
 
   protected Connection connection;
+  protected Connection keytables;
+  protected TagTranslator tagTranslator = null;
+  protected TagInterpreter tagInterpreter;
+
   private boolean useMultithreading = true;
 
-  public OSHDBJdbc(String classToLoad, String jdbcString)
-      throws SQLException, ClassNotFoundException {
-    this(classToLoad, jdbcString, "sa", "");
+  public OSHDBJdbc(String jdbcString) throws SQLException, ClassNotFoundException {
+    this(jdbcString, "sa", "");
   }
 
-  public OSHDBJdbc(String classToLoad, String jdbcString, String user, String pw)
+  public OSHDBJdbc(String jdbcString, String user, String pw)
       throws SQLException, ClassNotFoundException {
-    Class.forName(classToLoad);
     this.connection = DriverManager.getConnection(jdbcString, user, pw);
   }
 
   public OSHDBJdbc(Connection conn) {
     this.connection = conn;
+  }
+
+  @Override
+  public TagTranslator getTagTranslator() {
+    if (this.tagTranslator == null) {
+      try {
+        if (this.keytables == null) {
+          this.keytables = connection;
+        }
+        this.tagTranslator = new TagTranslator(this.keytables);
+      } catch (OSHDBKeytablesNotFoundException e) {
+        throw new OSHDBException(e);
+      }
+    }
+    return this.tagTranslator;
   }
 
   @Override
@@ -68,6 +87,18 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
 
   @Override
   public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
+    checkTables();
+    MapReducer<X> mapReducer;
+    if (this.useMultithreading) {
+      mapReducer = new MapReducerJdbcMultithread<>(this, forClass);
+    } else {
+      mapReducer = new MapReducerJdbcSinglethread<>(this, forClass);
+    }
+    mapReducer = mapReducer.keytables(this);
+    return mapReducer;
+  }
+
+  private void checkTables() {
     try {
       Collection<String> expectedTables = Stream.of(OSMType.values())
           .map(TableNames::forOSMType).filter(Optional::isPresent).map(Optional::get)
@@ -86,14 +117,6 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
     } catch (SQLException e) {
       throw new OSHDBException(e);
     }
-    MapReducer<X> mapReducer;
-    if (this.useMultithreading) {
-      mapReducer = new MapReducerJdbcMultithread<>(this, forClass);
-    } else {
-      mapReducer = new MapReducerJdbcSinglethread<>(this, forClass);
-    }
-    mapReducer = mapReducer.keytables(this);
-    return mapReducer;
   }
 
   @Override
@@ -128,16 +151,22 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    this.connection.close();
+    try {
+      if (keytables != null) {
+        this.keytables.close();
+      }
+    } finally {
+      this.connection.close();
+    }
   }
 
-  static class Collector<T, R> {
+  static class Collect<T, R> {
     private final BiFunction<R, T, R> accumulator;
     private final BinaryOperator<R> combiner;
 
     private R r;
 
-    Collector(R r, BiFunction<R, T, R> accumulator, BinaryOperator<R> combiner) {
+    Collect(R r, BiFunction<R, T, R> accumulator, BinaryOperator<R> combiner) {
       this.r = r;
       this.accumulator = accumulator;
       this.combiner = combiner;
@@ -147,7 +176,7 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
       r = accumulator.apply(r, t);
     }
 
-    public Collector<T, R> combine(Collector<T, R> other) {
+    public Collect<T, R> combine(Collect<T, R> other) {
       r = combiner.apply(r, other.r);
       return this;
     }
@@ -158,31 +187,50 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
   }
 
   @Override
-  public <X, Y> Y query(OSHDBView<?> view, SerializableFunction<OSHEntity, X> transform,
+  public <X, Y> Y query(OSHDBView<?> view,
+      SerializableFunction<OSHEntity, X> transform,
       Y identity, BiFunction<Y, X, Y> accumulator, BinaryOperator<Y> combiner) {
+    checkTables();
+    var timeout = timeoutInMilliseconds().orElse(Long.MAX_VALUE);
+    var executionStartTimeMillis = System.currentTimeMillis();
     var filter = view.getPreFilter();
     return Streams.stream(view.getCellIdRanges())
         .flatMap(range -> getOshCellsStream(range, view))
         .map(GridOSHEntity::getEntities)
         .flatMap(Streams::stream)
+        .takeWhile(x -> {
+          if (System.currentTimeMillis() - executionStartTimeMillis > timeout) {
+            throw new OSHDBTimeoutException();
+          }
+          return true;
+        })
         .parallel()
-          .map(OSHEntity.class::cast)
-          .filter(filter)
-          .map(transform)
-        .collect(() -> new Collector<>(identity, accumulator, combiner),
-            Collector::accumulate,
-            Collector::combine)
-         .get();
+        .map(OSHEntity.class::cast)
+        .filter(filter)
+        .map(transform)
+
+        .collect(() -> new Collect<>(identity, accumulator, combiner),
+            Collect::accumulate,
+            Collect::combine).get();
   }
 
   @Override
   public <X> Stream<X> query(OSHDBView<?> view,
       SerializableFunction<OSHEntity, Stream<X>> transform) {
+    checkTables();
+    var timeout = timeoutInMilliseconds().orElse(Long.MAX_VALUE);
+    var executionStartTimeMillis = System.currentTimeMillis();
     var filter = view.getPreFilter();
     return Streams.stream(view.getCellIdRanges())
         .flatMap(range -> getOshCellsStream(range, view))
         .map(GridOSHEntity::getEntities)
         .flatMap(Streams::stream)
+        .takeWhile(x -> {
+          if (System.currentTimeMillis() - executionStartTimeMillis > timeout) {
+            throw new OSHDBTimeoutException();
+          }
+          return true;
+        })
         .parallel()
         .map(OSHEntity.class::cast)
         .filter(filter)

@@ -16,12 +16,14 @@ import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.object.OSMContributionImpl;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshotImpl;
+import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.celliterator.LazyEvaluatedObject;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxInPolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastBboxOutsidePolygon;
 import org.heigit.ohsome.oshdb.util.geometry.fip.FastPolygonOperations;
+import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.locationtech.jts.geom.Geometry;
@@ -40,7 +42,7 @@ import org.locationtech.jts.io.WKBWriter;
  *
  * @param <U> an arbitrary index type to identify supplied sub-regions
  */
-class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serializable {
+public class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private STRtree spatialIndex = new STRtree();
@@ -51,7 +53,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
 
   private Map<U, ? extends Geometry> subregions;
 
-  <P extends Geometry & Polygonal> GeometrySplitter(Map<U, P> subregions) {
+  public <P extends Geometry & Polygonal> GeometrySplitter(Map<U, P> subregions) {
     PreparedGeometryFactory pgf = new PreparedGeometryFactory();
     subregions.forEach((index, geometry) -> {
       spatialIndex.insert(geometry.getEnvelopeInternal(), index);
@@ -81,18 +83,33 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
     }
   }
 
+
+  public Stream<Entry<U, OSMEntitySnapshot>> split(OSHEntity osh, OSMEntitySnapshot first, Stream<OSMEntitySnapshot> snapshots) {
+    return null;
+  }
+
+  public Stream<Entry<U, OSMContribution>>  split(OSHEntity osh, OSMContribution first, Stream<OSMContribution> contributions) {
+    return null;
+  }
+
+
+  public <X extends OSHDBMapReducible> Stream<Entry<U, X>> splitter(X data) {
+    return Stream.empty();
+  }
+
+
   /**
    * Splits osm entity snapshot objects into sub-regions.
    *
    * @param data the OSMEntitySnapshot to split into the given sub-regions
    * @return a list of OSMEntitySnapshot objects
    */
-  public Map<U, OSMEntitySnapshot> splitOSMEntitySnapshot(OSMEntitySnapshot data) {
+  public Map<U, OSMEntitySnapshot> split(OSMEntitySnapshot data) {
     OSHDBBoundable oshBoundingBox = data.getOSHEntity().getBoundable();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
     List<U> candidates = spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
-    );
+        );
     return candidates.stream()
         // OSH entity fully outside -> skip
         .filter(index -> !bops.get(index).test(oshBoundingBox))
@@ -106,7 +123,7 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
           var snapshotGeometry = data.getGeometry();
           OSHDBBoundingBox snapshotBbox = OSHDBGeometryBuilder.boundingBoxOf(
               snapshotGeometry.getEnvelopeInternal()
-          );
+              );
 
           // OSM entity fully outside -> skip
           if (bops.get(index).test(snapshotBbox)) {
@@ -127,8 +144,8 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
             } else {
               return Stream.of(new IndexData<>(index, new OSMEntitySnapshotImpl(data,
                   new LazyEvaluatedObject<>(() ->
-                      faultTolerantIntersection(snapshotGeometry, poop))
-              )));
+                  faultTolerantIntersection(snapshotGeometry, poop))
+                  )));
             }
           } catch (TopologyException ignored) {
             // JTS cannot handle broken osm geometry -> skip
@@ -151,12 +168,12 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
    * @param data the OSMContribution to split into the given sub-regions
    * @return a list of OSMContribution objects
    */
-  public Map<U, OSMContribution> splitOSMContribution(OSMContribution data) {
+  public Map<U, OSMContribution> split(OSMContribution data) {
     OSHDBBoundable oshBoundingBox = data.getOSHEntity().getBoundable();
     @SuppressWarnings("unchecked") // STRtree works with raw types unfortunately
     List<U> candidates = spatialIndex.query(
         OSHDBGeometryBuilder.getGeometry(oshBoundingBox).getEnvelopeInternal()
-    );
+        );
     return candidates.stream()
         // OSH entity fully outside -> skip
         .filter(index -> !bops.get(index).test(oshBoundingBox))
@@ -173,11 +190,11 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
           if (data.is(ContributionType.CREATION)) {
             contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(
                 contributionGeometryAfter.getEnvelopeInternal()
-            );
+                );
           } else if (data.is(ContributionType.DELETION)) {
             contributionGeometryBbox = OSHDBGeometryBuilder.boundingBoxOf(
                 contributionGeometryBefore.getEnvelopeInternal()
-            );
+                );
           } else {
             var env = contributionGeometryBefore.getEnvelopeInternal();
             env.expandToInclude(contributionGeometryAfter.getEnvelopeInternal());
@@ -206,10 +223,10 @@ class GeometrySplitter<U extends Comparable<U> & Serializable> implements Serial
             } else {
               return Stream.of(new IndexData<>(index, new OSMContributionImpl(data,
                   new LazyEvaluatedObject<>(() ->
-                      faultTolerantIntersection(contributionGeometryBefore, poop)),
+                  faultTolerantIntersection(contributionGeometryBefore, poop)),
                   new LazyEvaluatedObject<>(() ->
-                      faultTolerantIntersection(contributionGeometryAfter, poop)))
-              ));
+                  faultTolerantIntersection(contributionGeometryAfter, poop)))
+                  ));
             }
           } catch (TopologyException ignored) {
             // JTS cannot handle broken osm geometry -> skip

@@ -1,18 +1,18 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.google.common.collect.Iterables;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
+import org.heigit.ohsome.oshdb.api.mapreducer.reduction.Collector;
+import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
@@ -32,21 +32,22 @@ class TestCollect {
     oshdb = new OSHDBH2("../data/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    return OSMContributionView
-        .on(oshdb)
+  private OSMContributionView createMapReducerOSMContribution() throws Exception {
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
   }
 
   @Test
   void testCollect() throws Exception {
-    List<OSMContribution> result = this.createMapReducerOSMContribution()
+    List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .collect();
+        .on(oshdb)
+        .map(OSMContribution::getEntityAfter)
+        .map(OSMEntity::getId)
+        .collect(Collector.toList());
     assertEquals(42, result
         .stream()
-        .map(contribution -> contribution.getEntityAfter().getId())
         .collect(Collectors.toSet()).size());
   }
 
@@ -54,8 +55,9 @@ class TestCollect {
   void testMapCollect() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
+        .on(oshdb)
         .map(contribution -> contribution.getEntityAfter().getId())
-        .collect();
+        .reduce(Collector::toList);
     assertEquals(42, result
         .stream()
         .collect(Collectors.toSet()).size());
@@ -65,9 +67,10 @@ class TestCollect {
   void testFlatMapCollect() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .flatMap(contribution -> Collections
+        .on(oshdb)
+        .flatMapIterable(contribution -> Collections
             .singletonList(contribution.getEntityAfter().getId()))
-        .collect();
+        .reduce(Collector::toList);
     assertEquals(42, result
         .stream()
         .collect(Collectors.toSet()).size());
@@ -77,10 +80,11 @@ class TestCollect {
   void testFlatMapCollectGroupedById() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
+        .on(oshdb)
         .groupByEntity()
-        .flatMap(contributions -> Collections
+        .flatMapIterable(contributions -> Collections
             .singletonList(contributions.get(0).getEntityAfter().getId()))
-        .collect();
+        .reduce(Collector::toList);
     assertEquals(42, result
         .stream()
         .collect(Collectors.toSet()).size());
@@ -88,11 +92,12 @@ class TestCollect {
 
   @Test
   void testAggregatedByTimestamp() throws Exception {
-    SortedMap<OSHDBTimestamp, List<Long>> result = this.createMapReducerOSMContribution()
+    Map<OSHDBTimestamp, List<Long>> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
+        .on(oshdb)
         .aggregateByTimestamp()
         .map(contribution -> contribution.getEntityAfter().getId())
-        .collect();
+        .reduce(Collector::toList);
     assertEquals(14, result
         .get(Iterables.get(timestamps72.get(), 60))
         .size());

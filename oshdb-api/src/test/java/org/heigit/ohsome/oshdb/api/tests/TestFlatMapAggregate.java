@@ -32,7 +32,7 @@ class TestFlatMapAggregate {
   }
 
   private OSMContributionView createMapReducerOSMContribution() throws Exception {
-    return new OSMContributionView(oshdb, null)
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -41,7 +41,7 @@ class TestFlatMapAggregate {
   void test() throws Exception {
     var result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .view()
+        .on(oshdb)
         .flatMap(
             contribution -> Stream.of(contribution)
             .map(OSMContribution::getEntityAfter)
@@ -50,7 +50,7 @@ class TestFlatMapAggregate {
                 .map(tag -> Map.entry(entity.getId(), Map.entry(tag.getKey(), tag.getValue())))))
         .aggregateBy(Entry::getKey)
         .map(Entry::getValue)
-        .reduce(() -> new HashSet<Entry<Integer, Integer>>(),
+        .reduce(() -> new HashSet<>(),
             (x, y) -> {
               x.add(y);
               return x; },

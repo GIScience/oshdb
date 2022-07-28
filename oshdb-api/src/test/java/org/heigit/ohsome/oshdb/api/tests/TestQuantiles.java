@@ -2,20 +2,23 @@ package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.function.DoubleUnaryOperator;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapAggregator;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
+import org.heigit.ohsome.oshdb.api.mapreducer.reduction.Collector;
+import org.heigit.ohsome.oshdb.api.mapreducer.reduction.Estimated;
+import org.heigit.ohsome.oshdb.api.mapreducer.snapshot.MapAggregatorSnapshot;
+import org.heigit.ohsome.oshdb.api.mapreducer.snapshot.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
+import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -53,8 +56,8 @@ class TestQuantiles {
 
   // MapReducer
 
-  private MapReducer<OSMEntitySnapshot> createMapReducer() {
-    return OSMEntitySnapshotView.on(oshdb)
+  private OSMEntitySnapshotView createMapReducer() {
+    return OSMEntitySnapshotView.view()
         .timestamps(timestamps1)
         .areaOfInterest(bbox)
         .filter("type:way and building=yes");
@@ -62,33 +65,36 @@ class TestQuantiles {
 
   @Test
   void testMedian() throws Exception {
-    MapReducer<Integer> mr = this.createMapReducer()
+    var mr = this.createMapReducer()
+        .on(oshdb)
         .map(s -> s.getGeometry().getCoordinates().length);
-    List<Integer> fullResult = mr.collect();
+    List<Integer> fullResult = mr.reduce(Collector::toList);
     Collections.sort(fullResult);
-
-    assertApproximateQuantiles(fullResult, 0.5, mr.estimatedMedian());
+    Double median = mr.reduce(Estimated::median);
+    assertApproximateQuantiles(fullResult, 0.5, median);
   }
 
   @Test
   void testQuantile() throws Exception {
-    MapReducer<Integer> mr = this.createMapReducer()
+    var mr = this.createMapReducer()
+        .on(oshdb)
         .map(s -> s.getGeometry().getCoordinates().length);
-    List<Integer> fullResult = mr.collect();
+    List<Integer> fullResult = mr.reduce(Collector::toList);
     Collections.sort(fullResult);
-
-    assertApproximateQuantiles(fullResult, 0.8, mr.estimatedQuantile(0.8));
+    Double quantile = Estimated.quantile(mr, 0.8);
+    assertApproximateQuantiles(fullResult, 0.8, quantile);
   }
 
   @Test
   void testQuantiles() throws Exception {
-    MapReducer<Integer> mr = this.createMapReducer()
+    var mr = this.createMapReducer()
+        .on(oshdb)
         .map(s -> s.getGeometry().getCoordinates().length);
-    List<Integer> fullResult = mr.collect();
+    List<Integer> fullResult = mr.reduce(Collector::toList);
     Collections.sort(fullResult);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    List<Double> quantiles = mr.estimatedQuantiles(qs);
+    List<Double> quantiles = Estimated.quantiles(mr, qs);
 
     for (Double quantile : quantiles) {
       assertApproximateQuantiles(fullResult, qs.get(quantiles.indexOf(quantile)), quantile);
@@ -97,13 +103,14 @@ class TestQuantiles {
 
   @Test
   void testQuantilesFunction() throws Exception {
-    MapReducer<Integer> mr = this.createMapReducer()
+    var mr = this.createMapReducer()
+        .on(oshdb)
         .map(s -> s.getGeometry().getCoordinates().length);
-    List<Integer> fullResult = mr.collect();
+    List<Integer> fullResult = mr.reduce(Collector::toList);
     Collections.sort(fullResult);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    DoubleUnaryOperator quantilesFunction = mr.estimatedQuantiles();
+    DoubleUnaryOperator quantilesFunction = mr.reduce(Estimated::quantiles);
 
     for (Double q : qs) {
       assertApproximateQuantiles(fullResult, q, quantilesFunction.applyAsDouble(q));
@@ -112,22 +119,23 @@ class TestQuantiles {
 
   // MapAggregator
 
-  private MapAggregator<OSHDBTimestamp, OSMEntitySnapshot> createMapAggregator() {
-    return OSMEntitySnapshotView.on(oshdb)
+  private MapAggregatorSnapshot<OSHDBTimestamp> createMapAggregator() throws IOException, ParseException {
+    return OSMEntitySnapshotView.view()
         .timestamps(timestamps2)
         .areaOfInterest(bbox)
         .filter("type:way and building=yes")
+        .on(oshdb)
         .aggregateByTimestamp();
   }
 
   @Test
   void testMedianMapAggregator() throws Exception {
-    MapAggregator<OSHDBTimestamp, Integer> mr = this.createMapAggregator()
+    var mr = this.createMapAggregator()
         .map(s -> s.getGeometry().getCoordinates().length);
-    SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
+    Map<OSHDBTimestamp, List<Integer>> fullResult = mr.reduce(Collector::toList);
     fullResult.values().forEach(Collections::sort);
 
-    SortedMap<OSHDBTimestamp, Double> medians = mr.estimatedQuantile(0.8);
+    SortedMap<OSHDBTimestamp, Double> medians = Estimated.quantile(mr, 0.8);
 
     medians.forEach((ts, median) ->
         assertApproximateQuantiles(fullResult.get(ts), 0.8, median)
@@ -136,12 +144,12 @@ class TestQuantiles {
 
   @Test
   void testQuantileMapAggregator() throws Exception {
-    MapAggregator<OSHDBTimestamp, Integer> mr = this.createMapAggregator()
+    var mr = this.createMapAggregator()
         .map(s -> s.getGeometry().getCoordinates().length);
-    SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
+    Map<OSHDBTimestamp, List<Integer>> fullResult = mr.reduce(Collector::toList);
     fullResult.values().forEach(Collections::sort);
 
-    SortedMap<OSHDBTimestamp, Double> quantiles = mr.estimatedQuantile(0.8);
+    SortedMap<OSHDBTimestamp, Double> quantiles = Estimated.quantile(mr, 0.8);
 
     quantiles.forEach((ts, quantile) ->
         assertApproximateQuantiles(fullResult.get(ts), 0.8, quantile)
@@ -150,13 +158,13 @@ class TestQuantiles {
 
   @Test
   void testQuantilesMapAggregator() throws Exception {
-    MapAggregator<OSHDBTimestamp, Integer> mr = this.createMapAggregator()
+    var mr = this.createMapAggregator()
         .map(s -> s.getGeometry().getCoordinates().length);
-    SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
+    Map<OSHDBTimestamp, List<Integer>> fullResult = mr.reduce(Collector::toList);
     fullResult.values().forEach(Collections::sort);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    SortedMap<OSHDBTimestamp, List<Double>> quantiless = mr.estimatedQuantiles(qs);
+    SortedMap<OSHDBTimestamp, List<Double>> quantiless = Estimated.quantiles(mr, qs);
 
     quantiless.forEach((ts, quantiles) -> {
       for (Double quantile : quantiles) {
@@ -171,13 +179,14 @@ class TestQuantiles {
 
   @Test
   void testQuantilesFunctionMapAggregator() throws Exception {
-    MapAggregator<OSHDBTimestamp, Integer> mr = this.createMapAggregator()
+    var mr = this.createMapAggregator()
         .map(s -> s.getGeometry().getCoordinates().length);
-    SortedMap<OSHDBTimestamp, List<Integer>> fullResult = mr.collect();
+    Map<OSHDBTimestamp, List<Integer>> fullResult = mr.reduce(Collector::toList);
     fullResult.values().forEach(Collections::sort);
 
     List<Double> qs = Arrays.asList(0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
-    SortedMap<OSHDBTimestamp, DoubleUnaryOperator> quantilesFunctions = mr.estimatedQuantiles();
+    Map<OSHDBTimestamp, DoubleUnaryOperator> quantilesFunctions =
+        mr.reduce(Estimated::quantiles);
 
     quantilesFunctions.forEach((ts, quantilesFunction) -> {
       for (Double q : qs) {

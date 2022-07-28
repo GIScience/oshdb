@@ -2,65 +2,62 @@ package org.heigit.ohsome.oshdb.api.mapreducer.snapshot;
 
 import static java.util.Map.entry;
 import com.google.common.collect.Streams;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+import org.heigit.ohsome.oshdb.api.mapreducer.CombinedIndex;
+import org.heigit.ohsome.oshdb.api.mapreducer.GeometrySplitter;
 import org.heigit.ohsome.oshdb.api.mapreducer.base.MapReducerBase;
+import org.heigit.ohsome.oshdb.api.mapreducer.contribution.MapAggregatorContribution;
 import org.heigit.ohsome.oshdb.api.mapreducer.view.OSHDBView;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializablePredicate;
+import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygonal;
 
-public class MapReducerSnapshot<X> extends MapReducerBase<OSMEntitySnapshot, X> {
+public class MapReducerSnapshot extends MapReducerBase<OSMEntitySnapshot> {
 
-  MapReducerSnapshot(OSHDBView<?> view,
-      SerializableFunction<OSHEntity, Stream<OSMEntitySnapshot>> base,
-      SerializableFunction<OSMEntitySnapshot, Stream<X>> transform) {
-    super(view, base, transform);
+  MapReducerSnapshot(OSHDBView<?> view, OSHDBDatabase oshdb,
+      SerializableFunction<OSHEntity, Stream<OSMEntitySnapshot>> transform) {
+    super(view, oshdb, transform);
   }
 
-  private <R> MapReducerSnapshot<R> with(SerializableFunction<OSMEntitySnapshot, Stream<R>> transform) {
-    return new MapReducerSnapshot<>(view, base, transform);
-  }
-
-  @Override
-  public <R> MapReducerSnapshot<R> map(SerializableFunction<X, R> map) {
-    return with(apply(sx -> sx.map(map)));
+  private MapReducerSnapshot with(SerializableFunction<OSHEntity, Stream<OSMEntitySnapshot>> transform) {
+    return new MapReducerSnapshot(view, oshdb, transform);
   }
 
   @Override
-  public <R> MapReducerSnapshot<R> flatMap(SerializableFunction<X, Stream<R>> map) {
-    return with(apply(sx -> sx.flatMap(map)));
-  }
-
-  @Override
-  public <R> MapReducerBase<OSMEntitySnapshot, R> flatMapIterable(
-      SerializableFunction<X, Iterable<R>> mapper) {
-    return flatMap(x -> Streams.stream(mapper.apply(x)));
-  }
-
-  @Override
-  public MapReducerSnapshot<X> filter(SerializablePredicate<X> f) {
+  public MapReducerSnapshot filter(SerializablePredicate<OSMEntitySnapshot> f) {
     return with(apply(x -> x.filter(f)));
   }
 
   @Override
-  public <R> MapReducerSnapshot<R> mapBase(SerializableBiFunction<OSMEntitySnapshot, X, R> indexer){
-    return with(s -> transform.apply(s).map(x -> indexer.apply(s, x)));
-  }
-
-  @Override
-  public <R> MapReducerSnapshot<R> flatMapBase(SerializableBiFunction<OSMEntitySnapshot, X, Stream<R>> map) {
-    return with(s -> transform.apply(s).flatMap(x -> map.apply(s, x)));
-  }
-
-  @Override
-  public <U> MapAggregatorSnapshot<U, X> aggregateBy(SerializableFunction<X, U> indexer) {
+  public <U> MapAggregatorSnapshot<U> aggregateBy(SerializableFunction<OSMEntitySnapshot, U> indexer) {
     return new MapAggregatorSnapshot<>(map(x -> entry(indexer.apply(x), x)));
   }
 
-  public MapAggregatorSnapshot<OSHDBTimestamp, X> aggregateByTimestamp() {
-    return new MapAggregatorSnapshot<>(mapBase((s, x) -> entry(s.getTimestamp(), x)));
+  public MapAggregatorSnapshot<OSHDBTimestamp> aggregateByTimestamp() {
+    return aggregateBy(OSMEntitySnapshot::getTimestamp);
   }
+
+  @Override
+ public MapAggregatorSnapshot<OSHDBTimestamp> aggregateByTimestamp(
+     SerializableFunction<OSMEntitySnapshot, OSHDBTimestamp> indexer) {
+   return new MapAggregatorSnapshot<>(super.aggregateByTimestamp(indexer).getMapReducer());
+ }
+
+  public <U extends Comparable<U> & Serializable, P extends Geometry & Polygonal> MapAggregatorSnapshot<U> aggregateByGeometry(Map<U, P> geometries) {
+    var gs = new GeometrySplitter<>(geometries);
+    return new MapAggregatorSnapshot<>(flatMap(x -> gs.split(x).entrySet().stream())
+        .aggregateBy(Entry::getKey)
+        .map(Entry::getValue).getMapReducer());
+  }
+
 }

@@ -160,7 +160,8 @@ public class OSHDBTimestamps implements OSHDBTimestampList {
    *
    * @return a list of unix timestamps (measured in seconds)
    */
-  public SortedSet<OSHDBTimestamp> get() {
+  @Override
+  public TreeSet<OSHDBTimestamp> get() {
     Stream<ZonedDateTime> times;
     if (period != null) {
       times = getTimestampsAsEpochSeconds(start, end, period, fromEnd).stream();

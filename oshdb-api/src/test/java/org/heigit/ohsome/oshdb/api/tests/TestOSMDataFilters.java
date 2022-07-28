@@ -1,15 +1,12 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
-import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
-import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
+import org.heigit.ohsome.oshdb.api.mapreducer.snapshot.OSMEntitySnapshotView;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
-import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -29,42 +26,45 @@ class TestOSMDataFilters {
     oshdb = new OSHDBH2("../data/test-data");
   }
 
-  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    return OSMEntitySnapshotView.on(oshdb);
+  private OSMEntitySnapshotView createMapReducerOSMEntitySnapshot() throws Exception {
+    return OSMEntitySnapshotView.view();
   }
 
   // filter: area of interest
 
   @Test
   void bbox() throws Exception {
-    Integer result = createMapReducerOSMEntitySnapshot()
+    var result = createMapReducerOSMEntitySnapshot()
         .filter("type:node")
         .areaOfInterest(bbox)
         .timestamps(timestamps1)
+        .on(oshdb)
         .count();
-    assertEquals(2, result.intValue());
+    assertEquals(2L, result);
   }
 
   @Test
   void polygon() throws Exception {
-    Integer result = createMapReducerOSMEntitySnapshot()
+    var result = createMapReducerOSMEntitySnapshot()
         .filter("type:node")
         .areaOfInterest(OSHDBGeometryBuilder.getGeometry(bbox))
         .timestamps(timestamps1)
+        .on(oshdb)
         .count();
-    assertEquals(2, result.intValue());
+    assertEquals(2L, result);
   }
 
   @Test
   void multiPolygon() throws Exception {
     GeometryFactory gf = new GeometryFactory();
-    Integer result = createMapReducerOSMEntitySnapshot()
+    var result = createMapReducerOSMEntitySnapshot()
         .filter("type:node")
         .areaOfInterest(gf.createMultiPolygon(new Polygon[] {
             OSHDBGeometryBuilder.getGeometry(bbox)
         }))
         .timestamps(timestamps1)
+        .on(oshdb)
         .count();
-    assertEquals(2, result.intValue());
+    assertEquals(2L, result);
   }
 }

@@ -18,6 +18,7 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 
 /**
  * OSHDB database backend connector to a Ignite system.
@@ -201,5 +202,10 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     } else {
       return Optional.of(this.onCloseCallback);
     }
+  }
+
+  @Override
+  public TagTranslator getTagTranslator() {
+    throw new UnsupportedOperationException();
   }
 }

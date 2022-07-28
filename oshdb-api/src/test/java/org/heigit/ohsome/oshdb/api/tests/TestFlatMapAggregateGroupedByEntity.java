@@ -7,13 +7,11 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.SortedMap;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.contribution.OSMContributionView;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
-import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +32,7 @@ class TestFlatMapAggregateGroupedByEntity {
   }
 
   private OSMContributionView createMapReducerOSMContribution() throws Exception {
-    return new OSMContributionView(oshdb, null)
+    return OSMContributionView.view()
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
@@ -43,7 +41,7 @@ class TestFlatMapAggregateGroupedByEntity {
   void test() throws Exception {
     var result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .view()
+        .on(oshdb)
         .groupByEntity()
         .flatMapIterable(contributions -> {
           if (contributions.get(0).getEntityAfter().getId() != 617308093) {
