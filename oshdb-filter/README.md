@@ -41,7 +41,7 @@ OSMEntitySnapshotView.on(…)
     .areaOfInterest(…)
     .timestamps("…")
     .filter("building=*")
-    .aggreagteBy(snapshot ->
+    .aggregateBy(snapshot ->
         featureRequirementsFilter.applyOSMGeometry(snapshot.getEntity(), snapshot::getGeometry)
             ? "feature matches requirements"
             : "feature does not match requirements"
