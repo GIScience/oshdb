@@ -27,7 +27,7 @@ Changelog
 * remove `OSMMember.getRawRoleId` ([#453])
 * refactor `OSHDBRole` and move to oshdb-core ([#453])
 * update jts dependency to version 1.18.2
-* update ignite dependency to version 2.13.0 ([#459])
+* update ignite dependency to version 2.14.0 ([#459])
 * add natural order to `OSHDBTag` ([#454])
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
