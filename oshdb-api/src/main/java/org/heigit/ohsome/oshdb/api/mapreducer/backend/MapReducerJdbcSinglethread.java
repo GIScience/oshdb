@@ -2,11 +2,11 @@ package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
 import com.google.common.collect.Streams;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
@@ -66,14 +66,17 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
       return result;
     }
     for (CellIdRange cellIdRange : this.getCellIdRanges()) {
-      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
-
-      while (oshCellsRawData.next()) {
-        GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
-        result = combiner.apply(
-            result,
-            cellProcessor.apply(oshCellRawData, cellIterator)
-        );
+      try (var conn = ((OSHDBJdbc) this.oshdb).getConnection();
+          var pstmt = conn.prepareStatement(sqlQuery());) {
+        pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
+        pstmt.setLong(2, cellIdRange.getStart().getId());
+        pstmt.setLong(3, cellIdRange.getEnd().getId());
+        try (var oshCellsRawData = pstmt.executeQuery()) {
+          while (oshCellsRawData.next()) {
+            GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
+            result = combiner.apply(result, cellProcessor.apply(oshCellRawData, cellIterator));
+          }
+        }
       }
     }
     return result;

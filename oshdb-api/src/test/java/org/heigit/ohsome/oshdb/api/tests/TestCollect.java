@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.api.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;

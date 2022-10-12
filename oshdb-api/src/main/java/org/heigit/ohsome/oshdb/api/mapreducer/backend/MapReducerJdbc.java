@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -20,6 +19,7 @@ import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CancelableProcessS
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.TableNames;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
@@ -48,22 +48,6 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
     return true;
   }
 
-  protected ResultSet getOshCellsRawDataFromDb(CellIdRange cellIdRange)
-      throws SQLException {
-    String sqlQuery = this.typeFilter.stream()
-        .map(osmType ->
-            TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix()))
-        )
-        .filter(Optional::isPresent).map(Optional::get)
-        .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
-        .collect(Collectors.joining(" union all "));
-    PreparedStatement pstmt = ((OSHDBJdbc) this.oshdb).getConnection().prepareStatement(sqlQuery);
-    pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
-    pstmt.setLong(2, cellIdRange.getStart().getId());
-    pstmt.setLong(3, cellIdRange.getEnd().getId());
-    return pstmt.executeQuery();
-  }
-
   /**
    * Returns data of one cell from the raw data stream.
    */
@@ -73,46 +57,72 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
         (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
   }
 
+  protected String sqlQuery() {
+    var sqlQuery = this.typeFilter.stream()
+        .map(
+            osmType -> TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix())))
+        .filter(Optional::isPresent).map(Optional::get)
+        .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
+        .collect(Collectors.joining(" union all "));
+    return sqlQuery;
+  }
+
   @Nonnull
   protected Stream<GridOSHEntity> getOshCellsStream(CellIdRange cellIdRange) {
     try {
       if (this.typeFilter.isEmpty()) {
         return Stream.empty();
       }
-      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
-      if (!oshCellsRawData.next()) {
-        return Stream.empty();
-      }
+
+      var conn = ((OSHDBJdbc) this.oshdb).getConnection();
+      var pstmt = conn.prepareStatement(sqlQuery());
+      pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
+      pstmt.setLong(2, cellIdRange.getStart().getId());
+      pstmt.setLong(3, cellIdRange.getEnd().getId());
+      var oshCellsRawData = pstmt.executeQuery();
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
           new Iterator<GridOSHEntity>() {
+            GridOSHEntity next;
             @Override
             public boolean hasNext() {
-              try {
-                return !oshCellsRawData.isClosed();
-              } catch (SQLException e) {
-                throw new RuntimeException(e);
-              }
+              return next != null || (next = getNext()) != null;
             }
 
             @Override
             public GridOSHEntity next() {
+              if (!hasNext()) {
+                throw new NoSuchElementException();
+              }
+              var grid = next;
+              next = null;
+              return grid;
+            }
+
+            private GridOSHEntity getNext() {
               try {
-                if (!hasNext()) {
-                  throw new NoSuchElementException();
-                }
-                GridOSHEntity data = readOshCellRawData(oshCellsRawData);
                 if (!oshCellsRawData.next()) {
-                  oshCellsRawData.close();
+                  try {
+                    oshCellsRawData.close();
+                  } finally {
+                    conn.close();
+                  }
+                  return null;
                 }
-                return data;
+                return readOshCellRawData(oshCellsRawData);
               } catch (IOException | ClassNotFoundException | SQLException e) {
-                throw new RuntimeException(e);
+                var exception = new OSHDBException(e);
+                try {
+                  conn.close();
+                } catch (Exception e2) {
+                  exception.addSuppressed(e2);
+                }
+                throw exception;
               }
             }
           }, 0
       ), false);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new OSHDBException(e);
     }
   }
 }

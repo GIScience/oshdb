@@ -214,10 +214,10 @@ public abstract class MapReducer<X> implements
   @Contract(pure = true)
   public MapReducer<X> keytables(OSHDBJdbc keytables) {
     if (keytables != this.oshdb && this.oshdb instanceof OSHDBJdbc) {
-      Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
       boolean oshdbContainsKeytables = true;
       try {
-        new TagTranslator(c).close();
+        Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
+          new TagTranslator(c).close();
       } catch (OSHDBKeytablesNotFoundException e) {
         // this is the expected path -> the oshdb doesn't have the key tables
         oshdbContainsKeytables = false;
@@ -1695,7 +1695,7 @@ public abstract class MapReducer<X> implements
           throw new OSHDBKeytablesNotFoundException();
         }
         this.tagTranslator = new TagTranslator(this.keytables.getConnection());
-      } catch (OSHDBKeytablesNotFoundException e) {
+      } catch (OSHDBKeytablesNotFoundException | SQLException e) {
         LOG.error(e.getMessage());
         throw new RuntimeException(e);
       }
