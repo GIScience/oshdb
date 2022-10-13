@@ -13,6 +13,7 @@
 
   <properties>
     <osmpbf.version>1.5.0</osmpbf.version>
+    <rxjava2.version>2.1.9</rxjava2.version>
   </properties>
 
   <dependencies>
