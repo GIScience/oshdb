@@ -31,8 +31,6 @@ public class OSHDBH2 extends OSHDBJdbc {
    *
    * @param databaseFile the file name and path to the H2 database file. (the ".mv.db" file ending
    *        of H2 should be omitted here)
-   * @throws SQLException if the database couldn't be opened
-   * @throws ClassNotFoundException if the H2 database driver is not installed on the system
    */
   public OSHDBH2(Path databaseFile) {
     this(databaseFile, "sa", "");
@@ -78,7 +76,7 @@ public class OSHDBH2 extends OSHDBJdbc {
   @Override
   public void close() throws Exception {
     try {
-    connectionPool.dispose();
+      connectionPool.dispose();
     } finally {
       super.close();
     }

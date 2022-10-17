@@ -41,8 +41,20 @@ public abstract class OSHDBTags extends AbstractSet<OSHDBTag> implements Seriali
 
   /**
    * Test for a certain key/value combination.
+   *
+   * @param key the key to search for.
+   * @param value the value to search for.
+   * @return true, if key/value combination is present.
    */
   public abstract boolean hasTagValue(int key, int value);
+
+  /**
+   * Test for a certain key/value combination.
+   *
+   * @param tag the tag to search for.
+   * @return true, if tag is present.
+   */
+  public abstract boolean hasTag(OSHDBTag tag);
 
   /**
    * KV based OSHDBTags.
@@ -125,15 +137,14 @@ public abstract class OSHDBTags extends AbstractSet<OSHDBTag> implements Seriali
 
     @Override
     public boolean hasTagValue(int key, int value) {
+      return hasTag(new OSHDBTag(key, value));
+    }
+
+    @Override
+    public boolean hasTag(OSHDBTag tag) {
       for (int i = 0; i < tags.length; i += 2) {
-        if (tags[i] < key) {
-          continue;
-        }
-        if (tags[i] == key) {
-          return tags[i + 1] == value;
-        }
-        if (tags[i] > key) {
-          return false;
+        if (tags[i] == tag.getKey() && tags[i + 1] == tag.getValue()) {
+          return true;
         }
       }
       return false;

@@ -428,7 +428,7 @@ public abstract class MapReducer<X> implements
   private MapReducer<X> osmTag(OSHDBTag tag) {
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tag.getKey()));
-    ret.filters.add(osmEntity -> osmEntity.getTags().hasTagValue(tag.getKey(), tag.getValue()));
+    ret.filters.add(osmEntity -> osmEntity.getTags().hasTag(tag));
     return ret;
   }
 
