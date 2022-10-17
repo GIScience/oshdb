@@ -1,10 +1,8 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
@@ -17,7 +15,7 @@ import org.junit.jupiter.api.Test;
  * Tests the {@link DefaultTagTranslator} class.
  */
 class TagTranslatorTest {
-  private static Connection conn;
+  private static JdbcConnectionPool source;
 
   /**
    * Initialize tests by loading the H2 driver and open a connection via jdbc.
@@ -27,64 +25,63 @@ class TagTranslatorTest {
    */
   @BeforeAll
   static void setUpClass() throws ClassNotFoundException, SQLException {
-    // load H2-support
-    Class.forName("org.h2.Driver");
-
-    // connect to the test data DB
-    TagTranslatorTest.conn =
-        DriverManager.getConnection("jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
-            "sa", "");
+    source = JdbcConnectionPool.create("jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r", "sa", "");
   }
 
   @AfterAll
   static void breakDownClass() throws SQLException {
-    TagTranslatorTest.conn.close();
+    source.dispose();
   }
 
   TagTranslatorTest() {}
 
   @Test
-  void testTag2Int() throws OSHDBKeytablesNotFoundException {
+  void testTag2Int() throws OSHDBKeytablesNotFoundException, SQLException {
     OSMTag tag = new OSMTag("building", "yes");
-    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
-    OSHDBTag expResult = new OSHDBTag(1, 0);
-    OSHDBTag result = instance.getOSHDBTagOf(tag);
-    assertEquals(expResult, result);
+    try (var instance = new DefaultTagTranslator(source)){
+      OSHDBTag expResult = new OSHDBTag(1, 0);
+      OSHDBTag result = instance.getOSHDBTagOf(tag);
+      assertEquals(expResult, result);
+    }
   }
 
   @Test
-  void testTag2String() throws OSHDBKeytablesNotFoundException {
+  void testTag2String() throws OSHDBKeytablesNotFoundException, SQLException {
     OSHDBTag tag = new OSHDBTag(1, 2);
-    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
-    OSMTag expResult = new OSMTag("building", "residential");
-    OSMTag result = instance.lookupTag(tag);
-    assertEquals(expResult, result);
+    try (var instance = new DefaultTagTranslator(source)){
+      OSMTag expResult = new OSMTag("building", "residential");
+      OSMTag result = instance.lookupTag(tag);
+      assertEquals(expResult, result);
+    }
   }
 
   @Test
-  void testKey2Int() throws OSHDBKeytablesNotFoundException {
+  void testKey2Int() throws OSHDBKeytablesNotFoundException, SQLException {
     OSMTagKey key = new OSMTagKey("highway");
-    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
-    OSHDBTagKey expResult = new OSHDBTagKey(2);
-    OSHDBTagKey result = instance.getOSHDBTagKeyOf(key);
-    assertEquals(expResult, result);
+    try (var instance = new DefaultTagTranslator(source)) {
+      OSHDBTagKey expResult = new OSHDBTagKey(2);
+      OSHDBTagKey result = instance.getOSHDBTagKeyOf(key);
+      assertEquals(expResult, result);
+    }
   }
 
   @Test
-  void testRole2Int() throws OSHDBKeytablesNotFoundException {
+  void testRole2Int() throws OSHDBKeytablesNotFoundException, SQLException {
     OSMRole role = new OSMRole("from");
-    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
-    OSHDBRole expResult = OSHDBRole.of(4);
-    OSHDBRole result = instance.getOSHDBRoleOf(role);
-    assertEquals(expResult, result);
+    try (var instance = new DefaultTagTranslator(source)){
+      OSHDBRole expResult = OSHDBRole.of(4);
+      OSHDBRole result = instance.getOSHDBRoleOf(role);
+      assertEquals(expResult, result);
+    }
   }
 
   @Test
-  void testRole2String() throws OSHDBKeytablesNotFoundException {
+  void testRole2String() throws OSHDBKeytablesNotFoundException, SQLException {
     OSHDBRole role = OSHDBRole.of(1);
-    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
-    OSMRole expResult = new OSMRole("inner");
-    OSMRole result = instance.lookupRole(role);
-    assertEquals(expResult, result);
+    try (var instance = new DefaultTagTranslator(source)){
+      OSMRole expResult = new OSMRole("inner");
+      OSMRole result = instance.lookupRole(role);
+      assertEquals(expResult, result);
+    }
   }
 }

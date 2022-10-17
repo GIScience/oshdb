@@ -14,6 +14,6 @@ class TestMapReduceOSHDBIgniteLocalPeek extends TestMapReduceOSHDBIgnite {
    * @throws Exception if something goes wrong
    */
   TestMapReduceOSHDBIgniteLocalPeek() throws Exception {
-    super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.LOCAL_PEEK));
+    super(oshdb -> oshdb.computeMode(OSHDBIgnite.ComputeMode.LOCAL_PEEK));
   }
 }

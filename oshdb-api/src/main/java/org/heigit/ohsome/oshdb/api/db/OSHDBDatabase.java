@@ -4,6 +4,7 @@ import java.util.OptionalLong;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 
 /**
  * OSHDB database backend connector.
@@ -11,6 +12,8 @@ import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 public abstract class OSHDBDatabase implements AutoCloseable {
   private String prefix = "";
   private Long timeout = null;
+
+  public abstract TagTranslator getTagTranslator();
 
   /**
    * Factory function that creates a mapReducer object of the appropriate data type class for this

@@ -16,7 +16,6 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
-import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -41,7 +40,7 @@ class TestOSHDBFilter {
    */
   TestOSHDBFilter() throws Exception {
     OSHDBH2 oshdb = new OSHDBH2("../data/test-data");
-    filterParser = new FilterParser(new DefaultTagTranslator(oshdb.getConnection()));
+    filterParser = new FilterParser(oshdb.getTagTranslator());
     this.oshdb = oshdb;
   }
 
@@ -125,7 +124,7 @@ class TestOSHDBFilter {
   @Test
   @SuppressWarnings("ResultOfMethodCallIgnored")
   void testFilterNonExistentTag() throws Exception {
-    FilterParser parser = new FilterParser(new DefaultTagTranslator(oshdb.getConnection()));
+    FilterParser parser = new FilterParser(oshdb.getTagTranslator());
     try {
       createMapReducerOSMEntitySnapshot()
           .filter(parser.parse("type:way and nonexistentkey=*"))

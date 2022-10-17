@@ -2,25 +2,20 @@ package org.heigit.ohsome.oshdb.util.celliterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
-import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,18 +24,15 @@ import org.junit.jupiter.api.Test;
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method.
  */
 class IterateByContributionTest {
-  private static Connection conn;
+  private static JdbcConnectionPool source;
 
   /**
    * Set up of test framework, loading H2 driver and connection via jdbc.
    */
   @BeforeAll
   static void setUpClass() throws ClassNotFoundException, SQLException {
-    // load H2-support
-    Class.forName("org.h2.Driver");
-
     // connect to the "Big"DB
-    IterateByContributionTest.conn = DriverManager.getConnection(
+    source =  JdbcConnectionPool.create(
         "jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
         "sa",
         ""
@@ -48,8 +40,8 @@ class IterateByContributionTest {
   }
 
   @AfterAll
-  static void breakDownClass() throws SQLException {
-    IterateByContributionTest.conn.close();
+  static void breakDownClass() {
+    source.dispose();
   }
 
   IterateByContributionTest() {}
@@ -57,14 +49,14 @@ class IterateByContributionTest {
   @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
   @Test
   void testIssue108() throws Exception {
-    ResultSet oshCellsRawData = conn.prepareStatement(
-        "select data from " + TableNames.T_NODES).executeQuery();
-
     int countTotal = 0;
     int countCreated = 0;
     int countOther = 0;
 
-    try (TagTranslator tt = new DefaultTagTranslator(conn)) {
+    TagTranslator tt = new DefaultTagTranslator(source);
+    try (var conn = source.getConnection();
+        var stmt = conn.createStatement();
+        var oshCellsRawData = stmt.executeQuery("select data from " + TableNames.T_NODES)) {
       while (oshCellsRawData.next()) {
         // get one cell from the raw data stream
         GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(
@@ -95,7 +87,6 @@ class IterateByContributionTest {
         }
       }
     }
-
     assertEquals(4, countTotal);
     assertEquals(0, countCreated);
     assertEquals(4, countOther);

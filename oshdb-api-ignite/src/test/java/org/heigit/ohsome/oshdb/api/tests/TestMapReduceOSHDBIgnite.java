@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.function.Consumer;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteDataStreamer;
@@ -21,6 +22,7 @@ import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.logger.slf4j.Slf4jLogger;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
+import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
@@ -46,16 +48,8 @@ abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
     ignite = Ignition.start(cfg);
   }
 
-  TestMapReduceOSHDBIgnite(OSHDBIgnite oshdb) throws Exception {
-    super(oshdb);
-
+  private static OSHDBDatabase initOshdb(Consumer<OSHDBIgnite> computeMode) {
     final String prefix = "tests";
-    oshdb.prefix(prefix);
-
-    OSHDBH2 oshdbH2 = new OSHDBH2("../data/test-data");
-    this.keytables = oshdbH2;
-
-    Ignite ignite = ((OSHDBIgnite) this.oshdb).getIgnite();
     ignite.cluster().state(ClusterState.ACTIVE);
 
     CacheConfiguration<Long, GridOSHNodes> cacheCfg =
@@ -69,6 +63,7 @@ abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
     ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_WAYS.toString(prefix)));
     ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_RELATIONS.toString(prefix)));
 
+    OSHDBH2 oshdbH2 = new OSHDBH2("../data/test-data");
     // load test data into ignite cache
     try (IgniteDataStreamer<Long, GridOSHNodes> streamer = ignite.dataStreamer(cache.getName())) {
       Connection h2Conn = oshdbH2.getConnection();
@@ -96,5 +91,14 @@ abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
     }
 
     ignite.cluster().state(ClusterState.ACTIVE_READ_ONLY);
+
+    var oshdb = new OSHDBIgnite(ignite, oshdbH2);
+    oshdb.prefix(prefix);
+    computeMode.accept(oshdb);
+    return oshdb;
+  }
+
+  TestMapReduceOSHDBIgnite(Consumer<OSHDBIgnite> computeMode) throws Exception {
+    super(initOshdb(computeMode));
   }
 }

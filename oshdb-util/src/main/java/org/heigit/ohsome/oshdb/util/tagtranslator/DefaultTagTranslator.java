@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.sql.DataSource;
 import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
  *   </li>
  * </ul>
  */
-public class DefaultTagTranslator implements TagTranslator {
+public class DefaultTagTranslator implements TagTranslator, AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(DefaultTagTranslator.class);
   private static final String UNABLE_TO_ACCESS_KEYTABLES = "Unable to access keytables";
 
@@ -66,9 +67,10 @@ public class DefaultTagTranslator implements TagTranslator {
    * @param conn a connection to a database (containing oshdb keytables).
    * @throws OSHDBKeytablesNotFoundException if the supplied database doesn't contain the required
    *         "keyTables" tables
+   * @throws SQLException
    */
-  public DefaultTagTranslator(Connection conn) throws OSHDBKeytablesNotFoundException {
-    this.conn = conn;
+  public DefaultTagTranslator(DataSource source) throws OSHDBKeytablesNotFoundException, SQLException {
+    this.conn = source.getConnection();
     this.keyToInt = new ConcurrentHashMap<>(0);
     this.keyToString = new ConcurrentHashMap<>(0);
     this.tagToInt = new ConcurrentHashMap<>(0);
@@ -109,12 +111,16 @@ public class DefaultTagTranslator implements TagTranslator {
 
   @Override
   public void close() throws SQLException {
-    keyIdQuery.close();
-    keyTxtQuery.close();
-    valueIdQuery.close();
-    valueTxtQuery.close();
-    roleIdQuery.close();
-    roleTxtQuery.close();
+    try {
+      keyIdQuery.close();
+      keyTxtQuery.close();
+      valueIdQuery.close();
+      valueTxtQuery.close();
+      roleIdQuery.close();
+      roleTxtQuery.close();
+    } finally {
+      conn.close();
+    }
   }
 
   @Override

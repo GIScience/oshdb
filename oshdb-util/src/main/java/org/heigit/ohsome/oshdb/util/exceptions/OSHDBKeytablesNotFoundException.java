@@ -3,7 +3,7 @@ package org.heigit.ohsome.oshdb.util.exceptions;
 /**
  * Exception used if the OSHDB keytable cannot be found.
  */
-public class OSHDBKeytablesNotFoundException extends Exception {
+public class OSHDBKeytablesNotFoundException extends OSHDBException {
   /**
    * Creates an exception with a message explaining that the OSHDB keytables db was not found.
    */

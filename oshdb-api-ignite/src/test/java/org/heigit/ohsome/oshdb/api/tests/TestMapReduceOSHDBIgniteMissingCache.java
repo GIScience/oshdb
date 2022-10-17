@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +15,7 @@ class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
    * @throws Exception if something goes wrong
    */
   TestMapReduceOSHDBIgniteMissingCache() throws Exception {
-    super(new OSHDBIgnite(ignite));
+    super(oshdb -> {});
     this.oshdb.prefix("<test caches not present>");
   }
 

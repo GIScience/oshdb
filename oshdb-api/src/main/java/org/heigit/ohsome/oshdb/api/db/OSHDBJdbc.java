@@ -18,6 +18,8 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 
 /**
  * OSHDB database backend connector to a JDBC database file.
@@ -25,10 +27,29 @@ import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 public class OSHDBJdbc extends OSHDBDatabase {
 
   protected final DataSource dataSource;
+  protected final DataSource keytablesSource;
+  protected DefaultTagTranslator tagTranslator;
   private boolean useMultithreading = true;
 
   public OSHDBJdbc(DataSource source) {
+    this(source, source);
+  }
+
+  public OSHDBJdbc(DataSource source, DataSource keytables) {
     this.dataSource = source;
+    this.keytablesSource = keytables;
+  }
+
+  @Override
+  public TagTranslator getTagTranslator() {
+    if (tagTranslator == null) {
+      try {
+        tagTranslator = new DefaultTagTranslator(keytablesSource);
+      } catch (SQLException e) {
+        throw new OSHDBException(e);
+      }
+    }
+    return tagTranslator;
   }
 
   @Override
@@ -63,7 +84,6 @@ public class OSHDBJdbc extends OSHDBDatabase {
     } else {
       mapReducer = new MapReducerJdbcSinglethread<>(this, forClass);
     }
-    mapReducer = mapReducer.keytables(this);
     return mapReducer;
   }
 
@@ -100,5 +120,6 @@ public class OSHDBJdbc extends OSHDBDatabase {
 
   @Override
   public void close() throws Exception {
+    tagTranslator.close();
   }
 }

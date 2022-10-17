@@ -17,7 +17,7 @@ class TestMapReduceOSHDBIgniteScanQuery extends TestMapReduceOSHDBIgnite {
    * @throws Exception if something goes wrong
    */
   TestMapReduceOSHDBIgniteScanQuery() throws Exception {
-    super(new OSHDBIgnite(ignite).computeMode(OSHDBIgnite.ComputeMode.SCAN_QUERY));
+    super(oshdb -> oshdb.computeMode(OSHDBIgnite.ComputeMode.SCAN_QUERY));
   }
 
   @Override

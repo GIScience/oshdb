@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
  */
 abstract class TestMapReduce {
   final OSHDBDatabase oshdb;
-  OSHDBJdbc keytables = null;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps6 = new OSHDBTimestamps("2010-01-01", "2015-01-01",
@@ -38,21 +37,13 @@ abstract class TestMapReduce {
   }
 
   protected MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
-    MapReducer<OSMContribution> mapRed = OSMContributionView.on(oshdb);
-    if (this.keytables != null) {
-      mapRed = mapRed.keytables(this.keytables);
-    }
-    return mapRed
+    return OSMContributionView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }
 
   protected MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
-    MapReducer<OSMEntitySnapshot> mapRed = OSMEntitySnapshotView.on(oshdb);
-    if (this.keytables != null) {
-      mapRed = mapRed.keytables(this.keytables);
-    }
-    return mapRed
+    return OSMEntitySnapshotView.on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:node and highway=*");
   }

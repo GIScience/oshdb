@@ -5,7 +5,7 @@ import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTagOrRoleNotFoundException;
 
-public interface TagTranslator extends AutoCloseable {
+public interface TagTranslator {
   /**
    * Get oshdb's internal representation of a tag key (string).
    *

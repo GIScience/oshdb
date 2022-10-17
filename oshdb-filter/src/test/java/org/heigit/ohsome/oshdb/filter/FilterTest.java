@@ -1,11 +1,10 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
@@ -21,7 +20,6 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
-import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -29,23 +27,27 @@ import org.junit.jupiter.api.BeforeEach;
  * Tests the parsing of filters and the application to OSM entities.
  */
 abstract class FilterTest {
-  protected Connection conn;
+  protected JdbcConnectionPool source;
   protected FilterParser parser;
-  protected TagTranslator tagTranslator;
+  protected DefaultTagTranslator tagTranslator;
 
   @BeforeEach
   void setup() throws SQLException, ClassNotFoundException, OSHDBKeytablesNotFoundException {
-    this.conn = DriverManager.getConnection(
+    this.source = JdbcConnectionPool.create(
             "jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
             "sa", ""
     );
-    this.tagTranslator = new DefaultTagTranslator(conn);
+    this.tagTranslator = new DefaultTagTranslator(source);
     this.parser = new FilterParser(this.tagTranslator);
   }
 
   @AfterEach
   void teardown() throws SQLException {
-    conn.close();
+    try {
+      tagTranslator.close();
+    } finally {
+      source.dispose();
+    }
   }
 
   protected int[] createTestTags(String... keyValues) {
