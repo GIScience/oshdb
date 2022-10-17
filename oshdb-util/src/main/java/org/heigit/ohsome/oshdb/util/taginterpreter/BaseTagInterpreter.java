@@ -4,6 +4,7 @@ import static java.util.Collections.emptySet;
 
 import java.util.Map;
 import java.util.Set;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
@@ -17,8 +18,8 @@ import org.heigit.ohsome.oshdb.osm.OSMWay;
  * linestring geometry.
  */
 class BaseTagInterpreter implements TagInterpreter {
-  int areaNoTagKeyId;
-  int areaNoTagValueId;
+  OSHDBTag areaNo;
+
   Map<Integer, Set<Integer>> wayAreaTags;
   Map<Integer, Set<Integer>> relationAreaTags;
   Set<Integer> uninterestingTagKeys;
@@ -27,8 +28,7 @@ class BaseTagInterpreter implements TagInterpreter {
   int emptyRoleId;
 
   BaseTagInterpreter(
-      int areaNoTagKeyId,
-      int areaNoTagValueId,
+      OSHDBTag areaNo,
       Map<Integer, Set<Integer>> wayAreaTags,
       Map<Integer, Set<Integer>> relationAreaTags,
       Set<Integer> uninterestingTagKeys,
@@ -36,8 +36,7 @@ class BaseTagInterpreter implements TagInterpreter {
       int innerRoleId,
       int emptyRoleId
   ) {
-    this.areaNoTagKeyId = areaNoTagKeyId;
-    this.areaNoTagValueId = areaNoTagValueId;
+    this.areaNo = areaNo;
     this.wayAreaTags = wayAreaTags;
     this.relationAreaTags = relationAreaTags;
     this.uninterestingTagKeys = uninterestingTagKeys;
@@ -48,10 +47,10 @@ class BaseTagInterpreter implements TagInterpreter {
 
   private boolean evaluateWayForArea(OSMWay entity) {
     var tags = entity.getTags();
-    if (tags.hasTagValue(areaNoTagKeyId, areaNoTagValueId)) {
+    if (tags.hasTag(areaNo)) {
       return false;
     }
-    for (var tag : entity.getTags()) {
+    for (var tag : tags) {
       if (wayAreaTags.getOrDefault(tag.getKey(), emptySet())
           .contains(tag.getValue())) {
         return true;

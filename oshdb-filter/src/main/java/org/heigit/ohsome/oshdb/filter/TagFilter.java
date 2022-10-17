@@ -1,6 +1,8 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import javax.annotation.Nonnull;
+import org.heigit.ohsome.oshdb.OSHDBTag;
+import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagInterface;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTagKey;
@@ -42,18 +44,20 @@ public interface TagFilter extends Filter {
    */
   @Contract(pure = true)
   static TagFilter fromSelector(@Nonnull Type selector, OSMTagInterface tag, TagTranslator tt) {
+    //TODO we should check for key,key/value combination that not exist in the database and
+    // eagerly cancel the query!!
     switch (selector) {
       case EQUALS:
         if (tag instanceof OSMTag) {
-          return new TagFilterEquals(tt.getOSHDBTagOf((OSMTag) tag));
+          return new TagFilterEquals(tt.getOSHDBTagOf((OSMTag) tag).orElse(new OSHDBTag(-1, -1)));
         } else {
-          return new TagFilterEqualsAny(tt.getOSHDBTagKeyOf((OSMTagKey) tag));
+          return new TagFilterEqualsAny(tt.getOSHDBTagKeyOf((OSMTagKey) tag).orElse(new OSHDBTagKey(-1)));
         }
       case NOT_EQUALS:
         if (tag instanceof OSMTag) {
-          return new TagFilterNotEquals(tt.getOSHDBTagOf((OSMTag) tag));
+          return new TagFilterNotEquals(tt.getOSHDBTagOf((OSMTag) tag).orElse(new OSHDBTag(-1, -1)));
         } else {
-          return new TagFilterNotEqualsAny(tt.getOSHDBTagKeyOf((OSMTagKey) tag));
+          return new TagFilterNotEqualsAny(tt.getOSHDBTagKeyOf((OSMTagKey) tag).orElse(new OSHDBTagKey(-1)));
         }
       default:
         assert false : "invalid or null tag filter selector encountered";

@@ -14,7 +14,7 @@ import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
-import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
+import org.heigit.ohsome.oshdb.util.tagtranslator.JdbcTagTranslator;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -53,15 +53,15 @@ class IterateByContributionTest {
     int countCreated = 0;
     int countOther = 0;
 
-    TagTranslator tt = new DefaultTagTranslator(source);
+    var tt = new JdbcTagTranslator(source);
     try (var conn = source.getConnection();
         var stmt = conn.createStatement();
         var oshCellsRawData = stmt.executeQuery("select data from " + TableNames.T_NODES)) {
       while (oshCellsRawData.next()) {
         // get one cell from the raw data stream
-        GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(
-            oshCellsRawData.getBinaryStream(1))
-        ).readObject();
+        GridOSHEntity oshCellRawData =
+            (GridOSHEntity) (new ObjectInputStream(oshCellsRawData.getBinaryStream(1)))
+                .readObject();
 
         TreeSet<OSHDBTimestamp> timestamps = new TreeSet<>();
         timestamps.add(new OSHDBTimestamp(1325376000L));

@@ -125,7 +125,7 @@ public class FilterParser {
         stringSequence,
         (key, ignored, values) -> {
           List<OSHDBTag> tags = new ArrayList<>(values.size());
-          values.forEach(value -> tags.add(tt.getOSHDBTagOf(key, value)));
+          values.forEach(value -> tt.getOSHDBTagOf(key, value).ifPresent(tags::add));
           return new TagFilterEqualsAnyOf(tags);
         });
     final Parser<FilterExpression> idFilter = Parsers.sequence(

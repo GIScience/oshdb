@@ -2,12 +2,10 @@ package org.heigit.ohsome.oshdb.api.db;
 
 import com.google.common.base.Joiner;
 import java.io.File;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.sql.DataSource;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
@@ -20,7 +18,6 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
-import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 
 /**

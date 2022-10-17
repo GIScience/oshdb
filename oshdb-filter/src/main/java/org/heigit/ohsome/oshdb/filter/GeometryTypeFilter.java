@@ -57,8 +57,8 @@ public class GeometryTypeFilter implements Filter {
    */
   public GeometryTypeFilter(@Nonnull GeometryType geometryType, TagTranslator tt) {
     this.geometryType = geometryType;
-    this.typeMultipolygon = tt.getOSHDBTagOf(tagTypeMultipolygon);
-    this.typeBoundary = tt.getOSHDBTagOf(tagTypeBoundary);
+    this.typeMultipolygon = tt.getOSHDBTagOf(tagTypeMultipolygon).orElse(new OSHDBTag(-1, -1));
+    this.typeBoundary = tt.getOSHDBTagOf(tagTypeBoundary).orElse(new OSHDBTag(-1, -2));
   }
 
   private GeometryTypeFilter(

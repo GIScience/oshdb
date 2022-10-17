@@ -3,6 +3,7 @@ package org.heigit.ohsome.oshdb.filter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +24,7 @@ class ParseTest extends FilterTest {
   void testTagFilterEquals() {
     FilterExpression expression = parser.parse("highway=residential");
     assertTrue(expression instanceof TagFilterEquals);
-    OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
+    OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential").get();
     assertEquals(tag, ((TagFilterEquals) expression).getTag());
     assertEquals("tag:" + tag.getKey() + "=" + tag.getValue(), expression.toString());
   }
@@ -43,7 +44,7 @@ class ParseTest extends FilterTest {
   void testTagFilterEqualsAny() {
     FilterExpression expression = parser.parse("highway=*");
     assertTrue(expression instanceof TagFilterEqualsAny);
-    OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
+    OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway").get();
     assertEquals(tag, ((TagFilterEqualsAny) expression).getTag());
     assertEquals("tag:" + tag.toInt() + "=*", expression.toString());
   }
@@ -52,7 +53,7 @@ class ParseTest extends FilterTest {
   void testTagFilterNotEquals() {
     FilterExpression expression = parser.parse("highway!=residential");
     assertTrue(expression instanceof TagFilterNotEquals);
-    OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential");
+    OSHDBTag tag = tagTranslator.getOSHDBTagOf("highway", "residential").get();
     assertEquals(tag, ((TagFilterNotEquals) expression).getTag());
     assertEquals("tag:" + tag.getKey() + "!=" + tag.getValue(), expression.toString());
   }
@@ -61,7 +62,7 @@ class ParseTest extends FilterTest {
   void testTagFilterNotEqualsAny() {
     FilterExpression expression = parser.parse("highway!=*");
     assertTrue(expression instanceof TagFilterNotEqualsAny);
-    OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway");
+    OSHDBTagKey tag = tagTranslator.getOSHDBTagKeyOf("highway").get();
     assertEquals(tag, ((TagFilterNotEqualsAny) expression).getTag());
     assertEquals("tag:" + tag.toInt() + "!=*", expression.toString());
   }
@@ -71,8 +72,8 @@ class ParseTest extends FilterTest {
   void testTagFilterEqualsAnyOf() {
     FilterExpression expression = parser.parse("highway in (residential, track)");
     assertTrue(expression instanceof TagFilterEqualsAnyOf);
-    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
-    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential").get();
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track").get();
     assertTrue(expression.toString().matches("tag:" + tag1.getKey() + "in("
         + tag1.getValue() + "," + tag2.getValue() + "|"
         + tag2.getValue() + "," + tag1.getValue() + ")"
@@ -84,8 +85,8 @@ class ParseTest extends FilterTest {
   void testTagFilterNotEqualsAnyOf() {
     FilterExpression expression = parser.parse("not highway in (residential, track)");
     assertTrue(expression instanceof TagFilterNotEqualsAnyOf);
-    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
-    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential").get();
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track").get();
     assertTrue(expression.toString().matches("tag:" + tag1.getKey() + "not-in("
         + tag1.getValue() + "," + tag2.getValue() + "|"
         + tag2.getValue() + "," + tag1.getValue() + ")"
@@ -110,8 +111,8 @@ class ParseTest extends FilterTest {
   void testTagFilterEqualsAnyOfCheckMixed() {
     assertThrows(IllegalStateException.class, () -> {
       new TagFilterEqualsAnyOf(Arrays.asList(
-          tagTranslator.getOSHDBTagOf("highway", "residential"),
-          tagTranslator.getOSHDBTagOf("building", "yes")
+          tagTranslator.getOSHDBTagOf("highway", "residential").get(),
+          tagTranslator.getOSHDBTagOf("building", "yes").get()
       ));
     });
   }
@@ -120,8 +121,8 @@ class ParseTest extends FilterTest {
   void testTagFilterNotEqualsAnyOfCheckMixed() {
     assertThrows(IllegalStateException.class, () -> {
       new TagFilterNotEqualsAnyOf(Arrays.asList(
-          tagTranslator.getOSHDBTagOf("highway", "residential"),
-          tagTranslator.getOSHDBTagOf("building", "yes")
+          tagTranslator.getOSHDBTagOf("highway", "residential").get(),
+          tagTranslator.getOSHDBTagOf("building", "yes").get()
       ));
     });
   }

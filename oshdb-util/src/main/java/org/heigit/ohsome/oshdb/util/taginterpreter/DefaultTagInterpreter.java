@@ -8,9 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.heigit.ohsome.oshdb.OSHDBRole;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
-import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
+import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTag;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.json.simple.JSONArray;
@@ -26,10 +28,10 @@ import org.slf4j.LoggerFactory;
 public class DefaultTagInterpreter extends BaseTagInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(DefaultTagInterpreter.class);
 
-  private int typeKey = -1;
-  private int typeMultipolygonValue = -1;
-  private int typeBoundaryValue = -1;
-  private int typeRouteValue = -1;
+  private int typeKey;
+  private OSHDBTag typeMultipolygon;
+  private OSHDBTag typeBoundary;
+  private OSHDBTag typeRoute;
 
   private static final String defaultAreaTagsDefinitionFile = "json/polygon-features.json";
   private static final String defaultUninterestingTagsDefinitionFile
@@ -67,7 +69,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
       TagTranslator tagTranslator,
       String areaTagsDefinitionFile, String uninterestingTagsDefinitionFile
   ) throws IOException, ParseException {
-    super(-1, -1, null, null, null, -1, -1, -1); // initialize with dummy parameters for now
+    super(new OSHDBTag(-1, -1), null, null, null, -1, -1, -1); // initialize with dummy parameters for now
     // construct list of area tags for ways
     Map<Integer, Set<Integer>> wayAreaTags = new HashMap<>();
 
@@ -84,34 +86,37 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
       switch ((String) tag.get("polygon")) {
         case "all":
           Set<Integer> valueIds = new InvertedHashSet<>();
-          int keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
-          valueIds.add(tagTranslator.getOSHDBTagOf(key, "no").getValue());
-          wayAreaTags.put(keyId, valueIds);
+          tagTranslator.getOSHDBTagKeyOf(key).map(OSHDBTagKey::toInt).ifPresent(keyId -> {
+            tagTranslator.getOSHDBTagOf(key, "no").map(OSHDBTag::getValue).ifPresent(valueIds::add);
+            wayAreaTags.put(keyId, valueIds);
+          });
           break;
         case "whitelist":
           valueIds = new HashSet<>();
-          keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
-          JSONArray values = (JSONArray) tag.get("values");
-          @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
-          Iterable<String> iterableWhitelistValues = values;
-          for (String value : iterableWhitelistValues) {
-            OSMTag keyValue = new OSMTag(key, value);
-            valueIds.add(tagTranslator.getOSHDBTagOf(keyValue).getValue());
-          }
-          valueIds.add(tagTranslator.getOSHDBTagOf(key, "no").getValue());
-          wayAreaTags.put(keyId, valueIds);
+          tagTranslator.getOSHDBTagKeyOf(key).map(OSHDBTagKey::toInt).ifPresent(keyId -> {
+            JSONArray values = (JSONArray) tag.get("values");
+            @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
+            Iterable<String> iterableWhitelistValues = values;
+            for (String value : iterableWhitelistValues) {
+              OSMTag keyValue = new OSMTag(key, value);
+              tagTranslator.getOSHDBTagOf(keyValue).map(OSHDBTag::getValue)
+                  .ifPresent(valueIds::add);
+            }
+            tagTranslator.getOSHDBTagOf(key, "no").map(OSHDBTag::getValue).ifPresent(valueIds::add);
+            wayAreaTags.put(keyId, valueIds); });
           break;
         case "blacklist":
           valueIds = new InvertedHashSet<>();
-          keyId = tagTranslator.getOSHDBTagKeyOf(key).toInt();
-          values = (JSONArray) tag.get("values");
-          @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
-          Iterable<String> iterableBlacklistValues = values;
-          for (String value : iterableBlacklistValues) {
-            OSMTag keyValue = new OSMTag(key, value);
-            valueIds.add(tagTranslator.getOSHDBTagOf(keyValue).getValue());
-          }
-          wayAreaTags.put(keyId, valueIds);
+          tagTranslator.getOSHDBTagKeyOf(key).map(OSHDBTagKey::toInt).ifPresent(keyId -> {
+            JSONArray values = (JSONArray) tag.get("values");
+            @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
+            Iterable<String> iterableBlacklistValues = values;
+            for (String value : iterableBlacklistValues) {
+              OSMTag keyValue = new OSMTag(key, value);
+              tagTranslator.getOSHDBTagOf(keyValue).map(OSHDBTag::getValue)
+                  .ifPresent(valueIds::add);
+            }
+            wayAreaTags.put(keyId, valueIds); });
           break;
         default:
           throw new ParseException(-13);
@@ -119,16 +124,16 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     }
 
     // hardcoded type=multipolygon for relations
-    this.typeKey = tagTranslator.getOSHDBTagKeyOf("type").toInt();
-    this.typeMultipolygonValue = tagTranslator.getOSHDBTagOf("type", "multipolygon").getValue();
-    this.typeBoundaryValue = tagTranslator.getOSHDBTagOf("type", "boundary").getValue();
-    this.typeRouteValue = tagTranslator.getOSHDBTagOf("type", "route").getValue();
+    this.typeKey = tagTranslator.getOSHDBTagKeyOf("type").map(OSHDBTagKey::toInt).orElse(-1);
+    this.typeMultipolygon = tagTranslator.getOSHDBTagOf("type", "multipolygon").orElse(new OSHDBTag(typeKey, -1));
+    this.typeBoundary = tagTranslator.getOSHDBTagOf("type", "boundary").orElse(new OSHDBTag(typeKey, -2));
+    this.typeRoute = tagTranslator.getOSHDBTagOf("type", "route").orElse(new OSHDBTag(typeKey, -3));
 
     // we still need to also store relation area tags for isOldStyleMultipolygon() functionality!
     Map<Integer, Set<Integer>> relAreaTags = new TreeMap<>();
     Set<Integer> relAreaTagValues = new TreeSet<>();
-    relAreaTagValues.add(this.typeMultipolygonValue);
-    relAreaTagValues.add(this.typeBoundaryValue);
+    relAreaTagValues.add(this.typeMultipolygon.getValue());
+    relAreaTagValues.add(this.typeBoundary.getValue());
     relAreaTags.put(this.typeKey, relAreaTagValues);
 
     // list of uninteresting tags
@@ -141,19 +146,19 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     @SuppressWarnings("unchecked") // we expect only strings here in a valid definition file
     Iterable<String> iterableUninterestingTagsList = uninterestingTagsList;
     for (String tagKey : iterableUninterestingTagsList) {
-      uninterestingTagKeys.add(tagTranslator.getOSHDBTagKeyOf(tagKey).toInt());
+      tagTranslator.getOSHDBTagKeyOf(tagKey).map(OSHDBTagKey::toInt).ifPresent(uninterestingTagKeys::add);
     }
 
     this.wayAreaTags = wayAreaTags;
     this.relationAreaTags = relAreaTags;
     this.uninterestingTagKeys = uninterestingTagKeys;
 
-    this.areaNoTagKeyId = tagTranslator.getOSHDBTagOf("area", "no").getKey();
-    this.areaNoTagValueId = tagTranslator.getOSHDBTagOf("area", "no").getValue();
+    var areaTagKey = tagTranslator.getOSHDBTagKeyOf("area").map(OSHDBTagKey::toInt).orElse(-2);
+    this.areaNo = tagTranslator.getOSHDBTagOf("area", "no").orElse(new OSHDBTag(areaTagKey, -1));
 
-    this.outerRoleId = tagTranslator.getOSHDBRoleOf("outer").getId();
-    this.innerRoleId = tagTranslator.getOSHDBRoleOf("inner").getId();
-    this.emptyRoleId = tagTranslator.getOSHDBRoleOf("").getId();
+    this.outerRoleId = tagTranslator.getOSHDBRoleOf("outer").map(OSHDBRole::getId).orElse(-1);
+    this.innerRoleId = tagTranslator.getOSHDBRoleOf("inner").map(OSHDBRole::getId).orElse(-2);
+    this.emptyRoleId = tagTranslator.getOSHDBRoleOf("").map(OSHDBRole::getId).orElse(-3);
   }
 
   @Override
@@ -183,9 +188,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
     // `return entity.hasTagValue(k1,v1) || entity.hasTagValue(k2,v2);`
     for (var tag : tags) {
       if (tag.getKey() == typeKey) {
-        return tag.getValue() == typeMultipolygonValue || tag.getValue() == typeBoundaryValue;
-      } else if (tag.getKey() > typeKey) {
-        return false;
+        return  tag.equals(typeMultipolygon) || tag.equals(typeBoundary);
       }
     }
     return false;
@@ -193,6 +196,6 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
 
   // checks if the relation has the tag "type=route"
   private boolean evaluateRelationForLine(OSMRelation entity) {
-    return entity.getTags().hasTagValue(typeKey, typeRouteValue);
+    return entity.getTags().hasTag(typeRoute);
   }
 }

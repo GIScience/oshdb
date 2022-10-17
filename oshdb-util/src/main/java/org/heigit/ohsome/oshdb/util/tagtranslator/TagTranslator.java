@@ -1,18 +1,24 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTagOrRoleNotFoundException;
 
 public interface TagTranslator {
+
   /**
    * Get oshdb's internal representation of a tag key (string).
    *
    * @param key the tag key as a string
    * @return the corresponding oshdb representation of this key
    */
-  OSHDBTagKey getOSHDBTagKeyOf(String key);
+  default Optional<OSHDBTagKey> getOSHDBTagKeyOf(String key) {
+    return getOSHDBTagKeyOf(new OSMTagKey(key));
+  }
 
   /**
    * Get oshdb's internal representation of a tag key.
@@ -20,7 +26,7 @@ public interface TagTranslator {
    * @param key the tag key as an OSMTagKey object
    * @return the corresponding oshdb representation of this key
    */
-  OSHDBTagKey getOSHDBTagKeyOf(OSMTagKey key);
+  Optional<OSHDBTagKey> getOSHDBTagKeyOf(OSMTagKey key);
 
   /**
    * Get oshdb's internal representation of a tag (key-value string pair).
@@ -29,7 +35,9 @@ public interface TagTranslator {
    * @param value the (string) value of the tag
    * @return the corresponding oshdb representation of this tag
    */
-  OSHDBTag getOSHDBTagOf(String key, String value);
+  default Optional<OSHDBTag> getOSHDBTagOf(String key, String value) {
+    return getOSHDBTagOf(new OSMTag(key, value));
+  }
 
   /**
    * Get oshdb's internal representation of a tag (key-value pair).
@@ -37,7 +45,9 @@ public interface TagTranslator {
    * @param tag a key-value pair as an OSMTag object
    * @return the corresponding oshdb representation of this tag
    */
-  OSHDBTag getOSHDBTagOf(OSMTag tag);
+  Optional<OSHDBTag> getOSHDBTagOf(OSMTag tag);
+
+  Map<OSMTag, OSHDBTag> getOSHDBTagOf(Set<? extends OSMTag> tags);
 
   /**
    * Get oshdb's internal representation of a role (string).
@@ -45,7 +55,9 @@ public interface TagTranslator {
    * @param role the role string to fetch
    * @return the corresponding oshdb representation of this role
    */
-  OSHDBRole getOSHDBRoleOf(String role);
+  default Optional<OSHDBRole> getOSHDBRoleOf(String role) {
+    return getOSHDBRoleOf(new OSMRole(role));
+  }
 
   /**
    * Get oshdb's internal representation of a role.
@@ -53,7 +65,9 @@ public interface TagTranslator {
    * @param role the role to fetch as an OSMRole object
    * @return the corresponding oshdb representation of this role
    */
-  OSHDBRole getOSHDBRoleOf(OSMRole role);
+  Optional<OSHDBRole> getOSHDBRoleOf(OSMRole role);
+
+  Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Set<? extends OSMRole> roles);
 
   /**
    * Get a tag's string representation from oshdb's internal data format.
@@ -63,6 +77,8 @@ public interface TagTranslator {
    * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
   OSMTag lookupTag(OSHDBTag tag);
+
+  Map<OSHDBTag, OSMTag> lookupTag(Set<? extends OSHDBTag> tags);
 
   /**
    * Get a tag's string representation from oshdb's internal data format.
@@ -89,5 +105,7 @@ public interface TagTranslator {
    * @param role the role ID (represented as an integer)
    * @return the textual representation of this role
    */
-  OSMRole lookupRole(int role);
+  default OSMRole lookupRole(int role) {
+    return lookupRole(OSHDBRole.of(role));
+  }
 }
