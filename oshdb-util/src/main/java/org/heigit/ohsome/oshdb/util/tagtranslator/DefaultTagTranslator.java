@@ -64,7 +64,7 @@ public class DefaultTagTranslator implements TagTranslator, AutoCloseable {
    * A TagTranslator for a specific DB-Connection. It has its own internal cache
    * to speed up searching.
    *
-   * @param conn a connection to a database (containing oshdb keytables).
+   * @param source a datasoure to a database (containing oshdb keytables).
    * @throws OSHDBKeytablesNotFoundException if the supplied database doesn't contain the required
    *         "keyTables" tables
    * @throws SQLException
