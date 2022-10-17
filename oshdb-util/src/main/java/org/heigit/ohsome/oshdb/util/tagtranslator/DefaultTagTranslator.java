@@ -150,39 +150,6 @@ public class DefaultTagTranslator implements TagTranslator {
   }
 
   @Override
-  public OSMTagKey getOSMTagKeyOf(int key) {
-    return getOSMTagKeyOf(new OSHDBTagKey(key));
-  }
-
-  @Override
-  public OSMTagKey getOSMTagKeyOf(OSHDBTagKey key) {
-    if (this.keyToString.containsKey(key)) {
-      return this.keyToString.get(key);
-    }
-    OSMTagKey keyString;
-    try {
-      synchronized (keyTxtQuery) {
-        keyTxtQuery.setInt(1, key.toInt());
-        try (ResultSet keys = keyTxtQuery.executeQuery()) {
-          if (!keys.next()) {
-            throw new OSHDBTagOrRoleNotFoundException(format(
-                "Unable to find tag key id %d in keytables.", key.toInt()
-            ));
-          } else {
-            keyString = new OSMTagKey(keys.getString("TXT"));
-          }
-        }
-        this.keyToInt.put(keyString, key);
-      }
-    } catch (SQLException ex) {
-      LOG.error(UNABLE_TO_ACCESS_KEYTABLES);
-      throw new OSHDBException(UNABLE_TO_ACCESS_KEYTABLES);
-    }
-    this.keyToString.put(key, keyString);
-    return keyString;
-  }
-
-  @Override
   public OSHDBTag getOSHDBTagOf(String key, String value) {
     return this.getOSHDBTagOf(new OSMTag(key, value));
   }
@@ -219,12 +186,7 @@ public class DefaultTagTranslator implements TagTranslator {
   }
 
   @Override
-  public OSMTag getOSMTagOf(int key, int value) {
-    return this.getOSMTagOf(new OSHDBTag(key, value));
-  }
-
-  @Override
-  public OSMTag getOSMTagOf(OSHDBTag tag) {
+  public OSMTag lookupTag(OSHDBTag tag) {
     // check if Key and Value are in cache
     if (this.tagToString.containsKey(tag)) {
       return this.tagToString.get(tag);
@@ -290,12 +252,12 @@ public class DefaultTagTranslator implements TagTranslator {
   }
 
   @Override
-  public OSMRole getOSMRoleOf(int role) {
-    return this.getOSMRoleOf(OSHDBRole.of(role));
+  public OSMRole lookupRole(int role) {
+    return this.lookupRole(OSHDBRole.of(role));
   }
 
   @Override
-  public OSMRole getOSMRoleOf(OSHDBRole role) {
+  public OSMRole lookupRole(OSHDBRole role) {
     if (this.roleToString.containsKey(role)) {
       return this.roleToString.get(role);
     }

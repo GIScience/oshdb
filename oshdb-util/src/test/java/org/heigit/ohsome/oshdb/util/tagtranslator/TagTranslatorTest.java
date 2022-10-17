@@ -57,7 +57,7 @@ class TagTranslatorTest {
     OSHDBTag tag = new OSHDBTag(1, 2);
     TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSMTag expResult = new OSMTag("building", "residential");
-    OSMTag result = instance.getOSMTagOf(tag);
+    OSMTag result = instance.lookupTag(tag);
     assertEquals(expResult, result);
   }
 
@@ -67,15 +67,6 @@ class TagTranslatorTest {
     TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSHDBTagKey expResult = new OSHDBTagKey(2);
     OSHDBTagKey result = instance.getOSHDBTagKeyOf(key);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  void testKey2String() throws OSHDBKeytablesNotFoundException {
-    OSHDBTagKey key = new OSHDBTagKey(1);
-    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
-    OSMTagKey expResult = new OSMTagKey("building");
-    OSMTagKey result = instance.getOSMTagKeyOf(key);
     assertEquals(expResult, result);
   }
 
@@ -93,7 +84,7 @@ class TagTranslatorTest {
     OSHDBRole role = OSHDBRole.of(1);
     TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSMRole expResult = new OSMRole("inner");
-    OSMRole result = instance.getOSMRoleOf(role);
+    OSMRole result = instance.lookupRole(role);
     assertEquals(expResult, result);
   }
 }
