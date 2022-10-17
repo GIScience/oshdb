@@ -68,6 +68,7 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
+import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
@@ -217,7 +218,7 @@ public abstract class MapReducer<X> implements
       boolean oshdbContainsKeytables = true;
       try {
         Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
-          new TagTranslator(c).close();
+          new DefaultTagTranslator(c).close();
       } catch (OSHDBKeytablesNotFoundException e) {
         // this is the expected path -> the oshdb doesn't have the key tables
         oshdbContainsKeytables = false;
@@ -1694,7 +1695,7 @@ public abstract class MapReducer<X> implements
         if (this.keytables == null) {
           throw new OSHDBKeytablesNotFoundException();
         }
-        this.tagTranslator = new TagTranslator(this.keytables.getConnection());
+        this.tagTranslator = new DefaultTagTranslator(this.keytables.getConnection());
       } catch (OSHDBKeytablesNotFoundException | SQLException e) {
         LOG.error(e.getMessage());
         throw new RuntimeException(e);

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the {@link TagTranslator} class.
+ * Tests the {@link DefaultTagTranslator} class.
  */
 class TagTranslatorTest {
   private static Connection conn;
@@ -46,7 +46,7 @@ class TagTranslatorTest {
   @Test
   void testTag2Int() throws OSHDBKeytablesNotFoundException {
     OSMTag tag = new OSMTag("building", "yes");
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSHDBTag expResult = new OSHDBTag(1, 0);
     OSHDBTag result = instance.getOSHDBTagOf(tag);
     assertEquals(expResult, result);
@@ -55,7 +55,7 @@ class TagTranslatorTest {
   @Test
   void testTag2String() throws OSHDBKeytablesNotFoundException {
     OSHDBTag tag = new OSHDBTag(1, 2);
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSMTag expResult = new OSMTag("building", "residential");
     OSMTag result = instance.getOSMTagOf(tag);
     assertEquals(expResult, result);
@@ -64,7 +64,7 @@ class TagTranslatorTest {
   @Test
   void testKey2Int() throws OSHDBKeytablesNotFoundException {
     OSMTagKey key = new OSMTagKey("highway");
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSHDBTagKey expResult = new OSHDBTagKey(2);
     OSHDBTagKey result = instance.getOSHDBTagKeyOf(key);
     assertEquals(expResult, result);
@@ -73,7 +73,7 @@ class TagTranslatorTest {
   @Test
   void testKey2String() throws OSHDBKeytablesNotFoundException {
     OSHDBTagKey key = new OSHDBTagKey(1);
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSMTagKey expResult = new OSMTagKey("building");
     OSMTagKey result = instance.getOSMTagKeyOf(key);
     assertEquals(expResult, result);
@@ -82,7 +82,7 @@ class TagTranslatorTest {
   @Test
   void testRole2Int() throws OSHDBKeytablesNotFoundException {
     OSMRole role = new OSMRole("from");
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSHDBRole expResult = OSHDBRole.of(4);
     OSHDBRole result = instance.getOSHDBRoleOf(role);
     assertEquals(expResult, result);
@@ -91,7 +91,7 @@ class TagTranslatorTest {
   @Test
   void testRole2String() throws OSHDBKeytablesNotFoundException {
     OSHDBRole role = OSHDBRole.of(1);
-    TagTranslator instance = new TagTranslator(TagTranslatorTest.conn);
+    TagTranslator instance = new DefaultTagTranslator(TagTranslatorTest.conn);
     OSMRole expResult = new OSMRole("inner");
     OSMRole result = instance.getOSMRoleOf(role);
     assertEquals(expResult, result);

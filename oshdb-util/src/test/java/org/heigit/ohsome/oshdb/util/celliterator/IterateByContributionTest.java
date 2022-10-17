@@ -18,6 +18,7 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
+import org.heigit.ohsome.oshdb.util.tagtranslator.DefaultTagTranslator;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.AfterAll;
@@ -55,8 +56,7 @@ class IterateByContributionTest {
 
   @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
   @Test
-  void testIssue108() throws SQLException, IOException, ClassNotFoundException,
-      ParseException, OSHDBKeytablesNotFoundException {
+  void testIssue108() throws Exception {
     ResultSet oshCellsRawData = conn.prepareStatement(
         "select data from " + TableNames.T_NODES).executeQuery();
 
@@ -64,7 +64,7 @@ class IterateByContributionTest {
     int countCreated = 0;
     int countOther = 0;
 
-    try (TagTranslator tt = new TagTranslator(conn)) {
+    try (TagTranslator tt = new DefaultTagTranslator(conn)) {
       while (oshCellsRawData.next()) {
         // get one cell from the raw data stream
         GridOSHEntity oshCellRawData = (GridOSHEntity) (new ObjectInputStream(
