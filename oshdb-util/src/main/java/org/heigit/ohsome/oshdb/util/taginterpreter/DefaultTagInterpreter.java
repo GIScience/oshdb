@@ -38,7 +38,7 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
       = "json/uninterestingTags.json";
 
   /**
-   * Constructor using given {@link DefaultTagTranslator} and default values as areaTagsDefinitonFile and
+   * Constructor using given {@link TagTranslator} and default values as areaTagsDefinitonFile and
    * uninterestingTagsDefinitionFile.
    *
    * <p>
@@ -55,10 +55,10 @@ public class DefaultTagInterpreter extends BaseTagInterpreter {
   }
 
   /**
-   * Constructor using given {@link DefaultTagTranslator}, areaTagsDefinitonFile, and
+   * Constructor using given {@link TagTranslator}, areaTagsDefinitonFile, and
    * uninterestingTagsDefinitionFile.
    *
-   * @param tagTranslator {@link DefaultTagTranslator} used by {@link TagInterpreter}
+   * @param tagTranslator {@link TagTranslator} used by {@link TagInterpreter}
    * @param areaTagsDefinitionFile filename of a JSON file containing tags that are supposed to be
    *                               areas
    * @param uninterestingTagsDefinitionFile filename of a JSON file containing tags to be ignored
