@@ -291,6 +291,22 @@ class GeoTest {
         new Coordinate(0, L),
         new Coordinate(0, 0)
     })), 0.01);
+    // square shifted X
+    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+        new Coordinate(D, 0),
+        new Coordinate(D + L, 0),
+        new Coordinate(D + L, L),
+        new Coordinate(D, L),
+        new Coordinate(D, 0)
+    })), 0.01);
+    // square shifted Y
+    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+        new Coordinate(0, D),
+        new Coordinate(L, D),
+        new Coordinate(L, D + L),
+        new Coordinate(0, D + L),
+        new Coordinate(0, D)
+    })), 0.01);
     // square tilted
     assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
         new Coordinate(L, 0),
@@ -299,14 +315,22 @@ class GeoTest {
         new Coordinate(0, -L),
         new Coordinate(L, 0)
     })), 0.01);
-    // square tilted and shifted
+    // square tilted and shifted X
+    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+        new Coordinate(D + L, 0),
+        new Coordinate(D, L),
+        new Coordinate(D - L, 0),
+        new Coordinate(D, L),
+        new Coordinate(D + L, 0)
+    })), 0.01);
+    // square tilted and shifted Y – note that it is not perfectly rectangular due to the shift
     assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
         new Coordinate(L, D),
         new Coordinate(0, D + L),
         new Coordinate(-L, D),
         new Coordinate(0, D - L),
         new Coordinate(L, D)
-    })), 0.01);
+    })), 0.1);
     // triangle
     assertEquals(0.3, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
         new Coordinate(0, 0),
@@ -316,8 +340,7 @@ class GeoTest {
     })), 0.1);
     // circle
     var reader = new WKTReader();
-    assertEquals(0.0, Geo.rectilinearity(gf.createLinearRing(
-        reader.read(regular32gon).getCoordinates())), 0.1);
+    assertEquals(0.0, Geo.rectilinearity(reader.read(regular32gon)), 0.1);
 
     // line
     assertEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
@@ -343,13 +366,58 @@ class GeoTest {
     })), 0.1);
 
     // multipolygon: squares aligned
-    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
-        new Coordinate(L, D),
-        new Coordinate(0, D + L),
-        new Coordinate(-L, D),
-        new Coordinate(0, D - L),
-        new Coordinate(L, D)
-    })), 0.01);
+    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(
+        gf.createLinearRing(new Coordinate[] {
+            new Coordinate(0, 0),
+            new Coordinate(L, 0),
+            new Coordinate(L, L),
+            new Coordinate(0, L),
+            new Coordinate(0, 0)
+        }), new LinearRing[] {
+            gf.createLinearRing(new Coordinate[] {
+                new Coordinate(L/3, L/3),
+                new Coordinate(2*L/3, L/3),
+                new Coordinate(2*L/3, 2*L/3),
+                new Coordinate(L/3, 2*L/3),
+                new Coordinate(L/3, L/3)
+            })
+        })
+    ), 0.01);
+    // multipolygon: squares not aligned
+    assertNotEquals(1.0, Geo.rectilinearity(gf.createPolygon(
+        gf.createLinearRing(new Coordinate[] {
+            new Coordinate(0, 0),
+            new Coordinate(L, 0),
+            new Coordinate(L, L),
+            new Coordinate(0, L),
+            new Coordinate(0, 0)
+        }), new LinearRing[] {
+            gf.createLinearRing(new Coordinate[] {
+                new Coordinate(L/2 + L/4, L/2),
+                new Coordinate(L/2, L/2 + L/4),
+                new Coordinate(L/2 - L/4, L/2),
+                new Coordinate(L/2, L/2 - L/4),
+                new Coordinate(L/2 + L/4, L/2)
+            })
+        })
+    ), 0.01);
+
+    // real world, simple
+    var example1 = "POLYGON ((38.3460976 49.0294022, 38.3461905 49.0293425, "
+        + "38.3462795 49.0294021, 38.3461866 49.0294617, 38.3460976 49.0294022))";
+    assertEquals(1.0, Geo.rectilinearity(reader.read(example1)), 0.01);
+    // real world, complex
+    var example2 = "POLYGON ((38.3437718 49.0276361, 38.3438681 49.0275809, "
+        + "38.3438179 49.0275432, 38.3440056 49.0274357, 38.3440234 49.0274491, "
+        + "38.3441311 49.0273874, 38.3439048 49.0272175, 38.343646 49.0273657, "
+        + "38.3436218 49.0273475, 38.3435477 49.02739, 38.3435676 49.0274049, "
+        + "38.3435087 49.0274387, 38.3437718 49.0276361))";
+    assertEquals(1.0, Geo.rectilinearity(reader.read(example2)), 0.01);
+    // real world, unsquare
+    var example3 = "POLYGON ((38.3452974 49.0268873, 38.3453977 49.0268312, "
+        + "38.3454916 49.026925, 38.3453901 49.0269725, 38.3452974 49.0268873))";
+    assertNotEquals(1.0, Geo.rectilinearity(reader.read(example3)), 0.1);
+
   }
 
   @Test

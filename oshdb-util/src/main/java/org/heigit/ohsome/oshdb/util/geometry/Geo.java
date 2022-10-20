@@ -373,9 +373,13 @@ public class Geo {
   }
 
   public static double bearingRadians(Coordinate from, Coordinate to) {
-    var y = Math.sin(to.x - from.x) * Math.cos(to.y);
-    var x = Math.cos(from.y) * Math.sin(to.y)
-        - Math.sin(from.y) * Math.cos(to.y) * Math.cos(to.x - from.x);
+    var x1 = from.x * Math.PI / 180;
+    var x2 = to.x * Math.PI / 180;
+    var y1 = from.y * Math.PI / 180;
+    var y2 = to.y * Math.PI / 180;
+    var y = Math.sin(x2 - x1) * Math.cos(y2);
+    var x = Math.cos(y1) * Math.sin(y2)
+        - Math.sin(y1) * Math.cos(y2) * Math.cos(x2 - x1);
     return (Math.atan2(y, x) + 2 * Math.PI) % (2 * Math.PI);
   }
 
@@ -458,7 +462,7 @@ public class Geo {
     var cosA = Math.cos(angle);
     var sinA = Math.sin(angle);
     var centroid = line.getCentroid().getCoordinate();
-    var cosCentroidY = Math.cos(centroid.y);
+    var cosCentroidY = Math.cos(centroid.y * Math.PI / 180);
     var inverseCosCentroidY = 1 / cosCentroidY;
     var coords = line.getCoordinates();
     var modifiedCoords = new Coordinate[coords.length];
