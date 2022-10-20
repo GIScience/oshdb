@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.junit.jupiter.api.Test;
@@ -279,7 +280,7 @@ class GeoTest {
   }
 
   @Test
-  public void testRectilinearity() throws ParseException {
+  void testRectilinearity() throws ParseException {
     final double L = 1E-4;
     final double D = 10;
     // square

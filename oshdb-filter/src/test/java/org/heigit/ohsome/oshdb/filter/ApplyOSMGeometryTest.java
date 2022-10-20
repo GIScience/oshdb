@@ -173,7 +173,7 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterPerimeter() {
+  void testGeometryFilterPerimeter() {
     FilterExpression expression = parser.parse("perimeter:(4..5)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
@@ -196,7 +196,7 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterVertices() {
+  void testGeometryFilterVertices() {
     FilterExpression expression = parser.parse("geometry.vertices:(11..13)");
     // point
     assertFalse(expression.applyOSMGeometry(
@@ -270,7 +270,7 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterOuters() {
+  void testGeometryFilterOuters() {
     FilterExpression expression = parser.parse("geometry.outers:1");
     OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
     assertFalse(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
@@ -292,7 +292,7 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterInners() {
+  void testGeometryFilterInners() {
     FilterExpression expression = parser.parse("geometry.inners:0");
     OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
     assertTrue(expression.applyOSMGeometry(entity,
@@ -344,7 +344,7 @@ class ApplyOSMGeometryTest extends FilterTest {
       + "1.0000003577924967 0))";
 
   @Test
-  public void testGeometryFilterRoundness() throws ParseException {
+  void testGeometryFilterRoundness() throws ParseException {
     FilterExpression expression = parser.parse("geometry.roundness:(0.8..)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {});
     assertFalse(expression.applyOSMGeometry(entity,
@@ -355,7 +355,7 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterSqareness() throws ParseException {
+  void testGeometryFilterSqareness() throws ParseException {
     FilterExpression expression = parser.parse("geometry.squareness:(0.8..)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {});
     assertTrue(expression.applyOSMGeometry(entity,
