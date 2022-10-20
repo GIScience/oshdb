@@ -7,6 +7,10 @@ Changelog
 
 * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
 
+### new features
+
+* add new OSHDB filters: `perimeter`, `geometry.vertices`, `geometry.inners`, `geometry.outers`, `geometry.roundness` and `geometry.squareness` ([#436])
+
 ### bugfixes
 
 * change geometry filters to be based on full (unclipped) geometries ([#433])
@@ -27,7 +31,7 @@ Changelog
 
 [#426]: https://github.com/GIScience/oshdb/pull/426
 [#428]: https://github.com/GIScience/oshdb/pull/428
-
+[#436]: https://github.com/GIScience/oshdb/pull/436
 
 ## 0.7.1
 
