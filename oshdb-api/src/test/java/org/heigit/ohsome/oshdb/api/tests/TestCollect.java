@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
 import java.util.Collections;
@@ -13,15 +13,14 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the collect method of the OSHDB API.
  */
-public class TestCollect {
+class TestCollect {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -29,20 +28,19 @@ public class TestCollect {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  public TestCollect() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+  TestCollect() throws Exception {
+    oshdb = new OSHDBH2("../data/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:way and building=yes");
   }
 
   @Test
-  public void testCollect() throws Exception {
+  void testCollect() throws Exception {
     List<OSMContribution> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .collect();
@@ -53,7 +51,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testMapCollect() throws Exception {
+  void testMapCollect() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .map(contribution -> contribution.getEntityAfter().getId())
@@ -64,7 +62,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testFlatMapCollect() throws Exception {
+  void testFlatMapCollect() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(contribution -> Collections
@@ -76,7 +74,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testFlatMapCollectGroupedById() throws Exception {
+  void testFlatMapCollectGroupedById() throws Exception {
     List<Long> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .groupByEntity()
@@ -89,7 +87,7 @@ public class TestCollect {
   }
 
   @Test
-  public void testAggregatedByTimestamp() throws Exception {
+  void testAggregatedByTimestamp() throws Exception {
     SortedMap<OSHDBTimestamp, List<Long>> result = this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .aggregateByTimestamp()

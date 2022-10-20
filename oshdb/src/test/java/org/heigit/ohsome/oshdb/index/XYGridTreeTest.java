@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Sets;
 import java.util.HashSet;
@@ -9,13 +9,13 @@ import java.util.Iterator;
 import java.util.Set;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("checkstyle:abbreviationAsWordInName")
-public class XYGridTreeTest {
+class XYGridTreeTest {
 
   @Test
-  public void testGetIds() {
+  void testGetIds() {
     double longitude = 0.1;
     double latitude = 0.1;
     XYGridTree instance = new XYGridTree(4);
@@ -30,7 +30,7 @@ public class XYGridTreeTest {
   }
 
   @Test
-  public void testGetInsertId() {
+  void testGetInsertId() {
     OSHDBBoundingBox bbox = OSHDBBoundingBox.bboxWgs84Coordinates(0.0, -90.0, 179.0, 90.0);
     XYGridTree instance = new XYGridTree(4);
     CellId expResult = new CellId(2, 2L);
@@ -54,7 +54,7 @@ public class XYGridTreeTest {
   }
 
   @Test
-  public void testBbox2CellIds_BoundingBox_boolean() {
+  void testBbox2CellIds_BoundingBox_boolean() {
     HashSet<CellId> expectedCellIds = new HashSet<>(4);
     expectedCellIds.add(new CellId(3, 20L));
     expectedCellIds.add(new CellId(2, 6L));
@@ -71,7 +71,7 @@ public class XYGridTreeTest {
   }
 
   @Test
-  public void testBbox2CellIds_BoundingBox2_boolean() {
+  void testBbox2CellIds_BoundingBox2_boolean() {
     HashSet<CellId> expectedCellIds = new HashSet<>(16);
     expectedCellIds.add(new CellId(3, 12L));
     expectedCellIds.add(new CellId(3, 11L));

@@ -16,6 +16,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -190,7 +191,7 @@ public class OSHRelationImpl extends OSHEntityImpl
       final Collection<OSHNode> nodes,
       final Collection<OSHWay> ways, final long baseId, final long baseTimestamp,
       final int baseLongitude, final int baseLatitude) {
-    Collections.sort(versions, Collections.reverseOrder());
+    Collections.sort(versions, VERSION_REVERSE_ORDER);
 
     var lastMembers = new OSMMember[0];
 
@@ -205,7 +206,7 @@ public class OSHRelationImpl extends OSHEntityImpl
     int idx = 0;
     int offset = 0;
     for (OSHNode node : nodes) {
-      OSHDBBoundable bbox = node;
+      OSHDBBoundable bbox = node.getBoundable();
       if (bbox.isValid()) {
         minLon = Math.min(minLon, bbox.getMinLongitude());
         maxLon = Math.max(maxLon, bbox.getMaxLongitude());
@@ -240,7 +241,7 @@ public class OSHRelationImpl extends OSHEntityImpl
     idx = 0;
     offset = 0;
     for (OSHWay way : ways) {
-      OSHDBBoundable bbox = way;
+      OSHDBBoundable bbox = way.getBoundable();
       minLon = Math.min(minLon, bbox.getMinLongitude());
       maxLon = Math.max(maxLon, bbox.getMaxLongitude());
       minLat = Math.min(minLat, bbox.getMinLatitude());
@@ -302,7 +303,7 @@ public class OSHRelationImpl extends OSHEntityImpl
               break;
             }
           }
-          output.writeU32(member.getRawRoleId());
+          output.writeU32(member.getRole().getId());
           lastMemberId = member.getId();
         }
       }
@@ -377,7 +378,7 @@ public class OSHRelationImpl extends OSHEntityImpl
           members[i] = member;
         }
       }
-      return new OSMRelation(id, version, baseTimestamp + timestamp, changeset, userId,
+      return OSM.relation(id, version, baseTimestamp + timestamp, changeset, userId,
           keyValues, members);
     }
 

@@ -1,11 +1,19 @@
 Changelog
 =========
 
-## 0.8.0-SNAPSHOT (current master)
+## 1.0.0-SNAPSHOT (current master)
 
 ### breaking changes
 
 * remove class `oshdb-util:util.time.TimestampFormatter` ([#419])
+* drop "old" etl module ([#447])
+* remove Comparable interface from OSMEntity ([#449])
+* remove deprecated filter methods `osmType`, `osmTag` and `osmEntityFlter` (which were replaced by [OSHDB `filter`s](https://github.com/GIScience/oshdb/blob/0.7/documentation/manual/filters.md#oshdb-filter)) ([#451])
+* `OSMType.toString` returns lower-case name. ([#459])
+
+### new features
+
+* Allow to flexibly combine (automatic) aggregation methods (like `aggregateByGeometry(…)` or `aggregateByTimestamp()`) with each other and with `filter` or `map`/`flatMap`, regardless of the order of the applied operations ([#451])
 
 ### new features
 
@@ -14,13 +22,30 @@ Changelog
 ### bugfixes
 
 * change geometry filters to be based on full (unclipped) geometries ([#433])
+* make sure area computation never returns negative results (instead zero is returned for the invalid geometries which previously resulted in negative values) ([#438])
 
 ### other changes
 
- * update jts dependency to version 1.18.2
+* remove deprecated method `OSHEntity.getRawTagKeys` ([#441])
+* remove deprecated method `OSMEntity.getRawTags` ([#443])
+* remove `OSMMember.getRawRoleId` ([#453])
+* refactor `OSHDBRole` and move to oshdb-core ([#453])
+* update jts dependency to version 1.18.2
+* update ignite dependency to version 2.14.0 ([#459], [#467])
+* add natural order to `OSHDBTag` ([#454])
 
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#433]: https://github.com/GIScience/oshdb/issues/433
+[#438]: https://github.com/GIScience/oshdb/pull/438
+[#441]: https://github.com/GIScience/oshdb/pull/441
+[#443]: https://github.com/GIScience/oshdb/pull/443
+[#447]: https://github.com/GIScience/oshdb/pull/447
+[#449]: https://github.com/GIScience/oshdb/pull/449
+[#451]: https://github.com/GIScience/oshdb/pull/451
+[#453]: https://github.com/GIScience/oshdb/pull/453
+[#454]: https://github.com/GIScience/oshdb/pull/454
+[#459]: https://github.com/GIScience/oshdb/pull/459
+
 
 ## 0.7.2
 

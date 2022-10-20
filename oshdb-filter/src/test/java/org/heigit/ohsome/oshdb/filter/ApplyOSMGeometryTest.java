@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Streams;
 import java.util.function.BiConsumer;
@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
@@ -23,11 +23,11 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * Tests the application of filters to OSM geometries.
  */
-public class ApplyOSMGeometryTest extends FilterTest {
+class ApplyOSMGeometryTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
 
   @Test
-  public void testGeometryTypeFilterPoint() {
+  void testGeometryTypeFilterPoint() {
     FilterExpression expression = parser.parse("geometry:point");
     assertTrue(expression.applyOSMGeometry(createTestOSMEntityNode(), gf.createPoint()));
     // negated
@@ -35,7 +35,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterLine() {
+  void testGeometryTypeFilterLine() {
     FilterExpression expression = parser.parse("geometry:line");
     OSMEntity validWay = createTestOSMEntityWay(new long[]{1, 2, 3, 4, 1});
     assertTrue(expression.applyOSMGeometry(validWay, gf.createLineString()));
@@ -43,7 +43,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterPolygon() {
+  void testGeometryTypeFilterPolygon() {
     FilterExpression expression = parser.parse("geometry:polygon");
     OSMEntity validWay = createTestOSMEntityWay(new long[]{1, 2, 3, 4, 1});
     assertTrue(expression.applyOSMGeometry(validWay, gf.createPolygon()));
@@ -57,7 +57,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryTypeFilterOther() {
+  void testGeometryTypeFilterOther() {
     FilterExpression expression = parser.parse("geometry:other");
     OSMEntity validRelation = createTestOSMEntityRelation();
     assertTrue(expression.applyOSMGeometry(validRelation, gf.createGeometryCollection()));
@@ -76,7 +76,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testAndOperator() {
+  void testAndOperator() {
     FilterExpression expression = parser.parse("geometry:point and name=*");
     assertTrue(expression.applyOSMGeometry(
         createTestOSMEntityNode("name", "FIXME"),
@@ -93,7 +93,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testOrOperator() {
+  void testOrOperator() {
     FilterExpression expression = parser.parse("geometry:point or geometry:polygon");
     assertTrue(expression.applyOSMGeometry(
         createTestOSMEntityNode(),
@@ -110,7 +110,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterArea() {
+  void testGeometryFilterArea() {
     FilterExpression expression = parser.parse("area:(1..2)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
@@ -138,7 +138,7 @@ public class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  public void testGeometryFilterLength() {
+  void testGeometryFilterLength() {
     FilterExpression expression = parser.parse("length:(1..2)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2});
     assertFalse(expression.applyOSMGeometry(entity,
@@ -210,11 +210,11 @@ public class ApplyOSMGeometryTest extends FilterTest {
       var geometry = gf.createLineString(coords);
       tester.accept(expression.applyOSMGeometry(entity, geometry));
     };
-    testLineN.accept(10, Assert::assertFalse);
-    testLineN.accept(11, Assert::assertTrue);
-    testLineN.accept(12, Assert::assertTrue);
-    testLineN.accept(13, Assert::assertTrue);
-    testLineN.accept(14, Assert::assertFalse);
+    testLineN.accept(10, Assertions::assertFalse);
+    testLineN.accept(11, Assertions::assertTrue);
+    testLineN.accept(12, Assertions::assertTrue);
+    testLineN.accept(13, Assertions::assertTrue);
+    testLineN.accept(14, Assertions::assertFalse);
     // polygons
     BiConsumer<Integer, Consumer<Boolean>> testPolyonN = (n, tester) -> {
       var entity = createTestOSMEntityWay(LongStream.rangeClosed(1, n).toArray());
@@ -225,11 +225,11 @@ public class ApplyOSMGeometryTest extends FilterTest {
       var geometry = gf.createPolygon(coords);
       tester.accept(expression.applyOSMGeometry(entity, geometry));
     };
-    testPolyonN.accept(10, Assert::assertFalse);
-    testPolyonN.accept(11, Assert::assertTrue);
-    testPolyonN.accept(12, Assert::assertTrue);
-    testPolyonN.accept(13, Assert::assertTrue);
-    testPolyonN.accept(14, Assert::assertFalse);
+    testPolyonN.accept(10, Assertions::assertFalse);
+    testPolyonN.accept(11, Assertions::assertTrue);
+    testPolyonN.accept(12, Assertions::assertTrue);
+    testPolyonN.accept(13, Assertions::assertTrue);
+    testPolyonN.accept(14, Assertions::assertFalse);
     // polygon with hole
     BiConsumer<Integer, Consumer<Boolean>> testPolyonWithHoleN = (n, tester) -> {
       var entity = createTestOSMEntityRelation("type", "multipolygon");
@@ -244,11 +244,11 @@ public class ApplyOSMGeometryTest extends FilterTest {
           new LinearRing[] { innerCoords });
       tester.accept(expression.applyOSMGeometry(entity, geometry));
     };
-    testPolyonWithHoleN.accept(10, Assert::assertFalse);
-    testPolyonWithHoleN.accept(11, Assert::assertTrue);
-    testPolyonWithHoleN.accept(12, Assert::assertTrue);
-    testPolyonWithHoleN.accept(13, Assert::assertTrue);
-    testPolyonWithHoleN.accept(14, Assert::assertFalse);
+    testPolyonWithHoleN.accept(10, Assertions::assertFalse);
+    testPolyonWithHoleN.accept(11, Assertions::assertTrue);
+    testPolyonWithHoleN.accept(12, Assertions::assertTrue);
+    testPolyonWithHoleN.accept(13, Assertions::assertTrue);
+    testPolyonWithHoleN.accept(14, Assertions::assertFalse);
     // multi polygon
     BiConsumer<Integer, Consumer<Boolean>> testMultiPolyonN = (n, tester) -> {
       var entity = createTestOSMEntityRelation("type", "multipolygon");
@@ -262,11 +262,11 @@ public class ApplyOSMGeometryTest extends FilterTest {
           gf.createPolygon(coords) });
       tester.accept(expression.applyOSMGeometry(entity, geometry));
     };
-    testMultiPolyonN.accept(10, Assert::assertFalse);
-    testMultiPolyonN.accept(11, Assert::assertTrue);
-    testMultiPolyonN.accept(12, Assert::assertTrue);
-    testMultiPolyonN.accept(13, Assert::assertTrue);
-    testMultiPolyonN.accept(14, Assert::assertFalse);
+    testMultiPolyonN.accept(10, Assertions::assertFalse);
+    testMultiPolyonN.accept(11, Assertions::assertTrue);
+    testMultiPolyonN.accept(12, Assertions::assertTrue);
+    testMultiPolyonN.accept(13, Assertions::assertTrue);
+    testMultiPolyonN.accept(14, Assertions::assertFalse);
   }
 
   @Test

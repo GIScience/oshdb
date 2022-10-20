@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.util.geometry.fip;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
@@ -13,11 +13,11 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link FastPointInPolygon} class.
  */
-public class FastPointInPolygonTest {
+class FastPointInPolygonTest {
   /**
    * Returns a reversed "Σ"-shaped concave polygon.
    */
-  public static Polygon createPolygon() {
+  static Polygon createPolygon() {
     final GeometryFactory gf = new GeometryFactory();
     Coordinate[] coordinates = new Coordinate[100];
     coordinates[0] = new Coordinate(0, 0);
@@ -36,7 +36,7 @@ public class FastPointInPolygonTest {
   /**
    * Returns a square with a central square hole.
    */
-  public static Polygon createPolygonWithHole() {
+  static Polygon createPolygonWithHole() {
     final GeometryFactory gf = new GeometryFactory();
     Coordinate[] coordinates1 = new Coordinate[5];
     coordinates1[0] = new Coordinate(4, -1);
@@ -58,7 +58,7 @@ public class FastPointInPolygonTest {
   /**
    * Returns a reversed "Σ"-shaped concave polygon next to a square with a central square hole.
    */
-  public static MultiPolygon createMultiPolygon() {
+  static MultiPolygon createMultiPolygon() {
     GeometryFactory gf = new GeometryFactory();
     Polygon poly1 = createPolygon();
     Polygon poly2 = createPolygonWithHole();
@@ -66,7 +66,7 @@ public class FastPointInPolygonTest {
   }
 
   @Test
-  public void testPointInPolygon() {
+  void testPointInPolygon() {
     Polygon p = createPolygon();
     FastPointInPolygon pip = new FastPointInPolygon(p);
 
@@ -81,7 +81,7 @@ public class FastPointInPolygonTest {
   }
 
   @Test
-  public void testPointInPolygonWithHole() {
+  void testPointInPolygonWithHole() {
     Polygon p = createPolygonWithHole();
     FastPointInPolygon pip = new FastPointInPolygon(p);
 
@@ -96,7 +96,7 @@ public class FastPointInPolygonTest {
   }
 
   @Test
-  public void testPointInMultiPolygon() {
+  void testPointInMultiPolygon() {
     MultiPolygon p = createMultiPolygon();
     FastPointInPolygon pip = new FastPointInPolygon(p);
 

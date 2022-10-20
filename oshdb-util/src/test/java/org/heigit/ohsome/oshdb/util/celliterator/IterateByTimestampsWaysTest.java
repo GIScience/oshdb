@@ -1,8 +1,8 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +16,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
@@ -24,7 +24,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on OSM ways.
  */
-public class IterateByTimestampsWaysTest {
+class IterateByTimestampsWaysTest {
 
   private final GridOSHWays oshdbDataGridCell;
   TagInterpreter areaDecider;
@@ -33,7 +33,7 @@ public class IterateByTimestampsWaysTest {
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * {@link GridOSHWays}.
    */
-  public IterateByTimestampsWaysTest() throws IOException {
+  IterateByTimestampsWaysTest() throws IOException {
     OSMXmlReader osmXmlTestData = new OSMXmlReader();
     osmXmlTestData.add("./src/test/resources/different-timestamps/way.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
@@ -41,7 +41,7 @@ public class IterateByTimestampsWaysTest {
   }
 
   @Test
-  public void testGeometryChange() {
+  void testGeometryChange() {
     // way: creation and two geometry changes, but no tag changes
     // way getting more nodes, one disappears
 
@@ -60,7 +60,7 @@ public class IterateByTimestampsWaysTest {
         oshdbDataGridCell
     ).collect(Collectors.toList());
     assertEquals(10, result.size());
-    assertEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
     assertEquals(4, result.get(0).geometry.get().getNumPoints());
     assertEquals(8, result.get(1).geometry.get().getNumPoints());
     assertEquals(9, result.get(2).geometry.get().getNumPoints());
@@ -77,7 +77,7 @@ public class IterateByTimestampsWaysTest {
   }
 
   @Test
-  public void testGeometryChangeOfNodeInWay() {
+  void testGeometryChangeOfNodeInWay() {
     // way: creation and geometry change of nodes, but no tag changes
     // way with two then 3 nodes, first two nodes changed lat lon
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -107,7 +107,7 @@ public class IterateByTimestampsWaysTest {
   }
 
   @Test
-  public void testVisibleChange() {
+  void testVisibleChange() {
     // way: creation and 2 visible changes, but no geometry and no tag changes
     // way visible tag changed
 
@@ -132,7 +132,7 @@ public class IterateByTimestampsWaysTest {
   }
 
   @Test
-  public void testTagChange() {
+  void testTagChange() {
     // way: creation and two tag changes, one geometry change
 
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -161,14 +161,14 @@ public class IterateByTimestampsWaysTest {
     assertTrue(geom2 instanceof LineString);
     Geometry geom3 = result.get(10).geometry.get();
     assertTrue(geom3 instanceof LineString);
-    assertNotEquals(result.get(2).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertNotEquals(result.get(10).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
+    assertNotEquals(result.get(2).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertNotEquals(result.get(10).osmEntity.getTags(), result.get(2).osmEntity.getTags());
     assertNotEquals(result.get(2).geometry.get(), result.get(0).geometry.get());
     assertEquals(result.get(10).geometry.get(), result.get(2).geometry.get());
   }
 
   @Test
-  public void testMultipleChangesOnNodesOfWay() {
+  void testMultipleChangesOnNodesOfWay() {
     // way: nodes have different changes
     // node 12: tag change
     // node 13: visible change
@@ -199,7 +199,7 @@ public class IterateByTimestampsWaysTest {
   }
 
   @Test
-  public void testMultipleChanges() {
+  void testMultipleChanges() {
     // way and nodes have different changes
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -217,15 +217,15 @@ public class IterateByTimestampsWaysTest {
     ).collect(Collectors.toList());
     assertEquals(7, result.size());
 
-    assertNotEquals(result.get(2).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertEquals(result.get(6).osmEntity.getRawTags(), result.get(2).osmEntity.getRawTags());
+    assertNotEquals(result.get(2).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertEquals(result.get(6).osmEntity.getTags(), result.get(2).osmEntity.getTags());
     assertEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
     assertNotEquals(result.get(3).geometry.get(), result.get(1).geometry.get());
     assertNotEquals(result.get(6).geometry.get(), result.get(3).geometry.get());
   }
 
   @Test
-  public void testPolygonAreaYesTagDisappears() {
+  void testPolygonAreaYesTagDisappears() {
     // way seems to be polygon with area=yes, later linestring because area=yes deleted
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -250,12 +250,12 @@ public class IterateByTimestampsWaysTest {
     assertTrue(geom instanceof Polygon);
     Geometry geom2 = result.get(8).geometry.get();
     assertTrue(geom2 instanceof LineString);
-    assertNotEquals(result.get(8).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertNotEquals(result.get(8).osmEntity.getTags(), result.get(0).osmEntity.getTags());
     assertNotEquals(result.get(8).geometry.get(), result.get(0).geometry.get());
   }
 
   @Test
-  public void testPolygonAreaYesNodeDisappears() {
+  void testPolygonAreaYesNodeDisappears() {
     // way seems to be polygon with area=yes, later linestring because one node deleted
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -279,12 +279,12 @@ public class IterateByTimestampsWaysTest {
     assertTrue(geom instanceof Polygon);
     Geometry geom2 = result.get(8).geometry.get();
     assertTrue(geom2 instanceof LineString);
-    assertEquals(result.get(8).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertEquals(result.get(8).osmEntity.getTags(), result.get(0).osmEntity.getTags());
     assertNotEquals(result.get(8).geometry.get(), result.get(0).geometry.get());
   }
 
   @Test
-  public void testTimestampInclusion() {
+  void testTimestampInclusion() {
     // rule for contributions that fall exactly at time interval limits:
     // start timestamp: included, end timestamp: excluded
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -305,7 +305,7 @@ public class IterateByTimestampsWaysTest {
   }
 
   @Test
-  public void testNodeChangeOutsideBboxIsNotGeometryChange() {
+  void testNodeChangeOutsideBboxIsNotGeometryChange() {
     // way: creation and one geometry change, but no tag changes
     // node 23 outside bbox with lon lat change, should not be change in geometry inside bbox
     List<IterateByTimestampEntry> result = (new CellIterator(
@@ -328,7 +328,7 @@ public class IterateByTimestampsWaysTest {
   }
 
   @Test
-  public void testNodeChangeOutsideBboxAffectsPartOfLineStringInBbox() {
+  void testNodeChangeOutsideBboxAffectsPartOfLineStringInBbox() {
     // way: creation and one geometry change, but no tag changes
     // node 23 outside bbox with lon lat change, way between 24 and 25 intersects bbox
     // Node 25 outside bbox with lonlat change, way between 24 and 25 changes
@@ -355,7 +355,7 @@ public class IterateByTimestampsWaysTest {
   }
 
   @Test
-  public void testNodeRefsDeletedInVersion2() {
+  void testNodeRefsDeletedInVersion2() {
     // way with three nodes,  node refs deleted in version 2
     List<IterateByTimestampEntry> result = (new CellIterator(
         new OSHDBTimestamps(

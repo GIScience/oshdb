@@ -12,8 +12,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
+import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.OSHDBTag;
-import org.heigit.ohsome.oshdb.util.OSHDBRole;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
@@ -90,8 +90,8 @@ public class TagTranslator implements AutoCloseable {
 
     // create prepared statements for querying tags from keytables
     try {
-      keyIdQuery = conn.prepareStatement(format("select ID from %s where KEY.TXT = ?;", E_KEY));
-      keyTxtQuery = conn.prepareStatement(format("select TXT from %s where KEY.ID = ?;", E_KEY));
+      keyIdQuery = conn.prepareStatement(format("select ID from %s where TXT = ?;", E_KEY));
+      keyTxtQuery = conn.prepareStatement(format("select TXT from %s where ID = ?;", E_KEY));
       valueIdQuery = conn.prepareStatement(format("select k.ID as KEYID,kv.VALUEID as VALUEID"
           + " from %s kv"
           + " inner join %s k on k.ID = kv.KEYID"
@@ -143,7 +143,7 @@ public class TagTranslator implements AutoCloseable {
         keyIdQuery.setString(1, key.toString());
         try (ResultSet keys = keyIdQuery.executeQuery()) {
           if (!keys.next()) {
-            LOG.info("Unable to find tag key {} in keytables.", key);
+            LOG.debug("Unable to find tag key {} in keytables.", key);
             keyInt = new OSHDBTagKey(getFakeId(key.toString()));
           } else {
             keyInt = new OSHDBTagKey(keys.getInt("ID"));
@@ -330,9 +330,9 @@ public class TagTranslator implements AutoCloseable {
         try (ResultSet roles = roleIdQuery.executeQuery()) {
           if (!roles.next()) {
             LOG.info("Unable to find role {} in keytables.", role);
-            roleInt = new OSHDBRole(getFakeId(role.toString()));
+            roleInt = OSHDBRole.of(getFakeId(role.toString()));
           } else {
-            roleInt = new OSHDBRole(roles.getInt("ID"));
+            roleInt = OSHDBRole.of(roles.getInt("ID"));
           }
         }
       }
@@ -353,7 +353,7 @@ public class TagTranslator implements AutoCloseable {
    * @throws OSHDBTagOrRoleNotFoundException if the given role cannot be found
    */
   public OSMRole getOSMRoleOf(int role) {
-    return this.getOSMRoleOf(new OSHDBRole(role));
+    return this.getOSMRoleOf(OSHDBRole.of(role));
   }
 
   /**
@@ -370,11 +370,11 @@ public class TagTranslator implements AutoCloseable {
     OSMRole roleString;
     try {
       synchronized (roleTxtQuery) {
-        roleTxtQuery.setInt(1, role.toInt());
+        roleTxtQuery.setInt(1, role.getId());
         try (ResultSet roles = roleTxtQuery.executeQuery()) {
           if (!roles.next()) {
             throw new OSHDBTagOrRoleNotFoundException(format(
-                "Unable to find role id %d in keytables.", role.toInt()
+                "Unable to find role id %d in keytables.", role.getId()
             ));
           } else {
             roleString = new OSMRole(roles.getString("TXT"));

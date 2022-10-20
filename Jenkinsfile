@@ -64,11 +64,21 @@ pipeline {
     stage ('Reports and Statistics') {
       steps {
         script {
-          // START CUSTOM oshdb
           withSonarQubeEnv('sonarcloud GIScience/ohsome') {
-            sh "mvn $MAVEN_GENERAL_OPTIONS sonar:sonar -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.projectName=OSHDB"
+            // START CUSTOM oshdb
+            SONAR_CLI_PARAMETER = "-Dsonar.projectName=OSHDB"
+            // END CUSTOM oshdb
+            if (env.CHANGE_ID) {
+              SONAR_CLI_PARAMETER += " " +
+                "-Dsonar.pullrequest.key=${env.CHANGE_ID} " +
+                "-Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} " +
+                "-Dsonar.pullrequest.base=${env.CHANGE_TARGET}"
+            } else {
+              SONAR_CLI_PARAMETER += " " +
+                "-Dsonar.branch.name=${env.BRANCH_NAME}"
+            }
+            sh "mvn $MAVEN_GENERAL_OPTIONS sonar:sonar ${SONAR_CLI_PARAMETER}"
           }
-          // END CUSTOM oshdb
           report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
 
           // jacoco

@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -11,14 +11,14 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Tests the parsing of filters and the application to OSM entity snapshots.
  */
-public class ApplyOSMContributionTest extends FilterTest {
+class ApplyOSMContributionTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
   private final Geometry point = gf.createPoint();
   private final Geometry line = gf.createLineString();
@@ -35,7 +35,7 @@ public class ApplyOSMContributionTest extends FilterTest {
     private final int contributorUserId;
     private final Set<ContributionType> contributionTypes;
 
-    public TestOSMContribution(
+    TestOSMContribution(
         OSMEntity entityBefore, Geometry geometryBefore,
         OSMEntity entityAfter, Geometry geometryAfter,
         long changesetId, int contributorUserId, Set<ContributionType> contributionTypes) {
@@ -115,7 +115,7 @@ public class ApplyOSMContributionTest extends FilterTest {
   }
 
   @Test
-  public void testBasicFallback() {
+  void testBasicFallback() {
     FilterExpression expression = parser.parse("geometry:point");
     // expect true if either the "before" state …
     assertTrue(expression.applyOSMContribution(new TestOSMContribution(
@@ -132,7 +132,7 @@ public class ApplyOSMContributionTest extends FilterTest {
   }
 
   @Test
-  public void testNegatableFilter() {
+  void testNegatableFilter() {
     FilterExpression expression = parser.parse("id:(1,2)");
     var testObject = new TestOSMContribution(
         entity, point, entity, point, 1L, 2, NO_TYPE
@@ -151,46 +151,46 @@ public class ApplyOSMContributionTest extends FilterTest {
   }
 
   @Test
-  public void testChangesetId() {
+  void testChangesetId() {
     testContribution(parser.parse("changeset:42"));
   }
 
   @Test
-  public void testChangesetIdList() {
+  void testChangesetIdList() {
     testContribution(parser.parse("changeset:(41,42,43)"));
   }
 
   @Test
-  public void testChangesetIdRange() {
+  void testChangesetIdRange() {
     testContribution(parser.parse("changeset:(41..43)"));
   }
 
   @Test
-  public void testContributorUserId() {
+  void testContributorUserId() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     testContribution(parser.parse("contributor:1"));
   }
 
   @Test
-  public void testContributorUserIdList() {
+  void testContributorUserIdList() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     testContribution(parser.parse("contributor:(1,2,3)"));
   }
 
   @Test
-  public void testContributorUserIdRange() {
+  void testContributorUserIdRange() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     testContribution(parser.parse("contributor:(1..2)"));
   }
 
   @Test
-  public void testAndOperator() {
+  void testAndOperator() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     testContribution(parser.parse("contributor:1 and type:node"));
   }
 
   @Test
-  public void testOrOperator() {
+  void testOrOperator() {
     FilterParser parser = new FilterParser(tagTranslator, true);
     testContribution(parser.parse("contributor:1 or foo=doesntexist"));
   }

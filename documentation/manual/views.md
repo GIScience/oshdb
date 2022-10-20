@@ -1,7 +1,7 @@
 Views
 =====
 
-Two different ways of querying OSM data are available, which determine how the OSM history data is actually analyzed in a given OSHDB query: 
+Two different ways of querying OSM data are available, which determine how the OSM history data is actually analyzed in a given OSHDB query:
 
 * The **snapshot view** ([`OSMEntitySnapshotView`](https://docs.ohsome.org/java/oshdb/0.7.2/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMEntitySnapshotView.html)) returns the state of the OSM history data at specific given points in time.
 * The **contribution view** ([`OSMContributionView`](https://docs.ohsome.org/java/oshdb/0.7.2/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html)) returns all modifications (e.g., creations, modifications or deletions) to the OSM elements within a given time period.

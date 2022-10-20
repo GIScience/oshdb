@@ -1,7 +1,8 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Set;
@@ -12,13 +13,12 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Base class for testing the map-reducer backend implementations of the OSHDB API.
@@ -42,7 +42,9 @@ abstract class TestMapReduce {
     if (this.keytables != null) {
       mapRed = mapRed.keytables(this.keytables);
     }
-    return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return mapRed
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   protected MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
@@ -50,15 +52,17 @@ abstract class TestMapReduce {
     if (this.keytables != null) {
       mapRed = mapRed.keytables(this.keytables);
     }
-    return mapRed.osmType(OSMType.NODE).osmTag("highway").areaOfInterest(bbox);
+    return mapRed
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   @Test
-  public void testOSMContributionView() throws Exception {
+  void testOSMContributionView() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .uniq();
 
@@ -69,7 +73,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
         .uniq();
@@ -81,7 +85,7 @@ abstract class TestMapReduce {
     // "groupByEntity"
     assertEquals(7, createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
         .sum()
@@ -89,11 +93,11 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMEntitySnapshotView() throws Exception {
+  void testOSMEntitySnapshotView() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .uniq();
 
@@ -102,7 +106,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .filter(uid -> uid > 0)
         .uniq();
@@ -112,7 +116,7 @@ abstract class TestMapReduce {
     // "groupByEntity"
     assertEquals(5, createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
         .sum()
@@ -120,11 +124,11 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMContributionViewStream() throws Exception {
+  void testOSMContributionViewStream() throws Exception {
     // simple query
     Set<Integer> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .stream()
         .collect(Collectors.toSet());
@@ -136,7 +140,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(OSMContribution::getContributorUserId)
         .filter(uid -> uid > 0)
         .stream()
@@ -149,7 +153,7 @@ abstract class TestMapReduce {
     // "groupByEntity"
     assertEquals(7, createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
         .stream()
@@ -159,11 +163,11 @@ abstract class TestMapReduce {
   }
 
   @Test
-  public void testOSMEntitySnapshotViewStream() throws Exception {
+  void testOSMEntitySnapshotViewStream() throws Exception {
     // simple stream query
     Set<Integer> result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .stream()
         .collect(Collectors.toSet());
@@ -173,7 +177,7 @@ abstract class TestMapReduce {
     // "flatMap"
     result = createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .map(snapshot -> snapshot.getEntity().getUserId())
         .filter(uid -> uid > 0)
         .stream()
@@ -184,7 +188,7 @@ abstract class TestMapReduce {
     // "groupByEntity"
     assertEquals(5, createMapReducerOSMEntitySnapshot()
         .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
+        .filter("id:617308093")
         .groupByEntity()
         .map(List::size)
         .stream()
@@ -193,40 +197,52 @@ abstract class TestMapReduce {
     );
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
-  @Test(expected = OSHDBTimeoutException.class)
-  public void testTimeoutMapReduce() throws Exception {
-    // set short timeout -> query should fail
-    oshdb.timeoutInMilliseconds(30);
-
-    // simple query with a sleep. would take about ~500ms (1 entity for ~5 timestamp)
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
-        .map(delay(100))
-        .count();
-
-    // reset timeout
-    oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+  @Test
+  void testTimeoutMapReduce() throws Exception {
+    assertThrows(OSHDBTimeoutException.class, this::timeoutMapReduce);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
-  @Test(expected = OSHDBTimeoutException.class)
-  public void testTimeoutStream() throws Exception {
+  protected void timeoutMapReduce() throws Exception {
+    // set short timeout -> query should fail
+    oshdb.timeoutInMilliseconds(1);
+
+    try {
+      // simple query with a sleep. would take about ~500ms (1 entity for ~5 timestamp)
+      createMapReducerOSMEntitySnapshot()
+          .timestamps(timestamps6)
+          .filter("id:617308093")
+          .map(delay(100))
+          .count();
+    } finally {
+      // reset timeout
+      oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    }
+  }
+
+  @Test
+  void testTimeoutStream() throws Exception {
+    assertThrows(OSHDBTimeoutException.class, this::timeoutStream);
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored") // we only test for thrown exceptions here
+  protected void timeoutStream() throws Exception {
     // set super short timeout -> all queries should fail
-    oshdb.timeoutInMilliseconds(30);
+    oshdb.timeoutInMilliseconds(1);
 
-    // simple query
-    createMapReducerOSMEntitySnapshot()
-        .timestamps(timestamps6)
-        .osmEntityFilter(entity -> entity.getId() == 617308093)
-        .map(snapshot -> snapshot.getEntity().getId())
-        .map(delay(100))
-        .stream()
-        .count();
-
-    // reset timeout
-    oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    try {
+      // simple query
+      createMapReducerOSMEntitySnapshot()
+          .timestamps(timestamps6)
+          .filter("id:617308093")
+          .map(snapshot -> snapshot.getEntity().getId())
+          .map(delay(100))
+          .stream()
+          .count();
+    } finally {
+      // reset timeout
+      oshdb.timeoutInMilliseconds(Long.MAX_VALUE);
+    }
   }
 
   private static <T> SerializableFunction<T, T> delay(int ms) {

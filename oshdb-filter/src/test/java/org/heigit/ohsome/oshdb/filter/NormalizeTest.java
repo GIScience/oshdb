@@ -1,17 +1,17 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import org.heigit.ohsome.oshdb.osm.OSMType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for normalization of filters.
  */
-public class NormalizeTest {
+class NormalizeTest {
   @Test
-  public void testAndOperator() {
+  void testAndOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
     FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.AND, sub2);
@@ -21,7 +21,7 @@ public class NormalizeTest {
   }
 
   @Test
-  public void testOrOperator() {
+  void testOrOperator() {
     FilterExpression sub1 = new TypeFilter(OSMType.NODE);
     FilterExpression sub2 = new TypeFilter(OSMType.WAY);
     FilterExpression expression = BinaryOperator.fromOperator(sub1, BinaryOperator.Type.OR, sub2);

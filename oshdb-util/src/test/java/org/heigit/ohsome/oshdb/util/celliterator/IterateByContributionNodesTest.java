@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -19,7 +19,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -29,7 +29,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on nodes.
  */
-public class IterateByContributionNodesTest {
+class IterateByContributionNodesTest {
   private final GridOSHNodes oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
@@ -38,14 +38,14 @@ public class IterateByContributionNodesTest {
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * {@link GridOSHNodes}.
    */
-  public IterateByContributionNodesTest() throws IOException {
+  IterateByContributionNodesTest() throws IOException {
     osmXmlTestData.add("./src/test/resources/different-timestamps/node.osm");
     areaDecider = new OSMXmlReaderTagInterpreter(osmXmlTestData);
     oshdbDataGridCell = GridOSHFactory.getGridOSHNodes(osmXmlTestData);
   }
 
   @Test
-  public void testGeometryChange() {
+  void testGeometryChange() {
     // node 1: creation and two geometry changes, but no tag changes
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -81,11 +81,11 @@ public class IterateByContributionNodesTest {
     assertTrue(geom instanceof Point);
     assertEquals(result.get(0).geometry.get(), result.get(1).previousGeometry.get());
     assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
-    assertEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
+    assertEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
   }
 
   @Test
-  public void testTagChange() {
+  void testTagChange() {
     // node 2: creation and two tag changes, but no geometry changes
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -116,12 +116,12 @@ public class IterateByContributionNodesTest {
         result.get(2).activities.get()
     );
     assertEquals(3, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertNotEquals(result.get(2).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
+    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertNotEquals(result.get(2).osmEntity.getTags(), result.get(1).osmEntity.getTags());
   }
 
   @Test
-  public void testVisibleChange() {
+  void testVisibleChange() {
     // node 3: creation and 4 visible changes, but no geometry and no tag changes
 
     List<IterateAllEntry> result = (new CellIterator(
@@ -163,7 +163,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testMultipleChanges() {
+  void testMultipleChanges() {
     // node 4: creation and 5 changes:
     // tag and geometry,
     // visible = false,
@@ -211,14 +211,14 @@ public class IterateByContributionNodesTest {
         result.get(5).activities.get()
     );
     assertEquals(11, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getRawTags(), result.get(0).osmEntity.getRawTags());
-    assertNotEquals(result.get(3).osmEntity.getRawTags(), result.get(1).osmEntity.getRawTags());
-    assertEquals(result.get(4).osmEntity.getRawTags(), result.get(3).osmEntity.getRawTags());
-    assertNotEquals(result.get(5).osmEntity.getRawTags(), result.get(4).osmEntity.getRawTags());
+    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertNotEquals(result.get(3).osmEntity.getTags(), result.get(1).osmEntity.getTags());
+    assertEquals(result.get(4).osmEntity.getTags(), result.get(3).osmEntity.getTags());
+    assertNotEquals(result.get(5).osmEntity.getTags(), result.get(4).osmEntity.getTags());
   }
 
   @Test
-  public void testBboxMinAndMaxNotCorrect() {
+  void testBboxMinAndMaxNotCorrect() {
     // node 1: creation and two geometry changes, but no tag changes
     // OSHDBBoundingBox: MinLon and MinLat as well as MaxLon and MaxLat incorrect
     List<IterateAllEntry> result = (new CellIterator(
@@ -238,7 +238,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testBboxMinExactlyAtDataMinMaxExcluded() {
+  void testBboxMinExactlyAtDataMinMaxExcluded() {
     // node 1: creation and two geometry changes, but no tag changes
     // OSHDBBoundingBox: MinLon and MinLat like Version 1, MaxLon and MaxLat incorrect
     List<IterateAllEntry> result = (new CellIterator(
@@ -258,7 +258,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testBboxMaxExactlyAtDataMaxMinExcluded() {
+  void testBboxMaxExactlyAtDataMaxMinExcluded() {
     // node 1: creation and two geometry changes, but no tag changes
     // OSHDBBoundingBox: MinLon and MinLat incorrect, MaxLon and MaxLat like Version 3
     List<IterateAllEntry> result = (new CellIterator(
@@ -278,7 +278,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testBboxMinMaxExactlyAtDataMinMax() {
+  void testBboxMinMaxExactlyAtDataMinMax() {
     // node 1: creation and two geometry changes, but no tag changes
     // OSHDBBoundingBox: MinLon and MinLat like Version 1, MaxLon and MaxLat like Version 3
     List<IterateAllEntry> result = (new CellIterator(
@@ -298,7 +298,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagChangeTagFilterWithSuccess() {
+  void testTagChangeTagFilterWithSuccess() {
     // node: creation then tag changes, but no geometry changes
     // check if results are correct if we filter for a special tag
     List<IterateAllEntry> result = (new CellIterator(
@@ -309,7 +309,7 @@ public class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -335,7 +335,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagChangeTagFilterDisused() {
+  void testTagChangeTagFilterDisused() {
     // check if results are correct if we filter for a special tag
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -345,7 +345,7 @@ public class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 7,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("disused:shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("disused:shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -367,7 +367,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testMoreComplicatedFilter() {
+  void testMoreComplicatedFilter() {
     // check if results are correct if we filter for a special tag
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -377,7 +377,7 @@ public class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(0.0, 0.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 8,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -399,7 +399,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagChangeTagFilterWithoutSuccess() {
+  void testTagChangeTagFilterWithoutSuccess() {
     // check if results are correct if we filter for a special tag
     // tag not in data
     List<IterateAllEntry> result = (new CellIterator(
@@ -410,7 +410,7 @@ public class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -419,7 +419,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testPolygonIntersectingDataPartly() {
+  void testPolygonIntersectingDataPartly() {
     // lon lat changes, so that node in v2 is outside bbox
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -447,7 +447,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testTagFilterAndPolygonIntersectingDataPartly() {
+  void testTagFilterAndPolygonIntersectingDataPartly() {
     // lon lat changes, so that node in v2 is outside bbox
     final GeometryFactory geometryFactory = new GeometryFactory();
     // create clipping polygon for area of interest
@@ -468,7 +468,7 @@ public class IterateByContributionNodesTest {
         areaDecider,
         oshEntity -> oshEntity.getId() == 6,
         // filter entity for tag = shop
-        osmEntity -> osmEntity.hasTagKey(osmXmlTestData.keys().get("shop")),
+        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
         oshdbDataGridCell
@@ -478,7 +478,7 @@ public class IterateByContributionNodesTest {
   }
 
   @Test
-  public void testCoordinatesRelativeToPolygon() throws IOException {
+  void testCoordinatesRelativeToPolygon() throws IOException {
     // different cases of relative position between node coordinate(s) and cell bbox / query polygon
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[4];

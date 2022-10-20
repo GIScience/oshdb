@@ -191,6 +191,11 @@ public class Geo {
    *   https://trs.jpl.nasa.gov/handle/2014/40409
    * </p>
    *
+   * <p>
+   * This method will never return a negative number. For invalid polygons with a larger inner
+   * rings area than the outer ring encompasses, zero is returned instead.
+   * </p>
+   *
    * @param poly the polygon for which the area should be calculated. coordinates must be in WGS84
    * @return The approximate signed geodesic area of the polygon in square meters.
    */
@@ -200,7 +205,7 @@ public class Geo {
     for (int i = 0; i < poly.getNumInteriorRing(); i++) {
       area -= Math.abs(ringArea((LinearRing) poly.getInteriorRingN(i)));
     }
-    return area;
+    return Math.max(0, area);
   }
 
   /**

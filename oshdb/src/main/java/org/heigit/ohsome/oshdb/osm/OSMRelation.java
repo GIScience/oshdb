@@ -1,38 +1,34 @@
 package org.heigit.ohsome.oshdb.osm;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.osh.OSHEntities;
 
-public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, Serializable {
-
-  private static final long serialVersionUID = 1L;
-  private final OSMMember[] members;
-
-  public OSMRelation(final long id, final int version, final long timestamp, final long changeset,
-      final int userId, final int[] tags, final OSMMember[] members) {
-    super(id, version, timestamp, changeset, userId, tags);
-    this.members = members;
-  }
+/**
+ * Interface for single version osm-element relation.
+ */
+public interface OSMRelation extends OSMEntity {
 
   @Override
-  public OSMType getType() {
+  default OSMType getType() {
     return OSMType.RELATION;
   }
 
-  public OSMMember[] getMembers() {
-    return members;
-  }
+  /**
+   * Returns the members for this current version.
+   *
+   * @return OSMMember for this version
+   */
+  OSMMember[] getMembers();
 
-  public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp,
-      Predicate<OSMMember> memberFilter) {
-    return Arrays.stream(this.getMembers()).filter(memberFilter).map(OSMMember::getEntity)
-        .filter(Objects::nonNull).map(entity -> OSHEntities.getByTimestamp(entity, timestamp));
-  }
+  /**
+   * Returns a stream of all member entities (OSM) for the given timestamp.
+   *
+   * @param timestamp the timestamp for the osm member entity
+   * @param memberFilter apply filter to Stream of members
+   * @return stream of member entities (OSM)
+   */
+  Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp, Predicate<OSMMember> memberFilter);
 
   /**
    * Returns a stream of all member entities (OSM) for the given timestamp.
@@ -40,48 +36,6 @@ public class OSMRelation extends OSMEntity implements Comparable<OSMRelation>, S
    * @param timestamp the timestamp for the osm member entity
    * @return stream of member entities (OSM)
    */
-  public Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp) {
-    return this.getMemberEntities(timestamp, osmMember -> true);
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = super.hashCode();
-    result = prime * result + Arrays.hashCode(members);
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!super.equals(obj)) {
-      return false;
-    }
-    if (!(obj instanceof OSMRelation)) {
-      return false;
-    }
-    OSMRelation other = (OSMRelation) obj;
-    return Arrays.equals(members, other.members);
-  }
-
-  @Override
-  public int compareTo(OSMRelation o) {
-    int c = Long.compare(id, o.id);
-    if (c == 0) {
-      c = Integer.compare(Math.abs(version), Math.abs(o.version));
-      if (c == 0) {
-        c = Long.compare(timestamp, o.timestamp);
-      }
-    }
-    return c;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("Relation-> %s Mem:%s", super.toString(), Arrays.toString(getMembers()));
-  }
+  Stream<OSMEntity> getMemberEntities(OSHDBTimestamp timestamp);
 
 }
