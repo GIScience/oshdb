@@ -4,6 +4,7 @@ import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
+import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampIllegalArgumentException;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
 
@@ -256,4 +258,33 @@ abstract class TestMapReduce {
     };
   }
 
+  @Test
+  void testInvalidTimestamps() {
+    assertThrows(DateTimeParseException.class, this::invalidTimestamps1);
+    assertThrows(OSHDBTimestampIllegalArgumentException.class, this::invalidTimestamps2);
+  }
+
+  private void invalidTimestamps1() throws Exception {
+    // contribution view query
+    var ignored = createMapReducerOSMContribution()
+        .timestamps("invalid1", "invalid2")
+        .map(OSMContribution::getContributorUserId)
+        .uniq();
+    // snapshot view query
+    var ignored2 = createMapReducerOSMEntitySnapshot()
+        .timestamps("invalid")
+        .count();
+  }
+
+  @SuppressWarnings("UnusedAssignment")
+  private void invalidTimestamps2() throws Exception {
+    // invalid time zone
+    var ignored = createMapReducerOSMEntitySnapshot()
+        .timestamps("2020-01-01T00:00:00+00")
+        .count();
+    // invalid sign
+    ignored = createMapReducerOSMEntitySnapshot()
+        .timestamps("-2020-01-01T00:00:00Z")
+        .count();
+  }
 }
