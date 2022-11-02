@@ -19,6 +19,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaNever
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -292,7 +293,7 @@ class OSHDBGeometryBuilderTest extends OSHDBGeometryTest {
     }));
   }
 
-  private Consumer<OSMMember[]> getMultipolygonSharedNodeCheck(Consumer<Geometry> tester) {
+  public Consumer<OSMMember[]> getMultipolygonSharedNodeCheck(Consumer<Geometry> tester) {
     var areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
     var timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     return relMembers -> {
@@ -303,7 +304,7 @@ class OSHDBGeometryBuilderTest extends OSHDBGeometryTest {
     };
   }
 
-  private static <T> void checkAllMemberPermutations(int n, T[] elements, Consumer<T[]> consumer) {
+  public static <T> void checkAllMemberPermutations(int n, T[] elements, Consumer<T[]> consumer) {
     if (n == 1) {
       consumer.accept(elements);
     } else {
@@ -324,4 +325,6 @@ class OSHDBGeometryBuilderTest extends OSHDBGeometryTest {
     elements[a] = elements[b];
     elements[b] = tmp;
   }
+
+
 }
