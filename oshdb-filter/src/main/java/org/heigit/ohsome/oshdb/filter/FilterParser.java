@@ -203,7 +203,7 @@ public class FilterParser {
         Parsers.or(point, line, polygon, other))
         .map(geometryType -> new GeometryTypeFilter(geometryType, tt));
 
-    final Parser<ValueRange> floatingRange = Parsers.between(
+    final Parser<ValueRange> positiveFloatingRange = Parsers.between(
         Scanners.isChar('('),
         Parsers.or(
             Parsers.sequence(floatingNumber, dotdot, floatingNumber,
@@ -230,13 +230,13 @@ public class FilterParser {
     
     // geometry filter
     final Parser<GeometryFilter> geometryFilterArea = Parsers.sequence(
-        area, colon, floatingRange
+        area, colon, positiveFloatingRange
     ).map(GeometryFilterArea::new);
     final Parser<GeometryFilter> geometryFilterLength = Parsers.sequence(
-        length, colon, floatingRange
+        length, colon, positiveFloatingRange
     ).map(GeometryFilterLength::new);
     final Parser<GeometryFilter> geometryFilterPerimeter = Parsers.sequence(
-        perimeter, colon, floatingRange
+        perimeter, colon, positiveFloatingRange
     ).map(GeometryFilterPerimeter::new);
     final Parser<GeometryFilter> geometryFilterVertices = Parsers.sequence(
         vertices, colon, positiveIntegerRange
@@ -248,10 +248,10 @@ public class FilterParser {
         inners, colon, Parsers.or(positiveIntegerRange, number.map(n -> new ValueRange(n, n)))
     ).map(GeometryFilterInnerRings::new);
     final Parser<GeometryFilter> geometryFilterRoundness = Parsers.sequence(
-        roundness, colon, floatingRange
+        roundness, colon, positiveFloatingRange
     ).map(GeometryFilterRoundness::new);
     final Parser<GeometryFilter> geometryFilterSquareness = Parsers.sequence(
-        squareness, colon, floatingRange
+        squareness, colon, positiveFloatingRange
     ).map(GeometryFilterSquareness::new);
     final Parser<GeometryFilter> geometryFilter = Parsers.or(
         geometryFilterArea,
