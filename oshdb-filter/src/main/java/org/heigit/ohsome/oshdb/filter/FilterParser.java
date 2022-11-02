@@ -49,6 +49,7 @@ public class FilterParser {
    * @param allowContributorFilters if true enables filtering by contributor/user id.
    */
   public FilterParser(TagTranslator tt, boolean allowContributorFilters) {
+    // todo: refactor this method into smaller chunks to make it more easily testable
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
     final Parser<String> keystr = Patterns.regex("[a-zA-Z_0-9:-]+")
