@@ -1,9 +1,9 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -18,7 +18,7 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.OSMXmlReaderTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.heigit.ohsome.oshdb.util.xmlreader.OSMXmlReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -29,7 +29,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on relations.
  */
-public class IterateByContributionRelationsTest {
+class IterateByContributionRelationsTest {
   private GridOSHRelations oshdbDataGridCell;
   private final OSMXmlReader osmXmlTestData = new OSMXmlReader();
   TagInterpreter areaDecider;
@@ -39,7 +39,7 @@ public class IterateByContributionRelationsTest {
    * Initialize test framework by loading osm XML file and initializing {@link TagInterpreter} and
    * {@link GridOSHRelations}.
    */
-  public IterateByContributionRelationsTest() throws IOException {
+  IterateByContributionRelationsTest() throws IOException {
     // read osm xml data
     osmXmlTestData.add("./src/test/resources/different-timestamps/polygon.osm");
     // used to provide information needed to create actual geometries from OSM data
@@ -50,7 +50,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testGeometryChange() {
+  void testGeometryChange() {
     // relation: creation and two geometry changes, but no tag changes
     // relation getting more ways, one disappears
     List<IterateAllEntry> result = (new CellIterator(
@@ -97,7 +97,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testVisibleChange() {
+  void testVisibleChange() {
     // relation: creation and 2 visible changes, but no geometry and no tag changes
     // relation visible tag changed
     List<IterateAllEntry> result = (new CellIterator(
@@ -131,30 +131,27 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testWaysNotExistent() {
+  void testWaysNotExistent() {
     // relation with two ways, both missing
-    try {
-      List<IterateAllEntry> result = (new CellIterator(
-          new OSHDBTimestamps(
-              "2000-01-01T00:00:00Z",
-              "2020-01-01T00:00:00Z"
-          ).get(),
-          OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
-          areaDecider,
-          oshEntity -> oshEntity.getId() == 502,
-          osmEntity -> true,
-          false
-      )).iterateByContribution(
-          oshdbDataGridCell
-      ).collect(Collectors.toList());
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    assertDoesNotThrow(() -> {
+      (new CellIterator(
+            new OSHDBTimestamps(
+                "2000-01-01T00:00:00Z",
+                "2020-01-01T00:00:00Z"
+            ).get(),
+            OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
+            areaDecider,
+            oshEntity -> oshEntity.getId() == 502,
+            osmEntity -> true,
+            false
+        )).iterateByContribution(
+            oshdbDataGridCell
+        ).collect(Collectors.toList());
+    });
   }
 
   @Test
-  public void testTagChange() {
+  void testTagChange() {
     // relation: creation and two tag changes
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -187,7 +184,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testGeometryChangeOfNodeRefsInWays() {
+  void testGeometryChangeOfNodeRefsInWays() {
     // relation: creation and geometry change of ways, but no tag changes
     // relation, way 109 -inner- and 110 -outer- ways changed node refs-
     List<IterateAllEntry> result = (new CellIterator(
@@ -227,7 +224,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testGeometryChangeOfNodeCoordinatesInWay() {
+  void testGeometryChangeOfNodeCoordinatesInWay() {
     // relation: creation
     // relation, way 112 -outer- changed node coordinates
     List<IterateAllEntry> result = (new CellIterator(
@@ -266,7 +263,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testGeometryChangeOfNodeCoordinatesInRelationAndWay() {
+  void testGeometryChangeOfNodeCoordinatesInRelationAndWay() {
     // relation: creation
     // relation, with node members, nodes and nodes in way changed coordinates
     List<IterateAllEntry> result = (new CellIterator(
@@ -306,7 +303,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testGeometryCollection() {
+  void testGeometryCollection() {
     // relation, not valid, should be geometryCollection
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -339,10 +336,10 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testNodesOfWaysNotExistent() {
+  void testNodesOfWaysNotExistent() {
     // relation 2 way members nodes do not exist
-    try {
-      List<IterateAllEntry> result = (new CellIterator(
+    assertDoesNotThrow(() -> {
+      (new CellIterator(
           new OSHDBTimestamps(
               "2000-01-01T00:00:00Z",
               "2020-01-01T00:00:00Z"
@@ -355,14 +352,11 @@ public class IterateByContributionRelationsTest {
       )).iterateByContribution(
           oshdbDataGridCell
       ).collect(Collectors.toList());
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Should not have thrown any exception");
-    }
+    });
   }
 
   @Test
-  public void testVisibleChangeOfNodeInWay() {
+  void testVisibleChangeOfNodeInWay() {
     // relation, way member: node 52 changes visible tag
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -419,7 +413,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testTagChangeOfNodeInWay() {
+  void testTagChangeOfNodeInWay() {
     // relation, way member: node 53 changes tags-
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -446,7 +440,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testVisibleChangeOfWay() {
+  void testVisibleChangeOfWay() {
     // relation, way member: way 119 changes visible tag-
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -482,7 +476,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testVisibleChangeOfOneWayOfOuterRing() {
+  void testVisibleChangeOfOneWayOfOuterRing() {
     // relation, 2 way members making outer ring: way 120 changes visible tag later, 121 not
     // ways together making outer ring
     List<IterateAllEntry> result = (new CellIterator(
@@ -517,7 +511,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testTagChangeOfWay() {
+  void testTagChangeOfWay() {
     // relation, way member: way 122 changes tags
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -547,7 +541,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testOneOfTwoPolygonDisappears() {
+  void testOneOfTwoPolygonDisappears() {
     // relation, at the beginning two polygons, one disappears later
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -582,7 +576,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testWaySplitUpInTwo() {
+  void testWaySplitUpInTwo() {
     // relation, at the beginning one way, split up later
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -623,7 +617,7 @@ public class IterateByContributionRelationsTest {
 
 
   @Test
-  public void testPolygonIntersectingDataPartly() {
+  void testPolygonIntersectingDataPartly() {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -651,7 +645,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testPolygonIntersectingDataOnlyAtBorderLine() {
+  void testPolygonIntersectingDataOnlyAtBorderLine() {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -679,7 +673,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testPolygonIntersectingDataCompletely() {
+  void testPolygonIntersectingDataCompletely() {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -707,7 +701,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testPolygonNotIntersectingData() {
+  void testPolygonNotIntersectingData() {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -735,7 +729,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testNodeChangeOutsideBbox() {
+  void testNodeChangeOutsideBbox() {
     // relation: 2 ways, each has 5 points, making 1 polygon
     // nodes outside bbox have lon lat change in 2009 and 2011, the latest one affects geometry of
     // polygon inside bbox
@@ -765,7 +759,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testPolygonIntersectingDataCompletelyTimeIntervalAfterChanges() {
+  void testPolygonIntersectingDataCompletelyTimeIntervalAfterChanges() {
 
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -793,7 +787,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testTimeIntervalAfterChanges() {
+  void testTimeIntervalAfterChanges() {
 
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -812,7 +806,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testBboxOutsidePolygon() {
+  void testBboxOutsidePolygon() {
     // OSM Polygon coordinates between: minLon 10, maxLon 41, minLat 10, maxLat 45
     // OSHDBBoundingBox outside this coordinates
 
@@ -834,7 +828,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testUnclippedGeom() {
+  void testUnclippedGeom() {
     // relation: 2 ways, each has 5 points, making 1 polygon
     // geometry change of nodes of relation 2009 and 2011
     // OSHDBBoundingBox covers only left side of polygon
@@ -868,7 +862,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testSelfIntersectingPolygonClipped() {
+  void testSelfIntersectingPolygonClipped() {
     // Polygon with self crossing way
     // partly intersected by bbox polygon
     // happy if it works without crashing
@@ -898,7 +892,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testMembersDisappear() {
+  void testMembersDisappear() {
     // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member
     // is deleted
     List<IterateAllEntry> result = (new CellIterator(
@@ -924,7 +918,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testTimeIntervalAfterDeletionInVersion2() {
+  void testTimeIntervalAfterDeletionInVersion2() {
     // relation in second version visible = false, time interval includes version 3
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -948,7 +942,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testTimeIntervalAfterDeletionInCurrentVersion() {
+  void testTimeIntervalAfterDeletionInCurrentVersion() {
     // relation in first and third version visible = false, time interval includes version 3
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -972,7 +966,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testExcludingVersion2() {
+  void testExcludingVersion2() {
     // relation in second version visible = false, time interval includes version 3
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
@@ -997,7 +991,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testMembersDisappearClipped() {
+  void testMembersDisappearClipped() {
     // relation with one way member(nodes of way have changes in 2009 and 2011), in version 2 member
     // is deleted
     final GeometryFactory geometryFactory = new GeometryFactory();
@@ -1036,7 +1030,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testTimeIntervalAfterDeletionInVersion2Clipped() {
+  void testTimeIntervalAfterDeletionInVersion2Clipped() {
     // relation in second version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -1070,7 +1064,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testTimeIntervalAfterDeletionInCurrentVersionClipped() {
+  void testTimeIntervalAfterDeletionInCurrentVersionClipped() {
     // relation in first and third version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -1103,7 +1097,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testExcludingVersion2Clipped() {
+  void testExcludingVersion2Clipped() {
     // relation in second version visible = false, time interval includes version 3
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];
@@ -1137,7 +1131,7 @@ public class IterateByContributionRelationsTest {
   }
 
   @Test
-  public void testClippingPolygonIsVeryBig() {
+  void testClippingPolygonIsVeryBig() {
     // relation with two way members(nodes of ways have changes in 2009 and 2011)
     final GeometryFactory geometryFactory = new GeometryFactory();
     Coordinate[] coords = new Coordinate[5];

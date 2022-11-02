@@ -38,10 +38,10 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
     if (e instanceof OSMWay) {
       OSMMember[] nds = ((OSMWay) e).getMembers();
       return nds.length >= 4 && nds[0].getId() == nds[nds.length - 1].getId()
-          && e.hasTagValue(area, areaYes);
+          && e.getTags().hasTagValue(area, areaYes);
     }
     if (e instanceof OSMRelation) {
-      return e.hasTagValue(type, typeMultipolygon);
+      return e.getTags().hasTagValue(type, typeMultipolygon);
     }
     return true;
   }
@@ -49,11 +49,11 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
   @Override
   public boolean isMultipolygonOuterMember(OSMMember osmMember) {
     return osmMember.getType() == OSMType.WAY
-        && (osmMember.getRawRoleId() == outer || osmMember.getRawRoleId() == emptyRole);
+        && (osmMember.getRole().getId() == outer || osmMember.getRole().getId() == emptyRole);
   }
 
   @Override
   public boolean isMultipolygonInnerMember(OSMMember osmMember) {
-    return osmMember.getType() == OSMType.WAY && osmMember.getRawRoleId() == inner;
+    return osmMember.getType() == OSMType.WAY && osmMember.getRole().getId() == inner;
   }
 }

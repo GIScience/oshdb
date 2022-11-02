@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -13,16 +13,15 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.celliterator.ContributionType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test special reducers of the OSHDB API when using the contribution view.
  */
-public class TestHelpersOSMContributionView {
+class TestHelpersOSMContributionView {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -33,20 +32,19 @@ public class TestHelpersOSMContributionView {
 
   private static final double DELTA = 1e-8;
 
-  public TestHelpersOSMContributionView() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+  TestHelpersOSMContributionView() throws Exception {
+    oshdb = new OSHDBH2("../data/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducer() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:way and building=yes");
   }
 
   @Test
-  public void testSum() throws Exception {
+  void testSum() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Number> result1 = this.createMapReducer()
         .timestamps(timestamps2)
@@ -83,8 +81,6 @@ public class TestHelpersOSMContributionView {
     // custom aggregation identifier
     SortedMap<String, Number> result4 = this.createMapReducer()
         .timestamps(timestamps72)
-        .osmType(OSMType.WAY)
-        .osmTag("building", "yes")
         .aggregateBy(contribution -> contribution.getContributionTypes().toString())
         .sum(contribution -> 1);
 
@@ -93,7 +89,7 @@ public class TestHelpersOSMContributionView {
   }
 
   @Test
-  public void testCount() throws Exception {
+  void testCount() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Integer> result1 = this.createMapReducer()
         .timestamps(timestamps2)
@@ -131,7 +127,7 @@ public class TestHelpersOSMContributionView {
   }
 
   @Test
-  public void testAverage() throws Exception {
+  void testAverage() throws Exception {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps2)
@@ -169,7 +165,7 @@ public class TestHelpersOSMContributionView {
   }
 
   @Test
-  public void testWeightedAverage() throws Exception {
+  void testWeightedAverage() throws Exception {
     // single timestamp
     Double result1 = this.createMapReducer()
         .timestamps(timestamps2)
@@ -211,7 +207,7 @@ public class TestHelpersOSMContributionView {
   }
 
   @Test
-  public void testUniq() throws Exception {
+  void testUniq() throws Exception {
     // single timestamp
     SortedMap<OSHDBTimestamp, Set<Long>> result1 = this.createMapReducer()
         .timestamps(timestamps2)

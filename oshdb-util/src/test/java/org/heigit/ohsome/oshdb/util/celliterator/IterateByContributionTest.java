@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,43 +20,42 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.json.simple.parser.ParseException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method.
  */
-public class IterateByContributionTest {
+class IterateByContributionTest {
   private static Connection conn;
 
   /**
    * Set up of test framework, loading H2 driver and connection via jdbc.
    */
-  @BeforeClass
-  public static void setUpClass() throws ClassNotFoundException, SQLException {
+  @BeforeAll
+  static void setUpClass() throws ClassNotFoundException, SQLException {
     // load H2-support
     Class.forName("org.h2.Driver");
 
     // connect to the "Big"DB
     IterateByContributionTest.conn = DriverManager.getConnection(
-        "jdbc:h2:./src/test/resources/test-data;ACCESS_MODE_DATA=r",
+        "jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
         "sa",
         ""
     );
   }
 
-  @AfterClass
-  public static void breakDownClass() throws SQLException {
+  @AfterAll
+  static void breakDownClass() throws SQLException {
     IterateByContributionTest.conn.close();
   }
 
-  public IterateByContributionTest() {
-  }
+  IterateByContributionTest() {}
 
   @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
   @Test
-  public void testIssue108() throws SQLException, IOException, ClassNotFoundException,
+  void testIssue108() throws SQLException, IOException, ClassNotFoundException,
       ParseException, OSHDBKeytablesNotFoundException {
     ResultSet oshCellsRawData = conn.prepareStatement(
         "select data from " + TableNames.T_NODES).executeQuery();

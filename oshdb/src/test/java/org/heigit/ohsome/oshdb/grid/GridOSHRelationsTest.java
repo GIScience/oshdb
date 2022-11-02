@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.grid;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
 import java.io.IOException;
@@ -12,21 +12,18 @@ import org.heigit.ohsome.oshdb.impl.osh.OSHWayImpl;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-/**
- * General {@link GridOSHRelations} tests case.
- *
- */
-public class GridOSHRelationsTest {
+class GridOSHRelationsTest {
 
   @Test
-  public void test() throws IOException {
+  void test() throws IOException {
     var node100 = buildOSHNode(node(100L, 1, 1L, 0L, 123, tags(1, 2), 494094984, 86809727));
     var node102 = buildOSHNode(node(102L, 1, 1L, 0L, 123, tags(2, 1), 494094984, 86809727));
     var node104 = buildOSHNode(node(104L, 1, 1L, 0L, 123, tags(2, 4), 494094984, 86809727));
@@ -62,7 +59,7 @@ public class GridOSHRelationsTest {
 
   private static OSMNode node(long id, int version, long timestamp, long changeset,
       int userId, int[] tags, int longitude, int latitude) {
-    return new OSMNode(id, version, timestamp, changeset, userId, tags, longitude, latitude);
+    return OSM.node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
   }
 
   private static OSHNode buildOSHNode(OSMNode... versions) throws IOException {
@@ -71,7 +68,7 @@ public class GridOSHRelationsTest {
 
   private static OSMWay way(long id, int version, long timestamp, long changeset,
       int userId, int[] tags, OSMMember... refs) {
-    return new OSMWay(id, version, timestamp, changeset, userId, tags, refs);
+    return OSM.way(id, version, timestamp, changeset, userId, tags, refs);
   }
 
   private static OSHWay buildOSHWay(List<OSHNode> nodes, OSMWay... versions) throws IOException {
@@ -80,7 +77,7 @@ public class GridOSHRelationsTest {
 
   private static OSMRelation rel(long id, int version, long timestamp, long changeset,
       int userId, int[] tags, OSMMember... refs) {
-    return new OSMRelation(id, version, timestamp, changeset, userId, tags, refs);
+    return OSM.relation(id, version, timestamp, changeset, userId, tags, refs);
   }
 
   private static OSHRelation buildOSHRelation(List<OSHNode> nodes, List<OSHWay> ways,

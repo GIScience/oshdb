@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-parent</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>oshdb-oshpbf-parser</artifactId>
@@ -13,6 +13,7 @@
 
   <properties>
     <osmpbf.version>1.5.0</osmpbf.version>
+    <rxjava2.version>2.1.9</rxjava2.version>
   </properties>
 
   <dependencies>
@@ -32,11 +33,6 @@
       <groupId>io.reactivex.rxjava2</groupId>
       <artifactId>rxjava</artifactId>
       <version>${rxjava2.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
 </project>

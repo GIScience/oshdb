@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -16,15 +16,14 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
-import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test flat map method of the MapAggregator class of the OSHDB API.
  */
-public class TestFlatMapAggregate {
+class TestFlatMapAggregate {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -33,20 +32,19 @@ public class TestFlatMapAggregate {
 
   private static final double DELTA = 1e-8;
 
-  public TestFlatMapAggregate() throws Exception {
-    oshdb = new OSHDBH2("./src/test/resources/test-data");
+  TestFlatMapAggregate() throws Exception {
+    oshdb = new OSHDBH2("../data/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
     return OSMContributionView
         .on(oshdb)
-        .osmType(OSMType.NODE)
-        .osmTag("highway")
-        .areaOfInterest(bbox);
+        .areaOfInterest(bbox)
+        .filter("type:node and highway=*");
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     SortedMap<Long, Set<Entry<Integer, Integer>>> result = createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .flatMap(

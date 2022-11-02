@@ -1,19 +1,19 @@
 package org.heigit.ohsome.oshdb.util.geometry.fip;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
 /**
  * Tests the {@link FastBboxOutsidePolygon} class.
  */
-public class FastBboxOutsidePolygonTest {
+class FastBboxOutsidePolygonTest {
   @Test
-  public void testBboxInPolygon() {
+  void testBboxInPolygon() {
     Polygon p = FastPointInPolygonTest.createPolygon();
     FastBboxOutsidePolygon bop = new FastBboxOutsidePolygon(p);
 
@@ -38,7 +38,7 @@ public class FastBboxOutsidePolygonTest {
 
   @Test
   @SuppressWarnings("java:S5961" /* has to test all cases how bbox and polygon can be aligned */)
-  public void testBboxInPolygonWithHole() {
+  void testBboxInPolygonWithHole() {
     Polygon p = FastPointInPolygonTest.createPolygonWithHole();
     FastBboxOutsidePolygon bop = new FastBboxOutsidePolygon(p);
 
@@ -72,7 +72,7 @@ public class FastBboxOutsidePolygonTest {
 
   @Test
   @SuppressWarnings("java:S5961" /* has to test all cases how bbox and polygon can be aligned */)
-  public void testBboxInMultiPolygon() {
+  void testBboxInMultiPolygon() {
     MultiPolygon p = FastPointInPolygonTest.createMultiPolygon();
     FastBboxOutsidePolygon bop = new FastBboxOutsidePolygon(p);
 
@@ -125,7 +125,7 @@ public class FastBboxOutsidePolygonTest {
   }
 
   @Test
-  public void testBboxInSquareSquareMultiPolygon() {
+  void testBboxInSquareSquareMultiPolygon() {
     MultiPolygon p = FastBboxInPolygonTest.createSquareSquareMultiPolygon();
     FastBboxOutsidePolygon bop = new FastBboxOutsidePolygon(p);
 

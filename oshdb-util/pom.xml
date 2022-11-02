@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-parent</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>oshdb-util</artifactId>
@@ -33,6 +33,18 @@
       <groupId>com.googlecode.json-simple</groupId>
       <artifactId>json-simple</artifactId>
       <version>${googlejson.version}</version>
+      <exclusions>
+        <!-- 
+        json-simple in release 1.1.1 include junit unfortunately in compile scope. 
+        In the newest version
+        https://github.com/fangyidong/json-simple
+        , it is reduce to test, which makes more sense!
+         -->
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- TEST dependencies -->

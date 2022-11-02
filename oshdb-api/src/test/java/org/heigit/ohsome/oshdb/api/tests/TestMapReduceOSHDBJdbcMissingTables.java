@@ -1,57 +1,59 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for proper error messages if tables are not present on H2.
  */
-public class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
+class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
   /**
    * Creates the test runner using an H2 backend.
    *
    * @throws Exception if something goes wrong
    */
-  public TestMapReduceOSHDBJdbcMissingTables() throws Exception {
-    super((new OSHDBH2("./src/test/resources/test-data"))
+  TestMapReduceOSHDBJdbcMissingTables() throws Exception {
+    super((new OSHDBH2("../data/test-data"))
         .prefix("<test tables not present>")
     );
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testOSMContributionView() throws Exception {
-    super.testOSMContributionView();
+  @Test()
+  void testOSMContributionView() {
+    assertThrows(OSHDBTableNotFoundException.class, super::testOSMContributionView);
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testOSMEntitySnapshotView() throws Exception {
-    super.testOSMEntitySnapshotView();
+  @Test()
+  void testOSMEntitySnapshotView() {
+    assertThrows(OSHDBTableNotFoundException.class, super::testOSMEntitySnapshotView);
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testOSMContributionViewStream() throws Exception {
-    super.testOSMEntitySnapshotView();
+  @Test()
+  void testOSMContributionViewStream() {
+    assertThrows(OSHDBTableNotFoundException.class, super::testOSMContributionViewStream);
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testOSMEntitySnapshotViewStream() throws Exception {
-    super.testOSMEntitySnapshotView();
+  @Test()
+  void testOSMEntitySnapshotViewStream() {
+    assertThrows(OSHDBTableNotFoundException.class, super::testOSMEntitySnapshotViewStream);
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testTimeoutMapReduce() throws Exception {
-    super.testTimeoutMapReduce();
+  @Test()
+  void testTimeoutMapReduce() throws Exception {
+    assertThrows(OSHDBTableNotFoundException.class, this::timeoutMapReduce);
   }
 
   @Override
-  @Test(expected = OSHDBTableNotFoundException.class)
-  public void testTimeoutStream() throws Exception {
-    super.testTimeoutStream();
+  @Test()
+  void testTimeoutStream() {
+    assertThrows(OSHDBTableNotFoundException.class, this::timeoutStream);
   }
 }

@@ -1,15 +1,13 @@
 package org.heigit.ohsome.oshdb.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CellIdTest {
-  public CellIdTest() {
-  }
+class CellIdTest {
 
   @Test
-  public void testGetid() {
+  void testGetid() {
     CellId instance = new CellId(1, 1L);
     long expResult = 1L;
     long result = instance.getId();
@@ -17,7 +15,7 @@ public class CellIdTest {
   }
 
   @Test
-  public void testGetzoomlevel() {
+  void testGetzoomlevel() {
     CellId instance = new CellId(1, 1L);
     int expResult = 1;
     int result = instance.getZoomLevel();

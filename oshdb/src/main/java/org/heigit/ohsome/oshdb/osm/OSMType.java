@@ -34,4 +34,9 @@ public enum OSMType {
   public final int intValue() {
     return this.value;
   }
+
+  @Override
+  public String toString() {
+    return name().toLowerCase();
+  }
 }

@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.grid;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
 import java.io.IOException;
@@ -8,19 +8,20 @@ import java.util.ArrayList;
 import java.util.List;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GridOSHNodesTest {
+class GridOSHNodesTest {
 
   @Test
-  public void testRebaseEntities() throws IOException {
+  void testRebaseEntities() throws IOException {
     List<OSHNode> hosmNodes = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       List<OSMNode> versions = new ArrayList<>();
-      versions.add(new OSMNode(123L + 10 * i, 1, 123001L + 10 * i, 0L, 123, new int[] {},
+      versions.add(OSM.node(123L + 10 * i, 1, 123001L + 10 * i, 0L, 123, new int[] {},
           86809727 - 1000000 * i, 494094984 - 1000000 * i));
-      versions.add(new OSMNode(123L + 10 * i, 2, 123002L + 10 * i, 0L, 123, new int[] {},
+      versions.add(OSM.node(123L + 10 * i, 2, 123002L + 10 * i, 0L, 123, new int[] {},
           86809727 - 1000000 * i, 494094984 - 1000000 * i));
       hosmNodes.add(OSHNodeImpl.build(versions));
     }
