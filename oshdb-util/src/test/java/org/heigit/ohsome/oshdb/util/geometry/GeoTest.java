@@ -420,6 +420,40 @@ class GeoTest {
 
   }
 
+   @Test
+  void testRectilinearityLineStrings() throws ParseException {
+    final double L = 1E-4; // "size" of the test geometries
+    final double D = 10;   // offset used for shifted test geometries
+    // L-shape
+    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+        new Coordinate(0, 0),
+        new Coordinate(L, 0),
+        new Coordinate(L, L)
+    })), 0.01);
+    // S-shape shifted X
+    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+        new Coordinate(D, 0),
+        new Coordinate(D + L, 0),
+        new Coordinate(D + L, L)
+    })), 0.01);
+    // L-shape shifted Y
+    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+        new Coordinate(0, D),
+        new Coordinate(L, D),
+        new Coordinate(L, D + L)
+    })), 0.01);
+    // L-shape tilted
+    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+        new Coordinate(L, 0),
+        new Coordinate(0, L),
+        new Coordinate(-L, 0)
+    })), 0.01);
+
+    // circle
+    var reader = new WKTReader();
+    assertEquals(0.0, Geo.squareness(reader.read(regular32gon).getBoundary()), 0.1);
+  }
+
   @Test
   void testCompactness() throws ParseException {
     // circle
