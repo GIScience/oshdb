@@ -18,6 +18,6 @@ public class GeometryFilterSquareness extends GeometryFilter {
    * @param range the allowed range (inclusive) of values to pass the filter
    */
   public GeometryFilterSquareness(@Nonnull ValueRange range) {
-    super(range, GeometryMetricEvaluator.fromLambda(Geo::rectilinearity, "squareness"));
+    super(range, GeometryMetricEvaluator.fromLambda(Geo::squareness, "squareness"));
   }
 }

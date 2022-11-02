@@ -33,38 +33,6 @@ public class Geo {
   // =====================
 
   /**
-   * Calculate the approximate distance between two coordinates.
-   *
-   * <p>
-   * Uses an equirectangular distance approximation, which works well assuming segments are short.
-   * </p>
-   *
-   * <p>
-   * Adjusted to partially account for the spheroidal shape of the earth (WGS84 coordinates).
-   * See https://gis.stackexchange.com/a/63047/41632
-   * </p>
-   *
-   * <p>
-   * For typical features present in OpenStreetMap data, the relative error introduced by
-   * this approximation is below 0.1%
-   * </p>
-   *
-   * @param c1 one of the two coordinates defining the line segment
-   * @param c2 the ther coordinate defining the line segment
-   * @return The approximate geodesic length of the line segment in meters.
-   */
-  public static double distanceBetween(Coordinate c1, Coordinate c2) {
-    double c1Lon = Math.toRadians(c1.x);
-    double c1Lat = Math.atan(sphereFact * Math.tan(Math.toRadians(c1.y)));
-    double c2Lon = Math.toRadians(c2.x);
-    double c2Lat = Math.atan(sphereFact * Math.tan(Math.toRadians(c2.y)));
-    double deltaLon = c2Lon - c1Lon;
-    double deltaLat = c2Lat - c1Lat;
-    deltaLon *= Math.cos((c2Lat + c1Lat) / 2);
-    return Math.sqrt(deltaLon * deltaLon + deltaLat * deltaLat) * earthRadiusMean;
-  }
-
-  /**
    * Calculate the approximate length of a line string.
    *
    * <p>
@@ -341,7 +309,8 @@ public class Geo {
   // ======================
 
   /**
-   * Calculates the "Polsby–Popper test" score of a polygonal geometry.
+   * Calculates the "Polsby–Popper test" score of a polygonal geometry, representing the
+   * roundness (or compactness) of the feature.
    *
    * <p>
    * If the shape is not polygonal, zero is returned. If a shape constitutes of multiple parts (a
@@ -353,7 +322,7 @@ public class Geo {
    * @return the compactness measure of the input shape. A score of 1 indicates maximum compactness
    *         (i.e. a circle)
    */
-  public static double compactness(Geometry geom) {
+  public static double roundness(Geometry geom) {
     if (!(geom instanceof Polygonal)) {
       return 0;
     }
@@ -368,10 +337,6 @@ public class Geo {
   // = angle calculations =
   // ======================
 
-  public static double bearing(Coordinate from, Coordinate to) {
-    return bearingRadians(from, to) * 180 / Math.PI;
-  }
-
   public static double bearingRadians(Coordinate from, Coordinate to) {
     var x1 = from.x * Math.PI / 180;
     var x2 = to.x * Math.PI / 180;
@@ -384,7 +349,7 @@ public class Geo {
   }
 
   /**
-   * Returns a measure for the rectilinearity (or squareness) of a geometry.
+   * Returns a measure for the squareness (or rectilinearity) of a geometry.
    *
    * <p>Adapted from "A Rectilinearity Measurement for Polygons" by Joviša Žunić and Paul L. Rosin:
    * DOI:10.1007/3-540-47967-8_50
@@ -403,7 +368,7 @@ public class Geo {
    * @return returns the rectilinearity value of the input geometry, or zero if the geometry type
    *         isn't supported
    */
-  public static double rectilinearity(Geometry geom) {
+  public static double squareness(Geometry geom) {
     LineString[] lines;
     if (geom instanceof Polygon) {
       var poly = (Polygon) geom;
@@ -430,10 +395,10 @@ public class Geo {
       // other geometry types: return 0
       return 0;
     }
-    return rectilinearity(lines);
+    return squareness(lines);
   }
 
-  private static double rectilinearity(LineString[] lines) {
+  private static double squareness(LineString[] lines) {
     var minLengthL1 = Double.MAX_VALUE;
     for (LineString line : lines) {
       var coords = line.getCoordinates();

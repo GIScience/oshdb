@@ -284,7 +284,7 @@ class GeoTest {
     final double L = 1E-4;
     final double D = 10;
     // square
-    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
         new Coordinate(0, 0),
         new Coordinate(L, 0),
         new Coordinate(L, L),
@@ -292,7 +292,7 @@ class GeoTest {
         new Coordinate(0, 0)
     })), 0.01);
     // square shifted X
-    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
         new Coordinate(D, 0),
         new Coordinate(D + L, 0),
         new Coordinate(D + L, L),
@@ -300,7 +300,7 @@ class GeoTest {
         new Coordinate(D, 0)
     })), 0.01);
     // square shifted Y
-    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
         new Coordinate(0, D),
         new Coordinate(L, D),
         new Coordinate(L, D + L),
@@ -308,7 +308,7 @@ class GeoTest {
         new Coordinate(0, D)
     })), 0.01);
     // square tilted
-    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
         new Coordinate(L, 0),
         new Coordinate(0, L),
         new Coordinate(-L, 0),
@@ -316,7 +316,7 @@ class GeoTest {
         new Coordinate(L, 0)
     })), 0.01);
     // square tilted and shifted X
-    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
         new Coordinate(D + L, 0),
         new Coordinate(D, L),
         new Coordinate(D - L, 0),
@@ -324,7 +324,7 @@ class GeoTest {
         new Coordinate(D + L, 0)
     })), 0.01);
     // square tilted and shifted Y – note that it is not perfectly rectangular due to the shift
-    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
         new Coordinate(L, D),
         new Coordinate(0, D + L),
         new Coordinate(-L, D),
@@ -332,7 +332,7 @@ class GeoTest {
         new Coordinate(L, D)
     })), 0.1);
     // triangle
-    assertEquals(0.3, Geo.rectilinearity(gf.createPolygon(new Coordinate[] {
+    assertEquals(0.3, Geo.squareness(gf.createPolygon(new Coordinate[] {
         new Coordinate(0, 0),
         new Coordinate(L, 0),
         new Coordinate(L, L),
@@ -340,33 +340,33 @@ class GeoTest {
     })), 0.1);
     // circle
     var reader = new WKTReader();
-    assertEquals(0.0, Geo.rectilinearity(reader.read(regular32gon)), 0.1);
+    assertEquals(0.0, Geo.squareness(reader.read(regular32gon)), 0.1);
 
     // line
-    assertEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[] {
         new Coordinate(0, 0),
         new Coordinate(L, 0)
     })), 0.01);
     // line, slanted
-    assertEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[] {
         new Coordinate(0, 0),
         new Coordinate(L, L)
     })), 0.01);
     // line, right angle
-    assertEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
+    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[] {
         new Coordinate(0, 0),
         new Coordinate(L, 0),
         new Coordinate(L, L)
     })), 0.01);
     // line, not right angle
-    assertNotEquals(1.0, Geo.rectilinearity(gf.createLineString(new Coordinate[] {
+    assertNotEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[] {
         new Coordinate(0, 0),
         new Coordinate(L, 0),
         new Coordinate(0, L)
     })), 0.1);
 
     // polygon with holes: squares aligned
-    assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(
+    assertEquals(1.0, Geo.squareness(gf.createPolygon(
         gf.createLinearRing(new Coordinate[] {
             new Coordinate(0, 0),
             new Coordinate(L, 0),
@@ -384,7 +384,7 @@ class GeoTest {
         })
     ), 0.01);
     // polygon with holes: squares not aligned
-    assertNotEquals(1.0, Geo.rectilinearity(gf.createPolygon(
+    assertNotEquals(1.0, Geo.squareness(gf.createPolygon(
         gf.createLinearRing(new Coordinate[] {
             new Coordinate(0, 0),
             new Coordinate(L, 0),
@@ -405,18 +405,18 @@ class GeoTest {
     // real world, simple
     var example1 = "POLYGON ((38.3460976 49.0294022, 38.3461905 49.0293425, "
         + "38.3462795 49.0294021, 38.3461866 49.0294617, 38.3460976 49.0294022))";
-    assertEquals(1.0, Geo.rectilinearity(reader.read(example1)), 0.01);
+    assertEquals(1.0, Geo.squareness(reader.read(example1)), 0.01);
     // real world, complex
     var example2 = "POLYGON ((38.3437718 49.0276361, 38.3438681 49.0275809, "
         + "38.3438179 49.0275432, 38.3440056 49.0274357, 38.3440234 49.0274491, "
         + "38.3441311 49.0273874, 38.3439048 49.0272175, 38.343646 49.0273657, "
         + "38.3436218 49.0273475, 38.3435477 49.02739, 38.3435676 49.0274049, "
         + "38.3435087 49.0274387, 38.3437718 49.0276361))";
-    assertEquals(1.0, Geo.rectilinearity(reader.read(example2)), 0.01);
+    assertEquals(1.0, Geo.squareness(reader.read(example2)), 0.01);
     // real world, unsquare
     var example3 = "POLYGON ((38.3452974 49.0268873, 38.3453977 49.0268312, "
         + "38.3454916 49.026925, 38.3453901 49.0269725, 38.3452974 49.0268873))";
-    assertNotEquals(1.0, Geo.rectilinearity(reader.read(example3)), 0.1);
+    assertNotEquals(1.0, Geo.squareness(reader.read(example3)), 0.1);
 
   }
 
@@ -424,9 +424,9 @@ class GeoTest {
   void testCompactness() throws ParseException {
     // circle
     var reader = new WKTReader();
-    assertEquals(1.0, Geo.compactness(reader.read(regular32gon)), 0.1);
+    assertEquals(1.0, Geo.roundness(reader.read(regular32gon)), 0.1);
     // triangle
-    assertEquals(0.5, Geo.compactness(gf.createPolygon(new Coordinate[] {
+    assertEquals(0.5, Geo.roundness(gf.createPolygon(new Coordinate[] {
         new Coordinate(0, 0),
         new Coordinate(1E-4, 0),
         new Coordinate(1E-4, 1E-4),

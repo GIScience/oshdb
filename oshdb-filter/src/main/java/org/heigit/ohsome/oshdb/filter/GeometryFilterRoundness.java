@@ -16,6 +16,6 @@ public class GeometryFilterRoundness extends GeometryFilter {
    * @param range the allowed range (inclusive) of values to pass the filter
    */
   public GeometryFilterRoundness(@Nonnull ValueRange range) {
-    super(range, GeometryMetricEvaluator.fromLambda(Geo::compactness, "geometry.roundness"));
+    super(range, GeometryMetricEvaluator.fromLambda(Geo::roundness, "geometry.roundness"));
   }
 }
