@@ -30,7 +30,9 @@ Changelog
 * update jts dependency to version 1.18.2
 * update ignite dependency to version 2.14.0 ([#459], [#467])
 * add natural order to `OSHDBTag` ([#454])
+* throw exception when invalid timestamp strings are supplied to the MapReducer ([#260])
 
+[#260]: https://github.com/GIScience/oshdb/issues/260
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#424]: https://github.com/GIScience/oshdb/pull/424
 [#433]: https://github.com/GIScience/oshdb/issues/433
