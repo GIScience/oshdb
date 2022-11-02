@@ -14,7 +14,7 @@ Changelog
 ### new features
 
 * allow to flexibly combine (automatic) aggregation methods (like `aggregateByGeometry(…)` or `aggregateByTimestamp()`) with each other and with `filter` or `map`/`flatMap`, regardless of the order of the applied operations ([#451])
-* add new OSHDB filters: `perimeter`, `geometry.vertices`, `geometry.inners`, `geometry.outers`, `geometry.roundness` and `geometry.squareness` ([#436])
+* add new OSHDB filters: `perimeter`, `geometry.vertices`, `geometry.outers`, `geometry.inners`, `geometry.roundness` and `geometry.squareness` ([#436])
 
 ### bugfixes
 

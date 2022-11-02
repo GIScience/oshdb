@@ -177,20 +177,20 @@ class ApplyOSMGeometryTest extends FilterTest {
     FilterExpression expression = parser.parse("perimeter:(4..5)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
-        // approx 4 x 0.6m
+        // square with approx 0.6m edge length
         OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
     ));
     assertTrue(expression.applyOSMGeometry(entity,
-        // approx 4 x 1.1m
+        // square with approx 1.1m edge length
         OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1E-5, 1E-5))
     ));
     assertFalse(expression.applyOSMGeometry(entity,
-        // approx 4 x 2.2m
+        // square with approx 2.2m edge length
         OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 2E-5, 2E-5))
     ));
     // negated
     assertTrue(expression.negate().applyOSMGeometry(entity,
-        // approx 4 x 0.6m
+        // square with approx 0.6m edge length
         OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
     ));
   }

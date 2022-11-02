@@ -365,7 +365,7 @@ class GeoTest {
         new Coordinate(0, L)
     })), 0.1);
 
-    // multipolygon: squares aligned
+    // polygon with holes: squares aligned
     assertEquals(1.0, Geo.rectilinearity(gf.createPolygon(
         gf.createLinearRing(new Coordinate[] {
             new Coordinate(0, 0),
@@ -383,7 +383,7 @@ class GeoTest {
             })
         })
     ), 0.01);
-    // multipolygon: squares not aligned
+    // polygon with holes: squares not aligned
     assertNotEquals(1.0, Geo.rectilinearity(gf.createPolygon(
         gf.createLinearRing(new Coordinate[] {
             new Coordinate(0, 0),
