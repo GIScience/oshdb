@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.function.Consumer;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
@@ -34,8 +35,10 @@ class OSHDBGeometryBuilderTest extends OSHDBGeometryTest {
   private static final double DELTA = 1E-6;
 
   public OSHDBGeometryBuilderTest() {
-    testData.add("./src/test/resources/geometryBuilder.osh");
-    testData.add("./src/test/resources/relations/multipolygonShellsShareNode.osm");
+    super(
+        "./src/test/resources/geometryBuilder.osh",
+        "./src/test/resources/relations/multipolygonShellsShareNode.osm"
+    );
   }
 
   @Test
@@ -293,7 +296,7 @@ class OSHDBGeometryBuilderTest extends OSHDBGeometryTest {
     var areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
     var timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     return relMembers -> {
-      var relation = new OSMRelation(1, 1, timestamp.getEpochSecond(), 0, 0, null, relMembers);
+      var relation = OSM.relation(1, 1, timestamp.getEpochSecond(), 0, 0, null, relMembers);
       var geom = OSHDBGeometryBuilder.getGeometry(relation, timestamp, areaDecider);
       assertTrue(geom.isValid());
       tester.accept(geom);
