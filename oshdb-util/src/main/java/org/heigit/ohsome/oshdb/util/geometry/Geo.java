@@ -423,6 +423,9 @@ public class Geo {
     return 4 / (4 - Math.PI) * (lengthL2 / minLengthL1 - Math.PI / 4);
   }
 
+  /**
+   * Intermediate value used in calculation of squareness metric, see paper referenced above.
+   * */
   private static double gridAlignedLengthL1(LineString line, double angle) {
     var cosA = Math.cos(angle);
     var sinA = Math.sin(angle);
@@ -452,6 +455,10 @@ public class Geo {
     return lengthOfL1(modifiedCoords);
   }
 
+  /**
+   * Intermediate value used in calculation of squareness metric, see paper referenced above
+   * (this uses the L1 "Manhattan" metric to calculate the length of a given linestring).
+   * */
   private static double lengthOfL1(Coordinate[] coords) {
     var dist = 0.0;
     if (coords.length > 1) {
@@ -471,6 +478,10 @@ public class Geo {
     return dist;
   }
 
+  /**
+   * Intermediate value used in calculation of squareness metric, see paper referenced above
+   * (this uses the L2 "euclidean" distance metric to calculate the length of a given linestring).
+   * */
   private static double lengthOfL2(Coordinate[] coords) {
     var dist = 0.0;
     if (coords.length > 1) {

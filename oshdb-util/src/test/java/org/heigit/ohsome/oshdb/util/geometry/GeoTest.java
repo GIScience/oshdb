@@ -281,8 +281,8 @@ class GeoTest {
 
   @Test
   void testRectilinearity() throws ParseException {
-    final double L = 1E-4;
-    final double D = 10;
+    final double L = 1E-4; // "size" of the test geometries
+    final double D = 10;   // offset used for shifted test geometries
     // square
     assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
         new Coordinate(0, 0),
