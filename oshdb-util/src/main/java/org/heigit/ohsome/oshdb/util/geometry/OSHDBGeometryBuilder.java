@@ -251,16 +251,21 @@ public class OSHDBGeometryBuilder {
         timestamp
     );
 
-    // construct rings from polygons
-    List<LinearRing> outerRings = OSHDBGeometryBuilder.buildRings(outerLines).stream()
+    // construct inner and outer rings
+    List<LinkedList<OSMNode>> outerRingsNodes = OSHDBGeometryBuilder.buildRings(outerLines);
+    List<LinkedList<OSMNode>> innerRingsNodes = OSHDBGeometryBuilder.buildRings(innerLines);
+    // check if there are any pinched off sections in outer rings
+    splitPinchedRings(outerRingsNodes, innerRingsNodes, geometryFactory);
+    // check if there are any touching inner/outer rings, merge any
+    mergeTouchingRings(innerRingsNodes);
+    // create JTS rings for non-degenerate rings only
+
+    List<LinearRing> outerRings = outerRingsNodes.stream()
+        .filter(ring -> ring.size() >= LinearRing.MINIMUM_VALID_SIZE)
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
         .collect(Collectors.toList());
-    List<LinkedList<OSMNode>> innerRingsNodes = OSHDBGeometryBuilder.buildRings(innerLines);
-    // check if there are any touching inner/outer rings, merge any
-    mergeTouchingRings(innerRingsNodes);
-    // create JTS rings for non-degenerate rings only
     List<LinearRing> innerRings = innerRingsNodes.stream()
         .filter(ring -> ring.size() >= LinearRing.MINIMUM_VALID_SIZE)
         .map(ring -> geometryFactory.createLinearRing(
@@ -332,7 +337,7 @@ public class OSHDBGeometryBuilder {
    *   Touching rings are defined as rings which share at least one segment (a segment is formed by
    *   two consecutive ring nodes, regardless of their order). An example is:
    *   [r1 = (A,B,C,D,E,F,A); r2 = (X,Y,B,C,D,E,X)].
-   *   The result would be: [r1 = (B,A,F,E,X,Y,B)] "or any equivalent representation of this ring
+   *   The result would be: [r1 = (B,A,F,E,X,Y,B)] "or any equivalent representation of this ring"
    * </p>
    *
    * <pre>
@@ -343,7 +348,7 @@ public class OSHDBGeometryBuilder {
    * A----B--Y       A----B--Y
    * </pre>
    *
-   * @param ringsNodes a collection of node-lists, each forming a ring closed linestring
+   * @param ringsNodes a collection of node-lists, each forming a ring (i.e. a closed linestring)
    */
   private static void mergeTouchingRings(Collection<LinkedList<OSMNode>> ringsNodes) {
     // ringSegments will hold a reference of which ring a particular segment is part of.
@@ -398,6 +403,128 @@ public class OSHDBGeometryBuilder {
         ringSegments.put(mergedRingSegment, ringNodes);
       }
     }
+  }
+
+
+
+  /**
+   * Search and split self-intersecting/pinched/figure-8 rings.
+   *
+   * <p>Attention: modifies the input data, such that there are no more figure-8 rings.</p>
+   *
+   * <p>
+   *   A pinched ring forms a figure-8 configuration where the ring touches itself in a single
+   *   point. An example is: [r = (A,B,C,D,E,F,C,G,A)].
+   *   The result would be: [r1 = (C,D,E,G,C); r2 = (A,B,C,G,A)].
+   * </p>
+   *
+   * <pre>
+   *  A--B
+   *  |  |
+   *  G--C--D
+   *     |  |
+   *     F--E
+   * </pre>
+   *
+   * @param ringsNodes a collection of node-lists, each forming a ring (i.e. a closed linestring)
+   * @param holeRingsNodes a collection where holes formed by "upended" figure-8's should be stored
+   * @param geometryFactory a {@link GeometryFactory} object to create temporary features
+   */
+  private static void splitPinchedRings(
+      Collection<LinkedList<OSMNode>> ringsNodes,
+      Collection<LinkedList<OSMNode>> holeRingsNodes,
+      GeometryFactory geometryFactory
+  ) {
+    Map<Long, Integer> nodeIds = new HashMap<>();
+    Collection<LinkedList<OSMNode>> additionalRings = new LinkedList<>();
+    for (LinkedList<OSMNode> ringNodes : ringsNodes) {
+      var splitRings = splitPinchedRing(ringNodes, nodeIds);
+      if (splitRings != null) {
+        // if self-intersection(s) were found, we need to check whether these are next to or
+        // overlapping each other. to do this, we convert the rings to polygon geometries first
+        splitRings.add(new LinkedList<>(ringNodes));
+        ringNodes.clear();
+        var splitRingsGeoms = splitRings.stream()
+            .map(ring -> {
+              if (ring.size() >= LinearRing.MINIMUM_VALID_SIZE) {
+                return geometryFactory.createPolygon(ring.stream()
+                    .map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
+                    .toArray(Coordinate[]::new));
+              } else {
+                return geometryFactory.createPolygon();
+              }
+            })
+            .collect(Collectors.toList());
+        // determine which of the rings is "coveredBy" how many of the others
+        var nestingNumbers = Collections.nCopies(splitRingsGeoms.size(), 0)
+            .toArray(new Integer [] {});
+        for (var i = 0; i < splitRingsGeoms.size(); i++) {
+          for (var j = 0; j < splitRingsGeoms.size(); j++) {
+            if (i == j) {
+              continue;
+            }
+            if (splitRingsGeoms.get(i).coveredBy(splitRingsGeoms.get(j))) {
+              nestingNumbers[i]++;
+            }
+          }
+        }
+        // sort result into (additional) rings and holes
+        for (var i = 0; i < splitRingsGeoms.size(); i++) {
+          if (nestingNumbers[i] % 2 == 0) {
+            additionalRings.add(splitRings.get(i));
+          } else {
+            holeRingsNodes.add(splitRings.get(i));
+          }
+        }
+      }
+    }
+    ringsNodes.addAll(additionalRings);
+  }
+
+  /**
+   * Search and split pinched (figure-8) rings.
+   *
+   * @return null if no self-intersection is found,
+   *         otherwise a collection containing additional split-off rings
+   */
+  private static List<LinkedList<OSMNode>> splitPinchedRing(
+      LinkedList<OSMNode> ringNodes,
+      Map<Long, Integer> nodeIds
+  ) {
+    List<LinkedList<OSMNode>> result = null;
+    boolean wasSplittable;
+    do {
+      wasSplittable = false;
+      nodeIds.clear();
+      var currentNodePos = 0;
+      for (OSMNode ringNode : ringNodes) {
+        long nodeId = ringNode.getId();
+        if (nodeIds.containsKey(nodeId)) {
+          // split off ring between previous and current ring position
+          int nodePos = nodeIds.get(nodeId);
+          final var additionalRing = new LinkedList<>(ringNodes.subList(nodePos, currentNodePos + 1));
+          final var remainingRing = new LinkedList<OSMNode>();
+          remainingRing.addAll(ringNodes.subList(0, nodePos));
+          remainingRing.addAll(ringNodes.subList(currentNodePos, ringNodes.size()));
+          wasSplittable = true;
+          // add to results
+          ringNodes.clear();
+          ringNodes.addAll(remainingRing);
+          if (result == null) {
+            result = new ArrayList<>();
+          }
+          result.add(additionalRing);
+          break;
+        }
+        if (currentNodePos > 0) {
+          // don't memorize start node, since it is always repeated at the end of the ring
+          nodeIds.put(nodeId, currentNodePos);
+        }
+        currentNodePos++;
+      }
+      // repeat until the ring doesn't have any more self intersections
+    } while (wasSplittable);
+    return result;
   }
 
   /**
@@ -533,25 +660,32 @@ public class OSHDBGeometryBuilder {
             what.removeFirst();
             current.addAll(what);
             waysIterator.remove();
+            lastId = current.getLast().getId();
             joinable = true;
           } else if (firstId == what.getLast().getId()) {
             // start of partial ring matches end of current line
             what.removeLast();
             current.addAll(0, what);
             waysIterator.remove();
+            firstId = current.getFirst().getId();
             joinable = true;
           } else if (lastId == what.getLast().getId()) {
             // end of partial ring matches end of current line
             what.removeLast();
             current.addAll(Lists.reverse(what));
             waysIterator.remove();
+            lastId = current.getLast().getId();
             joinable = true;
           } else if (firstId == what.getFirst().getId()) {
             // start of partial ring matches start of current line
             what.removeFirst();
             current.addAll(0, Lists.reverse(what));
             waysIterator.remove();
+            firstId = current.getFirst().getId();
             joinable = true;
+          }
+          if (firstId == lastId) {
+            break;
           }
         }
         // joinable==false for invalid geometries (dangling way, unclosed ring)

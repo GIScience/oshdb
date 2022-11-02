@@ -17,6 +17,7 @@ Changelog
 
 ### bugfixes
 
+* fix building valid geometries for multipolygons with shells which share a single point ([#424])
 * change geometry filters to be based on full (unclipped) geometries ([#433])
 * make sure area computation never returns negative results (instead zero is returned for the invalid geometries which previously resulted in negative values) ([#438])
 
@@ -33,6 +34,7 @@ Changelog
 
 [#260]: https://github.com/GIScience/oshdb/issues/260
 [#419]: https://github.com/GIScience/oshdb/pull/419
+[#424]: https://github.com/GIScience/oshdb/pull/424
 [#433]: https://github.com/GIScience/oshdb/issues/433
 [#438]: https://github.com/GIScience/oshdb/pull/438
 [#441]: https://github.com/GIScience/oshdb/pull/441
@@ -43,6 +45,7 @@ Changelog
 [#453]: https://github.com/GIScience/oshdb/pull/453
 [#454]: https://github.com/GIScience/oshdb/pull/454
 [#459]: https://github.com/GIScience/oshdb/pull/459
+
 
 
 ## 0.7.2
