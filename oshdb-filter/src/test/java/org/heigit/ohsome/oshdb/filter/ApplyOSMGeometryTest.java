@@ -26,6 +26,12 @@ import org.locationtech.jts.io.WKTReader;
 class ApplyOSMGeometryTest extends FilterTest {
   private final GeometryFactory gf = new GeometryFactory();
 
+  private Polygon getBoundingBoxPolygon(
+      double minLon, double minLat, double maxLon, double maxLat) {
+    return OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(
+        minLon, minLat, maxLon, maxLat));
+  }
+
   @Test
   void testGeometryTypeFilterPoint() {
     FilterExpression expression = parser.parse("geometry:point");
@@ -115,20 +121,20 @@ class ApplyOSMGeometryTest extends FilterTest {
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
         // approx 0.3m²
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
+        getBoundingBoxPolygon(0, 0, 5E-6, 5E-6)
     ));
     assertTrue(expression.applyOSMGeometry(entity,
         // approx 1.2m²
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1E-5, 1E-5))
+        getBoundingBoxPolygon(0, 0, 1E-5, 1E-5)
     ));
     assertFalse(expression.applyOSMGeometry(entity,
         // approx 4.9m²
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 2E-5, 2E-5))
+        getBoundingBoxPolygon(0, 0, 2E-5, 2E-5)
     ));
     // negated
     assertFalse(expression.negate().applyOSMGeometry(entity,
         // approx 1.2m²
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1E-5, 1E-5))
+        getBoundingBoxPolygon(0, 0, 1E-5, 1E-5)
     ));
     assertTrue(expression.negate().applyOSMGeometry(entity,
         // approx 0.3m²
@@ -178,20 +184,20 @@ class ApplyOSMGeometryTest extends FilterTest {
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
         // square with approx 0.6m edge length
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
+        getBoundingBoxPolygon(0, 0, 5E-6, 5E-6)
     ));
     assertTrue(expression.applyOSMGeometry(entity,
         // square with approx 1.1m edge length
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1E-5, 1E-5))
+        getBoundingBoxPolygon(0, 0, 1E-5, 1E-5)
     ));
     assertFalse(expression.applyOSMGeometry(entity,
         // square with approx 2.2m edge length
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 2E-5, 2E-5))
+        getBoundingBoxPolygon(0, 0, 2E-5, 2E-5)
     ));
     // negated
     assertTrue(expression.negate().applyOSMGeometry(entity,
         // square with approx 0.6m edge length
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 5E-6, 5E-6))
+        getBoundingBoxPolygon(0, 0, 5E-6, 5E-6)
     ));
   }
 
@@ -258,7 +264,7 @@ class ApplyOSMGeometryTest extends FilterTest {
           Stream.of(new Coordinate(1, 1))
       ).toArray(Coordinate[]::new);
       var geometry = gf.createMultiPolygon(new Polygon[] {
-          OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(-2, -2, -1, -1)),
+          getBoundingBoxPolygon(-2, -2, -1, -1),
           gf.createPolygon(coords) });
       tester.accept(expression.applyOSMGeometry(entity, geometry));
     };
@@ -274,20 +280,20 @@ class ApplyOSMGeometryTest extends FilterTest {
     FilterExpression expression = parser.parse("geometry.outers:1");
     OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
     assertFalse(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)),
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(3, 3, 4, 4))
+        getBoundingBoxPolygon(1, 1, 2, 2),
+        getBoundingBoxPolygon(3, 3, 4, 4)
     })));
     assertTrue(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2))
+        getBoundingBoxPolygon(1, 1, 2, 2)
     })));
     assertTrue(expression.applyOSMGeometry(entity,
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2))
+        getBoundingBoxPolygon(1, 1, 2, 2)
     ));
     // range
     expression = parser.parse("geometry.outers:(2..)");
     assertTrue(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)),
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(3, 3, 4, 4))
+        getBoundingBoxPolygon(1, 1, 2, 2),
+        getBoundingBoxPolygon(3, 3, 4, 4)
     })));
   }
 
@@ -296,7 +302,7 @@ class ApplyOSMGeometryTest extends FilterTest {
     FilterExpression expression = parser.parse("geometry.inners:0");
     OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
     assertTrue(expression.applyOSMGeometry(entity,
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2))
+        getBoundingBoxPolygon(1, 1, 2, 2)
     ));
     assertFalse(expression.applyOSMGeometry(entity, gf.createPolygon(
         OSHDBGeometryBuilder.getGeometry(
@@ -305,7 +311,7 @@ class ApplyOSMGeometryTest extends FilterTest {
             OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)).getExteriorRing()
         })));
     assertTrue(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2))
+        getBoundingBoxPolygon(1, 1, 2, 2)
     })));
     assertFalse(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
         gf.createPolygon(
@@ -340,7 +346,7 @@ class ApplyOSMGeometryTest extends FilterTest {
     FilterExpression expression = parser.parse("geometry.roundness:(0.8..)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {});
     assertFalse(expression.applyOSMGeometry(entity,
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1, 1))
+        getBoundingBoxPolygon(0, 0, 1, 1)
     ));
     var reader = new WKTReader();
     assertTrue(expression.applyOSMGeometry(entity, reader.read(regular32gon)));
@@ -351,7 +357,7 @@ class ApplyOSMGeometryTest extends FilterTest {
     FilterExpression expression = parser.parse("geometry.squareness:(0.8..)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {});
     assertTrue(expression.applyOSMGeometry(entity,
-        OSHDBGeometryBuilder.getGeometry(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1, 1))
+        getBoundingBoxPolygon(0, 0, 1, 1)
     ));
     var reader = new WKTReader();
     assertFalse(expression.applyOSMGeometry(entity, reader.read(regular32gon)));
