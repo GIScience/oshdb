@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import javax.annotation.Nonnull;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
@@ -14,18 +15,21 @@ public class GeometryFilterInnerRings extends GeometryFilter {
    * @param range the allowed range (inclusive) of values to pass the filter
    */
   public GeometryFilterInnerRings(@Nonnull ValueRange range) {
-    super(range, GeometryMetricEvaluator.fromLambda(geometry -> {
-      if (geometry instanceof Polygon) {
-        return ((Polygon) geometry).getNumInteriorRing();
-      } else if (geometry instanceof MultiPolygon) {
-        var counter = 0;
-        for (var i = 0; i < geometry.getNumGeometries(); i++) {
-          counter += ((Polygon) geometry.getGeometryN(i)).getNumInteriorRing();
-        }
-        return counter;
-      } else {
-        return -1;
+    super(range, GeometryMetricEvaluator.fromLambda(GeometryFilterInnerRings::countInnerRings,
+        "geometry.inners"));
+  }
+
+  private static int countInnerRings(Geometry geometry) {
+    if (geometry instanceof Polygon) {
+      return ((Polygon) geometry).getNumInteriorRing();
+    } else if (geometry instanceof MultiPolygon) {
+      var counter = 0;
+      for (var i = 0; i < geometry.getNumGeometries(); i++) {
+        counter += ((Polygon) geometry.getGeometryN(i)).getNumInteriorRing();
       }
-    }, "geometry.inners"));
+      return counter;
+    } else {
+      return -1;
+    }
   }
 }
