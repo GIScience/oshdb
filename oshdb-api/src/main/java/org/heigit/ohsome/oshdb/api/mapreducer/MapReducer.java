@@ -328,6 +328,10 @@ public abstract class MapReducer<X> implements
    *
    * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
    *
+   * <p>Supplied times are assumed to be in UTC (and the only allowed timezone designator is 'Z').
+   * If a date parameter does not include a time part, midnight (00:00:00Z) of the respective
+   * date is used.</p>
+   *
    * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
    * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
    * @param interval the interval between the timestamps to be used in the analysis
@@ -348,6 +352,10 @@ public abstract class MapReducer<X> implements
    *
    * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
    *
+   * <p>Supplied times are assumed to be in UTC (and the only allowed timezone designator is 'Z').
+   * If a date parameter does not include a time part, midnight (00:00:00Z) of the respective
+   * date is used.</p>
+   *
    * @param isoDate an ISO 8601 date string representing the date of the analysis
    * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
    */
@@ -366,6 +374,10 @@ public abstract class MapReducer<X> implements
    * by timestamp.</p>
    *
    * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
+   *
+   * <p>Supplied times are assumed to be in UTC (and the only allowed timezone designator is 'Z').
+   * If a date parameter does not include a time part, midnight (00:00:00Z) of the respective
+   * date is used.</p>
    *
    * @param isoDateStart an ISO 8601 date string representing the start date of the analysis
    * @param isoDateEnd an ISO 8601 date string representing the end date of the analysis
@@ -386,6 +398,10 @@ public abstract class MapReducer<X> implements
    * </p>
    *
    * <p>See {@link #timestamps(OSHDBTimestampList)} for further information.</p>
+   *
+   * <p>Supplied times are assumed to be in UTC (and the only allowed timezone designator is 'Z').
+   * If a date parameter does not include a time part, midnight (00:00:00Z) of the respective
+   * date is used.</p>
    *
    * @param isoDateFirst an ISO 8601 date string representing the start date of the analysis
    * @param isoDateSecond an ISO 8601 date string representing the second date of the analysis
