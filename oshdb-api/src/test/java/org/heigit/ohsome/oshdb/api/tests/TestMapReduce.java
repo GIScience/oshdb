@@ -257,34 +257,4 @@ abstract class TestMapReduce {
       }
     };
   }
-
-  @Test
-  void testInvalidTimestamps() {
-    assertThrows(DateTimeParseException.class, this::invalidTimestamps1);
-    assertThrows(OSHDBTimestampIllegalArgumentException.class, this::invalidTimestamps2);
-  }
-
-  private void invalidTimestamps1() throws Exception {
-    // contribution view query
-    var ignored = createMapReducerOSMContribution()
-        .timestamps("invalid1", "invalid2")
-        .map(OSMContribution::getContributorUserId)
-        .uniq();
-    // snapshot view query
-    var ignored2 = createMapReducerOSMEntitySnapshot()
-        .timestamps("invalid")
-        .count();
-  }
-
-  @SuppressWarnings("UnusedAssignment")
-  private void invalidTimestamps2() throws Exception {
-    // invalid time zone
-    var ignored = createMapReducerOSMEntitySnapshot()
-        .timestamps("2020-01-01T00:00:00+00")
-        .count();
-    // invalid sign
-    ignored = createMapReducerOSMEntitySnapshot()
-        .timestamps("-2020-01-01T00:00:00Z")
-        .count();
-  }
 }
