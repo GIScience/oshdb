@@ -179,22 +179,36 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  void testGeometryFilterPerimeter() {
+  void testGeometryFilterPerimeterTooSmall() {
     FilterExpression expression = parser.parse("perimeter:(4..5)");
-    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
+    OSMEntity entity = createTestOSMEntityWay(new long[]{1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
         // square with approx 0.6m edge length
         getBoundingBoxPolygon(0, 0, 5E-6, 5E-6)
     ));
+  }
+  @Test
+  void testGeometryFilterPerimeterTooLarge() {
+    FilterExpression expression = parser.parse("perimeter:(4..5)");
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertTrue(expression.applyOSMGeometry(entity,
         // square with approx 1.1m edge length
         getBoundingBoxPolygon(0, 0, 1E-5, 1E-5)
     ));
+  }
+  @Test
+  void testGeometryFilterPerimeterInRange() {
+    FilterExpression expression = parser.parse("perimeter:(4..5)");
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
         // square with approx 2.2m edge length
         getBoundingBoxPolygon(0, 0, 2E-5, 2E-5)
     ));
-    // negated
+  }
+  @Test
+  void testGeometryFilterPerimeterNegated() {
+    FilterExpression expression = parser.parse("perimeter:(4..5)");
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertTrue(expression.negate().applyOSMGeometry(entity,
         // square with approx 0.6m edge length
         getBoundingBoxPolygon(0, 0, 5E-6, 5E-6)
@@ -202,13 +216,15 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  void testGeometryFilterVertices() {
+  void testGeometryFilterVerticesPoint() {
     FilterExpression expression = parser.parse("geometry.vertices:(11..13)");
-    // point
     assertFalse(expression.applyOSMGeometry(
         createTestOSMEntityNode("natural", "tree"),
         gf.createPoint(new Coordinate(0, 0))));
-    // lines
+  }
+  @Test
+  void testGeometryFilterVerticesLine() {
+    FilterExpression expression = parser.parse("geometry.vertices:(11..13)");
     BiConsumer<Integer, Consumer<Boolean>> testLineN = (n, tester) -> {
       var entity = createTestOSMEntityWay(LongStream.rangeClosed(1, n).toArray());
       var coords = LongStream.rangeClosed(1, n)
@@ -221,7 +237,10 @@ class ApplyOSMGeometryTest extends FilterTest {
     testLineN.accept(12, Assertions::assertTrue);
     testLineN.accept(13, Assertions::assertTrue);
     testLineN.accept(14, Assertions::assertFalse);
-    // polygons
+  }
+  @Test
+  void testGeometryFilterVerticesPolygon() {
+    FilterExpression expression = parser.parse("geometry.vertices:(11..13)");
     BiConsumer<Integer, Consumer<Boolean>> testPolyonN = (n, tester) -> {
       var entity = createTestOSMEntityWay(LongStream.rangeClosed(1, n).toArray());
       var coords = Streams.concat(
@@ -236,7 +255,10 @@ class ApplyOSMGeometryTest extends FilterTest {
     testPolyonN.accept(12, Assertions::assertTrue);
     testPolyonN.accept(13, Assertions::assertTrue);
     testPolyonN.accept(14, Assertions::assertFalse);
-    // polygon with hole
+  }
+  @Test
+  void testGeometryFilterVerticesPolygonWithHole() {
+    FilterExpression expression = parser.parse("geometry.vertices:(11..13)");
     BiConsumer<Integer, Consumer<Boolean>> testPolyonWithHoleN = (n, tester) -> {
       var entity = createTestOSMEntityRelation("type", "multipolygon");
       n -= 5; // outer shell is a simple bbox with 5 points
@@ -255,7 +277,10 @@ class ApplyOSMGeometryTest extends FilterTest {
     testPolyonWithHoleN.accept(12, Assertions::assertTrue);
     testPolyonWithHoleN.accept(13, Assertions::assertTrue);
     testPolyonWithHoleN.accept(14, Assertions::assertFalse);
-    // multi polygon
+  }
+  @Test
+  void testGeometryFilterVerticesMultiPolygon() {
+    FilterExpression expression = parser.parse("geometry.vertices:(11..13)");
     BiConsumer<Integer, Consumer<Boolean>> testMultiPolyonN = (n, tester) -> {
       var entity = createTestOSMEntityRelation("type", "multipolygon");
       n -= 5; // outer shell 2 is a simple bbox with 5 points
@@ -276,7 +301,37 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  void testGeometryFilterOuters() {
+  void testGeometryFilterOutersPoint() {
+    FilterExpression expression = parser.parse("geometry.outers:1");
+    OSMEntity entity = createTestOSMEntityNode();
+    assertFalse(expression.applyOSMGeometry(entity, gf.createPoint(new Coordinate(0, 0))));
+    // range
+    expression = parser.parse("geometry.outers:(2..)");
+    assertFalse(expression.applyOSMGeometry(entity, gf.createPoint(new Coordinate(0, 0))));
+  }
+  @Test
+  void testGeometryFilterOutersLine() {
+    FilterExpression expression = parser.parse("geometry.outers:1");
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3});
+    var geom = gf.createLineString(new Coordinate[] {
+        new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1)
+    });
+    assertFalse(expression.applyOSMGeometry(entity, geom));
+    // range
+    expression = parser.parse("geometry.outers:(2..)");
+    assertFalse(expression.applyOSMGeometry(entity, geom));
+  }
+  @Test
+  void testGeometryFilterOutersPolygon() {
+    FilterExpression expression = parser.parse("geometry.outers:1");
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 1});
+    assertTrue(expression.applyOSMGeometry(entity, getBoundingBoxPolygon(1, 1, 2, 2)));
+    // range
+    expression = parser.parse("geometry.outers:(2..)");
+    assertFalse(expression.applyOSMGeometry(entity, getBoundingBoxPolygon(1, 1, 2, 2)));
+  }
+  @Test
+  void testGeometryFilterOutersMultiPolygon() {
     FilterExpression expression = parser.parse("geometry.outers:1");
     OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
     assertFalse(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
@@ -298,18 +353,45 @@ class ApplyOSMGeometryTest extends FilterTest {
   }
 
   @Test
-  void testGeometryFilterInners() {
+  void testGeometryFilterInnersPoint() {
     FilterExpression expression = parser.parse("geometry.inners:0");
-    OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
-    assertTrue(expression.applyOSMGeometry(entity,
-        getBoundingBoxPolygon(1, 1, 2, 2)
-    ));
+    OSMEntity entity = createTestOSMEntityNode();
+    assertFalse(expression.applyOSMGeometry(entity, gf.createPoint(new Coordinate(0, 0))));
+    // range
+    expression = parser.parse("geometry.inners:(1..)");
+    assertFalse(expression.applyOSMGeometry(entity, gf.createPoint(new Coordinate(0, 0))));
+  }
+  @Test
+  void testGeometryFilterInnersLine() {
+    FilterExpression expression = parser.parse("geometry.inners:0");
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3});
+    var geom = gf.createLineString(new Coordinate[] {
+        new Coordinate(0, 0), new Coordinate(1, 0), new Coordinate(1, 1)
+    });
+    assertFalse(expression.applyOSMGeometry(entity, geom));
+    // range
+    expression = parser.parse("geometry.inners:(1..)");
+    assertFalse(expression.applyOSMGeometry(entity, geom));
+  }
+  @Test
+  void testGeometryFilterInnersPolygon() {
+    FilterExpression expression = parser.parse("geometry.inners:0");
+    OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 1});
+    assertTrue(expression.applyOSMGeometry(entity, getBoundingBoxPolygon(1, 1, 2, 2)));
     assertFalse(expression.applyOSMGeometry(entity, gf.createPolygon(
         OSHDBGeometryBuilder.getGeometry(
             OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 10, 10)).getExteriorRing(),
         new LinearRing[] { OSHDBGeometryBuilder.getGeometry(
             OSHDBBoundingBox.bboxWgs84Coordinates(1, 1, 2, 2)).getExteriorRing()
         })));
+    // range
+    expression = parser.parse("geometry.inners:(1..)");
+    assertFalse(expression.applyOSMGeometry(entity, getBoundingBoxPolygon(1, 1, 2, 2)));
+  }
+  @Test
+  void testGeometryFilterInnersMultiPolygon() {
+    FilterExpression expression = parser.parse("geometry.inners:0");
+    OSMEntity entity = createTestOSMEntityRelation("type", "multipolygon");
     assertTrue(expression.applyOSMGeometry(entity, gf.createMultiPolygon(new Polygon[] {
         getBoundingBoxPolygon(1, 1, 2, 2)
     })));
