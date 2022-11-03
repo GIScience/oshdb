@@ -38,10 +38,10 @@ public class OSMXmlReaderTagInterpreter extends FakeTagInterpreter {
     if (e instanceof OSMWay) {
       OSMMember[] nds = ((OSMWay) e).getMembers();
       return nds.length >= 4 && nds[0].getId() == nds[nds.length - 1].getId()
-          && e.getTags().hasTagValue(area, areaYes);
+          && e.getTags().hasTag(area, areaYes);
     }
     if (e instanceof OSMRelation) {
-      return e.getTags().hasTagValue(type, typeMultipolygon);
+      return e.getTags().hasTag(type, typeMultipolygon);
     }
     return true;
   }

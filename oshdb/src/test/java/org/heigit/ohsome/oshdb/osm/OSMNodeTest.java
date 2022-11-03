@@ -172,12 +172,12 @@ class OSMNodeTest {
     OSMNode instance =
         OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 3}, 1000000000, 1000000000);
     boolean expResult = false;
-    boolean result = instance.getTags().hasTagValue(1, 1);
+    boolean result = instance.getTags().hasTag(1, 1);
     assertEquals(expResult, result);
 
     instance = OSM.node(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 3}, 1000000000, 1000000000);
     expResult = true;
-    result = instance.getTags().hasTagValue(1, 1);
+    result = instance.getTags().hasTag(1, 1);
     assertEquals(expResult, result);
   }
 
