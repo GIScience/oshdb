@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.ResultSet;
@@ -58,13 +60,13 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
   }
 
   protected String sqlQuery() {
-    var sqlQuery = this.typeFilter.stream()
-        .map(
-            osmType -> TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix())))
-        .filter(Optional::isPresent).map(Optional::get)
+    return this.typeFilter.stream()
+        .map(osmType -> TableNames.forOSMType(osmType)
+                .map(tn -> tn.toString(this.oshdb.prefix())))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
-        .collect(Collectors.joining(" union all "));
-    return sqlQuery;
+        .collect(joining(" union all "));
   }
 
   @Nonnull
