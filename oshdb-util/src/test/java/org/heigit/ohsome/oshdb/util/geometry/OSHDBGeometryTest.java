@@ -21,8 +21,10 @@ public abstract class OSHDBGeometryTest {
   protected final ListMultimap<Long, OSMRelation> relations;
   protected final TagInterpreter areaDecider;
 
-  protected OSHDBGeometryTest(String testdata) {
-    testData.add(testdata);
+  protected OSHDBGeometryTest(String... testdata) {
+    for (var data : testdata) {
+      testData.add(data);
+    }
     nodes = testData.nodes();
     ways = testData.ways();
     relations = testData.relations();

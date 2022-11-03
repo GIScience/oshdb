@@ -413,17 +413,13 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> timestamps(
       String isoDateFirst, String isoDateSecond, String... isoDateMore) {
     SortedSet<OSHDBTimestamp> timestamps = new TreeSet<>();
-    try {
+    timestamps.add(
+        new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateFirst).toEpochSecond()));
+    timestamps.add(
+        new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateSecond).toEpochSecond()));
+    for (String isoDate : isoDateMore) {
       timestamps.add(
-          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateFirst).toEpochSecond()));
-      timestamps.add(
-          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDateSecond).toEpochSecond()));
-      for (String isoDate : isoDateMore) {
-        timestamps.add(
-            new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDate).toEpochSecond()));
-      }
-    } catch (Exception e) {
-      LOG.error("unable to parse ISO date string: " + e.getMessage());
+          new OSHDBTimestamp(IsoDateTimeParser.parseIsoDateTime(isoDate).toEpochSecond()));
     }
     return this.timestamps(() -> timestamps);
   }
