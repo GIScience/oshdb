@@ -1,16 +1,16 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
+import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.Collectors.joining;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Spliterators;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
@@ -82,49 +82,60 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
       pstmt.setLong(2, cellIdRange.getStart().getId());
       pstmt.setLong(3, cellIdRange.getEnd().getId());
       var oshCellsRawData = pstmt.executeQuery();
-      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-          new Iterator<GridOSHEntity>() {
-            GridOSHEntity next;
-            @Override
-            public boolean hasNext() {
-              return next != null || (next = getNext()) != null;
-            }
-
-            @Override
-            public GridOSHEntity next() {
-              if (!hasNext()) {
-                throw new NoSuchElementException();
-              }
-              var grid = next;
-              next = null;
-              return grid;
-            }
-
-            private GridOSHEntity getNext() {
-              try {
-                if (!oshCellsRawData.next()) {
-                  try {
-                    oshCellsRawData.close();
-                  } finally {
-                    conn.close();
-                  }
-                  return null;
-                }
-                return readOshCellRawData(oshCellsRawData);
-              } catch (IOException | ClassNotFoundException | SQLException e) {
-                var exception = new OSHDBException(e);
-                try {
-                  conn.close();
-                } catch (Exception e2) {
-                  exception.addSuppressed(e2);
-                }
-                throw exception;
-              }
-            }
-          }, 0
+      return StreamSupport.stream(spliteratorUnknownSize(
+          new GridOSHEntityIterator(oshCellsRawData, conn), 0
       ), false);
     } catch (SQLException e) {
       throw new OSHDBException(e);
+    }
+  }
+
+  private class GridOSHEntityIterator implements Iterator<GridOSHEntity> {
+
+    private final ResultSet oshCellsRawData;
+    private final Connection conn;
+    GridOSHEntity next;
+
+    public GridOSHEntityIterator(ResultSet oshCellsRawData, Connection conn) {
+      this.oshCellsRawData = oshCellsRawData;
+      this.conn = conn;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return next != null || (next = getNext()) != null;
+    }
+
+    @Override
+    public GridOSHEntity next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      var grid = next;
+      next = null;
+      return grid;
+    }
+
+    private GridOSHEntity getNext() {
+      try {
+        if (!oshCellsRawData.next()) {
+          try {
+            oshCellsRawData.close();
+          } finally {
+            conn.close();
+          }
+          return null;
+        }
+        return readOshCellRawData(oshCellsRawData);
+      } catch (IOException | ClassNotFoundException | SQLException e) {
+        var exception = new OSHDBException(e);
+        try {
+          conn.close();
+        } catch (Exception e2) {
+          exception.addSuppressed(e2);
+        }
+        throw exception;
+      }
     }
   }
 }
