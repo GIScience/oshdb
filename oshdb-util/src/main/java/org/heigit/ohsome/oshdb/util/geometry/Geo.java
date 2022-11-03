@@ -1,6 +1,8 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -369,36 +371,35 @@ public class Geo {
    *         isn't supported
    */
   public static double squareness(Geometry geom) {
-    LineString[] lines;
     if (geom instanceof Polygon) {
-      var poly = (Polygon) geom;
-      var rings = new ArrayList<LinearRing>(poly.getNumInteriorRing() + 1);
-      rings.add(poly.getExteriorRing());
-      for (var i = 0; i < poly.getNumInteriorRing(); i++) {
-        rings.add(poly.getInteriorRingN(i));
-      }
-      lines = rings.toArray(new LineString[] {});
+      return squareness(dissolvePolygonToRings((Polygon) geom));
     } else if (geom instanceof MultiPolygon) {
       var multiPoly = (MultiPolygon) geom;
       var rings = new ArrayList<LinearRing>();
       for (var i = 0; i < multiPoly.getNumGeometries(); i++) {
         var poly = (Polygon) geom.getGeometryN(i);
-        rings.add(poly.getExteriorRing());
-        for (var j = 0; j < poly.getNumInteriorRing(); j++) {
-          rings.add(poly.getInteriorRingN(j));
-        }
+        rings.addAll(dissolvePolygonToRings(poly));
       }
-      lines = rings.toArray(new LineString[] {});
+      return squareness(rings);
     } else if (geom instanceof LineString) {
-      lines = new LineString[] { (LineString) geom };
+      return squareness(Collections.singletonList((LineString) geom));
     } else {
       // other geometry types: return 0
       return 0;
     }
-    return squareness(lines);
   }
 
-  private static double squareness(LineString[] lines) {
+  /** Helper method to dissolve a polygon to a collection of rings. */
+  private static List<LinearRing> dissolvePolygonToRings(Polygon poly) {
+    var rings = new ArrayList<LinearRing>(poly.getNumInteriorRing() + 1);
+    rings.add(poly.getExteriorRing());
+    for (var i = 0; i < poly.getNumInteriorRing(); i++) {
+      rings.add(poly.getInteriorRingN(i));
+    }
+    return rings;
+  }
+
+  private static double squareness(List<? extends LineString> lines) {
     var minLengthL1 = Double.MAX_VALUE;
     for (LineString line : lines) {
       var coords = line.getCoordinates();
