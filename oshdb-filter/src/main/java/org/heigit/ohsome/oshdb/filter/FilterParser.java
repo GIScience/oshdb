@@ -228,7 +228,7 @@ public class FilterParser {
         ),
         Scanners.isChar(')')
     );
-    
+
     // geometry filter
     final Parser<GeometryFilter> geometryFilterArea = Parsers.sequence(
         area, colon, positiveFloatingRange
