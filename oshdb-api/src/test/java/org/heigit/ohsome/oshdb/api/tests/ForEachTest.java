@@ -13,9 +13,9 @@ import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the stream method of the OSHDB API.
+ * Test forEach method of the OSHDB API.
  */
-class TestStream {
+class ForEachTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -23,8 +23,8 @@ class TestStream {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  TestStream() throws Exception {
-    oshdb = new OSHDBH2("../data/test-data").multithreading(false);
+  ForEachTest() throws Exception {
+    oshdb = new OSHDBH2("../data/test-data");
   }
 
   private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
@@ -39,7 +39,6 @@ class TestStream {
     ConcurrentHashMap<Long, Boolean> result = new ConcurrentHashMap<>();
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
-        .stream()
         .forEach(contribution -> {
           result.put(contribution.getEntityAfter().getId(), true);
         });
@@ -52,9 +51,11 @@ class TestStream {
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .groupByEntity()
-        .map(contributions -> contributions.get(0).getEntityAfter().getId())
-        .stream()
-        .forEach(id -> result.put(id, true));
+        .forEach(contributions -> {
+          contributions.forEach(contribution -> {
+            result.put(contribution.getEntityAfter().getId(), true);
+          });
+        });
     assertEquals(42, result.entrySet().size());
   }
 
@@ -64,10 +65,11 @@ class TestStream {
     this.createMapReducerOSMContribution()
         .timestamps(timestamps72)
         .aggregateByTimestamp()
-        .stream()
-        .forEach(entry ->
-          result.put(entry.getValue().getEntityAfter().getId(), true)
-        );
+        .forEach((ts, contributions) -> {
+          contributions.forEach(contribution -> {
+            result.put(contribution.getEntityAfter().getId(), true);
+          });
+        });
     assertEquals(42, result.entrySet().size());
   }
 }

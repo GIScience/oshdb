@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for proper error messages if tables are not present on H2.
  */
-class TestMapReduceOSHDBJdbcMissingTables extends TestMapReduce {
+class MapReduceOSHDBJdbcMissingTablesTest extends MapReduceTest {
   /**
    * Creates the test runner using an H2 backend.
    *
    * @throws Exception if something goes wrong
    */
-  TestMapReduceOSHDBJdbcMissingTables() throws Exception {
+  MapReduceOSHDBJdbcMissingTablesTest() throws Exception {
     super((new OSHDBH2("../data/test-data"))
         .prefix("<test tables not present>")
     );

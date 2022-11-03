@@ -23,14 +23,14 @@ import org.junit.jupiter.api.Test;
 /**
  * Test flat map method of the MapReducer class of the OSHDB API.
  */
-class TestFlatMapReduce {
+class FlatMapReduceTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  TestFlatMapReduce() throws Exception {
+  FlatMapReduceTest() throws Exception {
     oshdb = new OSHDBH2("../data/test-data");
   }
 

@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
  *   of unit tests.
  * </p>
  */
-class TestOSHDBFilter {
+class OSHDBFilterTest {
   private final OSHDBJdbc oshdb;
   private final FilterParser filterParser;
 
@@ -38,7 +38,7 @@ class TestOSHDBFilter {
    *
    * @throws Exception if something goes wrong.
    */
-  TestOSHDBFilter() throws Exception {
+  OSHDBFilterTest() throws Exception {
     OSHDBH2 oshdb = new OSHDBH2("../data/test-data");
     filterParser = new FilterParser(oshdb.getTagTranslator());
     this.oshdb = oshdb;

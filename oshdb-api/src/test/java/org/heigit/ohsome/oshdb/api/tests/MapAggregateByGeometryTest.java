@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Test aggregateByGeometry method of the OSHDB API.
  */
-class TestMapAggregateByGeometry {
+class MapAggregateByGeometryTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -39,7 +39,7 @@ class TestMapAggregateByGeometry {
 
   private static final double DELTA = 1e-4;
 
-  TestMapAggregateByGeometry() throws Exception {
+  MapAggregateByGeometryTest() throws Exception {
     oshdb = new OSHDBH2("../data/test-data");
   }
 

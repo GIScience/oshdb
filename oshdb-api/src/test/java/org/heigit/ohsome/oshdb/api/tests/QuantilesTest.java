@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the quantiles reducer of the OSHDB API.
  */
-class TestQuantiles {
+class QuantilesTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -31,7 +31,7 @@ class TestQuantiles {
 
   private static final double REQUIRED_ACCURACY = 1E-4;
 
-  TestQuantiles() throws Exception {
+  QuantilesTest() throws Exception {
     oshdb = new OSHDBH2("../data/test-data");
   }
 

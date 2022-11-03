@@ -7,13 +7,13 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
  *
  * <p>Runs the tests using the singlethreaded H2 backend.</p>
  */
-class TestMapReduceOSHDBH2Singlethread extends TestMapReduce {
+class MapReduceOSHDBH2SinglethreadTest extends MapReduceTest {
   /**
    * Creates the test runner using the singlethreaded "dummy" H2 backend.
    *
    * @throws Exception if something goes wrong
    */
-  TestMapReduceOSHDBH2Singlethread() throws Exception {
+  MapReduceOSHDBH2SinglethreadTest() throws Exception {
     super(
         (new OSHDBH2("../data/test-data")).multithreading(false)
     );

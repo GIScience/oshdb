@@ -29,7 +29,7 @@ import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.TableNames;
 
-abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
+abstract class MapReduceTestOSHDBIgnite extends MapReduceTest {
   static final Ignite ignite;
 
   static {
@@ -98,7 +98,7 @@ abstract class TestMapReduceOSHDBIgnite extends TestMapReduce {
     return oshdb;
   }
 
-  TestMapReduceOSHDBIgnite(Consumer<OSHDBIgnite> computeMode) throws Exception {
+  MapReduceTestOSHDBIgnite(Consumer<OSHDBIgnite> computeMode) throws Exception {
     super(initOshdb(computeMode));
   }
 }

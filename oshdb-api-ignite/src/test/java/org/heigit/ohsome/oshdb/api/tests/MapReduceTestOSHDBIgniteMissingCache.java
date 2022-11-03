@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for proper error messages is caches are not pnt on ignite.
  */
-class TestMapReduceOSHDBIgniteMissingCache extends TestMapReduceOSHDBIgnite {
+class MapReduceTestOSHDBIgniteMissingCache extends MapReduceTestOSHDBIgnite {
   /**
    * Creates the test runner using an Ignite backend.
    *
    * @throws Exception if something goes wrong
    */
-  TestMapReduceOSHDBIgniteMissingCache() throws Exception {
+  MapReduceTestOSHDBIgniteMissingCache() throws Exception {
     super(oshdb -> {});
     this.oshdb.prefix("<test caches not present>");
   }

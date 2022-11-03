@@ -18,14 +18,14 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Tests osm data filters.
  */
-class TestOSMDataFilters {
+class OSMDataFiltersTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
       OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);
   private final OSHDBTimestamps timestamps1 = new OSHDBTimestamps("2014-01-01");
 
-  TestOSMDataFilters() throws Exception {
+  OSMDataFiltersTest() throws Exception {
     oshdb = new OSHDBH2("../data/test-data");
   }
 

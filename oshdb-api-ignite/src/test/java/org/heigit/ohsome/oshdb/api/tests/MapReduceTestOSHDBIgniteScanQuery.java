@@ -10,13 +10,13 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Runs the tests using the "scan query" Ignite backend.</p>
  */
-class TestMapReduceOSHDBIgniteScanQuery extends TestMapReduceOSHDBIgnite {
+class MapReduceTestOSHDBIgniteScanQuery extends MapReduceTestOSHDBIgnite {
   /**
    * Creates the test runner using the ignite scanquery backend.
    *
    * @throws Exception if something goes wrong
    */
-  TestMapReduceOSHDBIgniteScanQuery() throws Exception {
+  MapReduceTestOSHDBIgniteScanQuery() throws Exception {
     super(oshdb -> oshdb.computeMode(OSHDBIgnite.ComputeMode.SCAN_QUERY));
   }
 

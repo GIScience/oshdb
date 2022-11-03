@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.api.tests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
@@ -21,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests the collect method of the OSHDB API.
  */
-class TestCollect {
+class CollectTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -29,7 +28,7 @@ class TestCollect {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  TestCollect() {
+  CollectTest() {
     oshdb = new OSHDBH2("../data/test-data");
   }
 

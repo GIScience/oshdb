@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test special reducers of the OSHDB API when using the contribution view.
  */
-class TestHelpersOSMContributionView {
+class HelpersOSMContributionViewTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox =
@@ -32,7 +32,7 @@ class TestHelpersOSMContributionView {
 
   private static final double DELTA = 1e-8;
 
-  TestHelpersOSMContributionView() throws Exception {
+  HelpersOSMContributionViewTest() throws Exception {
     oshdb = new OSHDBH2("../data/test-data");
   }
 

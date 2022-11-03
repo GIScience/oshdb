@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test flatMap method with groupByEntity of the MapReducer class of the OSHDB API.
  */
-abstract class TestFlatMapReduceGroupedByEntity {
+abstract class FlatMapReduceGroupedByEntityTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -28,7 +28,7 @@ abstract class TestFlatMapReduceGroupedByEntity {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  TestFlatMapReduceGroupedByEntity(OSHDBDatabase oshdb) throws Exception {
+  FlatMapReduceGroupedByEntityTest(OSHDBDatabase oshdb) throws Exception {
     this.oshdb = oshdb;
   }
 

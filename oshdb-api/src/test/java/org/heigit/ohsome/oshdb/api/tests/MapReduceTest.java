@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -23,7 +22,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Base class for testing the map-reducer backend implementations of the OSHDB API.
  */
-abstract class TestMapReduce {
+abstract class MapReduceTest {
   final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -32,7 +31,7 @@ abstract class TestMapReduce {
   private final OSHDBTimestamps timestamps72 = new OSHDBTimestamps("2010-01-01", "2015-12-01",
       OSHDBTimestamps.Interval.MONTHLY);
 
-  TestMapReduce(OSHDBDatabase oshdb) throws Exception {
+  MapReduceTest(OSHDBDatabase oshdb) throws Exception {
     this.oshdb = oshdb;
   }
 

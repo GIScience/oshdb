@@ -13,13 +13,13 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Runs the tests using the "affinity call" Ignite backend.</p>
  */
-class TestMapReduceOSHDBIgniteAffinityCall extends TestMapReduceOSHDBIgnite {
+class MapReduceTestOSHDBIgniteAffinityCall extends MapReduceTestOSHDBIgnite {
   /**
    * Creates the test runner using the ignite affinitycall backend.
    *
    * @throws Exception if something goes wrong
    */
-  TestMapReduceOSHDBIgniteAffinityCall() throws Exception {
+  MapReduceTestOSHDBIgniteAffinityCall() throws Exception {
     super(oshdb -> oshdb.computeMode(OSHDBIgnite.ComputeMode.AFFINITY_CALL));
   }
 

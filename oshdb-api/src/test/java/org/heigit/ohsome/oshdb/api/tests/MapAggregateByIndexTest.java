@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test aggregate by custom index method of the OSHDB API.
  */
-class TestMapAggregateByIndex {
+class MapAggregateByIndexTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -34,7 +34,7 @@ class TestMapAggregateByIndex {
 
   private static final double DELTA = 1e-8;
 
-  TestMapAggregateByIndex() throws Exception {
+  MapAggregateByIndexTest() throws Exception {
     oshdb = new OSHDBH2("../data/test-data");
   }
 

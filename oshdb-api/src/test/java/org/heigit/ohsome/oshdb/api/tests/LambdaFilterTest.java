@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests lambda functions as filters.
  */
-class TestLambdaFilter {
+class LambdaFilterTest {
   private final OSHDBDatabase oshdb;
 
   private final OSHDBBoundingBox bbox = bboxWgs84Coordinates(8.0, 49.0, 9.0, 50.0);
@@ -27,7 +27,7 @@ class TestLambdaFilter {
 
   private static final double DELTA = 1e-8;
 
-  TestLambdaFilter() throws Exception {
+  LambdaFilterTest() throws Exception {
     oshdb = new OSHDBH2("../data/test-data");
   }
 

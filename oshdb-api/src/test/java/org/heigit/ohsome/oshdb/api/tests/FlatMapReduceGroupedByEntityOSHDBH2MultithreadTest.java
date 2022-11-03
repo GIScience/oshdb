@@ -7,14 +7,14 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
  *
  * <p>Runs the tests using the multithreaded H2 backend.</p>
  */
-class TestFlatMapReduceGroupedByEntityOSHDBH2Multithread extends
-    TestFlatMapReduceGroupedByEntity {
+class FlatMapReduceGroupedByEntityOSHDBH2MultithreadTest extends
+    FlatMapReduceGroupedByEntityTest {
   /**
    * Creates the test runner using the multithreaded H2 backend.
    *
    * @throws Exception if something goes wrong
    */
-  TestFlatMapReduceGroupedByEntityOSHDBH2Multithread() throws Exception {
+  FlatMapReduceGroupedByEntityOSHDBH2MultithreadTest() throws Exception {
     super(
         (new OSHDBH2("../data/test-data")).multithreading(true)
     );
