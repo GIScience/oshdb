@@ -1,13 +1,16 @@
 package org.heigit.ohsome.oshdb.api.db;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.base.Joiner;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
@@ -20,6 +23,7 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.tagtranslator.JdbcTagTranslator;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * OSHDB database backend connector to a JDBC database file.
@@ -56,31 +60,52 @@ public class OSHDBJdbc extends OSHDBDatabase {
   @Override
   public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
     try {
-      Collection<String> expectedTables = Stream.of(OSMType.values()).map(TableNames::forOSMType)
-          .filter(Optional::isPresent).map(Optional::get)
-          .map(t -> t.toString(this.prefix()).toLowerCase()).collect(Collectors.toList());
-      List<String> allTables = new LinkedList<>();
-      try (var conn = getConnection()) {
-        var metaData = conn.getMetaData();
-        try (var rs = metaData.getTables(null, null, "%", new String[] {"TABLE"})) {
-          while (rs.next()) {
-            allTables.add(rs.getString("TABLE_NAME").toLowerCase());
-          }
-          if (!allTables.containsAll(expectedTables)) {
-            throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedTables));
-          }
-        }
-      }
+      Collection<String> expectedTables = getExpectedTables();
+      checkTables(expectedTables);
     } catch (SQLException e) {
       throw new OSHDBException(e);
     }
-    MapReducer<X> mapReducer;
-    if (this.useMultithreading) {
-      mapReducer = new MapReducerJdbcMultithread<>(this, forClass);
-    } else {
-      mapReducer = new MapReducerJdbcSinglethread<>(this, forClass);
+
+    return mapReducer(forClass);
+  }
+
+  @NotNull
+  private Collection<String> getExpectedTables() {
+    return Stream.of(OSMType.values())
+        .map(TableNames::forOSMType)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(table -> table.toString(this.prefix()).toLowerCase())
+        .collect(toList());
+  }
+
+  private void checkTables(Collection<String> expectedTables) throws SQLException {
+    try (var conn = getConnection()) {
+      try (var rs = getTables(conn)) {
+        var allTables = new HashSet<String>();
+        while (rs.next()) {
+          allTables.add(rs.getString("TABLE_NAME").toLowerCase());
+        }
+        if (!allTables.containsAll(expectedTables)) {
+          throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedTables));
+        }
+      }
     }
-    return mapReducer;
+  }
+
+  private static ResultSet getTables(Connection connection) throws SQLException {
+    return connection
+        .getMetaData()
+        .getTables(null, null, "%", new String[]{"TABLE"});
+  }
+
+  @NotNull
+  private <X extends OSHDBMapReducible> MapReducer<X> mapReducer(Class<X> forClass) {
+    if (this.useMultithreading) {
+      return new MapReducerJdbcMultithread<>(this, forClass);
+    }
+
+    return new MapReducerJdbcSinglethread<>(this, forClass);
   }
 
   @Override
