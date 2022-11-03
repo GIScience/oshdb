@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -19,12 +20,14 @@ import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * OSHDB database backend connector to a H2 database.
  */
 public class OSHDBH2 extends OSHDBJdbc {
 
-  private JdbcConnectionPool connectionPool;
+  private final JdbcConnectionPool connectionPool;
 
   /**
    * Opens a connection to oshdb data stored in a H2 database file.
@@ -50,6 +53,7 @@ public class OSHDBH2 extends OSHDBJdbc {
 
   public OSHDBH2(DataSource ds) {
     super(ds);
+    this.connectionPool = null;
   }
 
   private OSHDBH2(JdbcConnectionPool ds) {
@@ -76,7 +80,7 @@ public class OSHDBH2 extends OSHDBJdbc {
   @Override
   public void close() throws Exception {
     try {
-      connectionPool.dispose();
+      ofNullable(connectionPool).ifPresent(JdbcConnectionPool::dispose);
     } finally {
       super.close();
     }
