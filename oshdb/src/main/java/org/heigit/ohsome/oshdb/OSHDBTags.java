@@ -143,8 +143,8 @@ public abstract class OSHDBTags extends AbstractSet<OSHDBTag> implements Seriali
     @Override
     public boolean hasTag(OSHDBTag tag) {
       for (int i = 0; i < tags.length; i += 2) {
-        if (tags[i] == tag.getKey() && tags[i + 1] == tag.getValue()) {
-          return true;
+        if (tags[i] == tag.getKey()) {
+          return tags[i + 1] == tag.getValue();
         }
       }
       return false;
