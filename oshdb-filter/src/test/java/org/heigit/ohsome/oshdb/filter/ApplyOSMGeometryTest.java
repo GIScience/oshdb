@@ -188,7 +188,7 @@ class ApplyOSMGeometryTest extends FilterTest {
     ));
   }
   @Test
-  void testGeometryFilterPerimeterTooLarge() {
+  void testGeometryFilterPerimeterInRange() {
     FilterExpression expression = parser.parse("perimeter:(4..5)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertTrue(expression.applyOSMGeometry(entity,
@@ -197,7 +197,7 @@ class ApplyOSMGeometryTest extends FilterTest {
     ));
   }
   @Test
-  void testGeometryFilterPerimeterInRange() {
+  void testGeometryFilterPerimeterTooLarge() {
     FilterExpression expression = parser.parse("perimeter:(4..5)");
     OSMEntity entity = createTestOSMEntityWay(new long[] {1, 2, 3, 4, 1});
     assertFalse(expression.applyOSMGeometry(entity,
