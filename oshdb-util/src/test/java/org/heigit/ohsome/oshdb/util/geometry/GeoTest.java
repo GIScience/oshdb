@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -279,179 +280,237 @@ class GeoTest {
     assertEquals(1.0, Geo.lengthOf(line) / expectedResult, relativeDelta);
   }
 
-  @Test
-  void testRectilinearity() throws ParseException {
+  @Nested
+  class RectilinearityTest {
     final double L = 1E-4; // "size" of the test geometries
     final double D = 10;   // offset used for shifted test geometries
-    // square
-    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
-        new Coordinate(0, 0),
-        new Coordinate(L, 0),
-        new Coordinate(L, L),
-        new Coordinate(0, L),
-        new Coordinate(0, 0)
-    })), 0.01);
-    // square shifted X
-    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
-        new Coordinate(D, 0),
-        new Coordinate(D + L, 0),
-        new Coordinate(D + L, L),
-        new Coordinate(D, L),
-        new Coordinate(D, 0)
-    })), 0.01);
-    // square shifted Y
-    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
-        new Coordinate(0, D),
-        new Coordinate(L, D),
-        new Coordinate(L, D + L),
-        new Coordinate(0, D + L),
-        new Coordinate(0, D)
-    })), 0.01);
-    // square tilted
-    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
-        new Coordinate(L, 0),
-        new Coordinate(0, L),
-        new Coordinate(-L, 0),
-        new Coordinate(0, -L),
-        new Coordinate(L, 0)
-    })), 0.01);
-    // square tilted and shifted X
-    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
-        new Coordinate(D + L, 0),
-        new Coordinate(D, L),
-        new Coordinate(D - L, 0),
-        new Coordinate(D, L),
-        new Coordinate(D + L, 0)
-    })), 0.01);
-    // square tilted and shifted Y – note that it is not perfectly rectangular due to the shift
-    assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[] {
-        new Coordinate(L, D),
-        new Coordinate(0, D + L),
-        new Coordinate(-L, D),
-        new Coordinate(0, D - L),
-        new Coordinate(L, D)
-    })), 0.1);
-    // triangle
-    assertEquals(0.3, Geo.squareness(gf.createPolygon(new Coordinate[] {
-        new Coordinate(0, 0),
-        new Coordinate(L, 0),
-        new Coordinate(L, L),
-        new Coordinate(0, 0)
-    })), 0.1);
-    // circle
-    var reader = new WKTReader();
-    assertEquals(0.0, Geo.squareness(reader.read(regular32gon)), 0.1);
 
-    // line
-    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[] {
-        new Coordinate(0, 0),
-        new Coordinate(L, 0)
-    })), 0.01);
-    // line, slanted
-    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[] {
-        new Coordinate(0, 0),
-        new Coordinate(L, L)
-    })), 0.01);
-    // line, right angle
-    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[] {
-        new Coordinate(0, 0),
-        new Coordinate(L, 0),
-        new Coordinate(L, L)
-    })), 0.01);
-    // line, not right angle
-    assertNotEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[] {
-        new Coordinate(0, 0),
-        new Coordinate(L, 0),
-        new Coordinate(0, L)
-    })), 0.1);
+    @Test
+    void testSquare() {
+      assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[]{
+          new Coordinate(0, 0),
+          new Coordinate(L, 0),
+          new Coordinate(L, L),
+          new Coordinate(0, L),
+          new Coordinate(0, 0)
+      })), 0.01);
+    }
 
-    // polygon with holes: squares aligned
-    assertEquals(1.0, Geo.squareness(gf.createPolygon(
-        gf.createLinearRing(new Coordinate[] {
-            new Coordinate(0, 0),
-            new Coordinate(L, 0),
-            new Coordinate(L, L),
-            new Coordinate(0, L),
-            new Coordinate(0, 0)
-        }), new LinearRing[] {
-            gf.createLinearRing(new Coordinate[] {
-                new Coordinate(L/3, L/3),
-                new Coordinate(2*L/3, L/3),
-                new Coordinate(2*L/3, 2*L/3),
-                new Coordinate(L/3, 2*L/3),
-                new Coordinate(L/3, L/3)
-            })
-        })
-    ), 0.01);
-    // polygon with holes: squares not aligned
-    assertNotEquals(1.0, Geo.squareness(gf.createPolygon(
-        gf.createLinearRing(new Coordinate[] {
-            new Coordinate(0, 0),
-            new Coordinate(L, 0),
-            new Coordinate(L, L),
-            new Coordinate(0, L),
-            new Coordinate(0, 0)
-        }), new LinearRing[] {
-            gf.createLinearRing(new Coordinate[] {
-                new Coordinate(L/2 + L/4, L/2),
-                new Coordinate(L/2, L/2 + L/4),
-                new Coordinate(L/2 - L/4, L/2),
-                new Coordinate(L/2, L/2 - L/4),
-                new Coordinate(L/2 + L/4, L/2)
-            })
-        })
-    ), 0.01);
+    @Test
+    void testSquareShiftedX() {
+      assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[]{
+          new Coordinate(D, 0),
+          new Coordinate(D + L, 0),
+          new Coordinate(D + L, L),
+          new Coordinate(D, L),
+          new Coordinate(D, 0)
+      })), 0.01);
+    }
 
-    // real world, simple
-    var example1 = "POLYGON ((38.3460976 49.0294022, 38.3461905 49.0293425, "
-        + "38.3462795 49.0294021, 38.3461866 49.0294617, 38.3460976 49.0294022))";
-    assertEquals(1.0, Geo.squareness(reader.read(example1)), 0.01);
-    // real world, complex
-    var example2 = "POLYGON ((38.3437718 49.0276361, 38.3438681 49.0275809, "
-        + "38.3438179 49.0275432, 38.3440056 49.0274357, 38.3440234 49.0274491, "
-        + "38.3441311 49.0273874, 38.3439048 49.0272175, 38.343646 49.0273657, "
-        + "38.3436218 49.0273475, 38.3435477 49.02739, 38.3435676 49.0274049, "
-        + "38.3435087 49.0274387, 38.3437718 49.0276361))";
-    assertEquals(1.0, Geo.squareness(reader.read(example2)), 0.01);
-    // real world, unsquare
-    var example3 = "POLYGON ((38.3452974 49.0268873, 38.3453977 49.0268312, "
-        + "38.3454916 49.026925, 38.3453901 49.0269725, 38.3452974 49.0268873))";
-    assertNotEquals(1.0, Geo.squareness(reader.read(example3)), 0.1);
+    @Test
+    void testSquareShiftedY() {
+      assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[]{
+          new Coordinate(0, D),
+          new Coordinate(L, D),
+          new Coordinate(L, D + L),
+          new Coordinate(0, D + L),
+          new Coordinate(0, D)
+      })), 0.01);
+    }
 
-  }
+    @Test
+    void testSquareTilted() {
+      assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[]{
+          new Coordinate(L, 0),
+          new Coordinate(0, L),
+          new Coordinate(-L, 0),
+          new Coordinate(0, -L),
+          new Coordinate(L, 0)
+      })), 0.01);
+    }
 
-   @Test
-  void testRectilinearityLineStrings() throws ParseException {
-    final double L = 1E-4; // "size" of the test geometries
-    final double D = 10;   // offset used for shifted test geometries
-    // L-shape
-    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
-        new Coordinate(0, 0),
-        new Coordinate(L, 0),
-        new Coordinate(L, L)
-    })), 0.01);
-    // S-shape shifted X
-    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
-        new Coordinate(D, 0),
-        new Coordinate(D + L, 0),
-        new Coordinate(D + L, L)
-    })), 0.01);
-    // L-shape shifted Y
-    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
-        new Coordinate(0, D),
-        new Coordinate(L, D),
-        new Coordinate(L, D + L)
-    })), 0.01);
-    // L-shape tilted
-    assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
-        new Coordinate(L, 0),
-        new Coordinate(0, L),
-        new Coordinate(-L, 0)
-    })), 0.01);
+    @Test
+    void testSquareTiltedShiftedX() {
+      assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[]{
+          new Coordinate(D + L, 0),
+          new Coordinate(D, L),
+          new Coordinate(D - L, 0),
+          new Coordinate(D, L),
+          new Coordinate(D + L, 0)
+      })), 0.01);
+    }
 
-    // circle
-    var reader = new WKTReader();
-    assertEquals(0.0, Geo.squareness(reader.read(regular32gon).getBoundary()), 0.1);
+    @Test
+    void testSquareTiltedShiftedY() {
+      assertEquals(1.0, Geo.squareness(gf.createPolygon(new Coordinate[]{
+          new Coordinate(L, D),
+          new Coordinate(0, D + L),
+          new Coordinate(-L, D),
+          new Coordinate(0, D - L),
+          new Coordinate(L, D)
+      })), 0.1);
+    }
+
+    @Test
+    void testTriangle() {
+      assertEquals(0.3, Geo.squareness(gf.createPolygon(new Coordinate[]{
+          new Coordinate(0, 0),
+          new Coordinate(L, 0),
+          new Coordinate(L, L),
+          new Coordinate(0, 0)
+      })), 0.1);
+    }
+
+    @Test
+    void testCircle() throws ParseException {
+      var reader = new WKTReader();
+      assertEquals(0.0, Geo.squareness(reader.read(regular32gon)), 0.1);
+    }
+
+    @Test
+    void testLine() {
+      assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+          new Coordinate(0, 0),
+          new Coordinate(L, 0)
+      })), 0.01);
+    }
+
+    @Test
+    void testLineSlanted() {
+      assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+          new Coordinate(0, 0),
+          new Coordinate(L, L)
+      })), 0.01);
+    }
+
+    @Test
+    void testLineRightAngle() {
+      assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+          new Coordinate(0, 0),
+          new Coordinate(L, 0),
+          new Coordinate(L, L)
+      })), 0.01);
+    }
+
+    @Test
+    void testLineNotRightAngle() {
+      assertNotEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+          new Coordinate(0, 0),
+          new Coordinate(L, 0),
+          new Coordinate(0, L)
+      })), 0.1);
+    }
+
+    @Test
+    void testPolygonWithAlignedHoles() {
+      // polygon with holes: squares aligned
+      assertEquals(1.0, Geo.squareness(gf.createPolygon(
+          gf.createLinearRing(new Coordinate[]{
+              new Coordinate(0, 0),
+              new Coordinate(L, 0),
+              new Coordinate(L, L),
+              new Coordinate(0, L),
+              new Coordinate(0, 0)
+          }), new LinearRing[]{
+              gf.createLinearRing(new Coordinate[]{
+                  new Coordinate(L / 3, L / 3),
+                  new Coordinate(2 * L / 3, L / 3),
+                  new Coordinate(2 * L / 3, 2 * L / 3),
+                  new Coordinate(L / 3, 2 * L / 3),
+                  new Coordinate(L / 3, L / 3)
+              })
+          })
+      ), 0.01);
+    }
+
+    @Test
+    void testPolygonWithUnalignedHoles() {
+      // polygon with holes: squares not aligned
+      assertNotEquals(1.0, Geo.squareness(gf.createPolygon(
+          gf.createLinearRing(new Coordinate[]{
+              new Coordinate(0, 0),
+              new Coordinate(L, 0),
+              new Coordinate(L, L),
+              new Coordinate(0, L),
+              new Coordinate(0, 0)
+          }), new LinearRing[]{
+              gf.createLinearRing(new Coordinate[]{
+                  new Coordinate(L / 2 + L / 4, L / 2),
+                  new Coordinate(L / 2, L / 2 + L / 4),
+                  new Coordinate(L / 2 - L / 4, L / 2),
+                  new Coordinate(L / 2, L / 2 - L / 4),
+                  new Coordinate(L / 2 + L / 4, L / 2)
+              })
+          })
+      ), 0.01);
+    }
+
+    @Test
+    void testRectilinearityLineString() {
+      // L-shape
+      assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+          new Coordinate(0, 0),
+          new Coordinate(L, 0),
+          new Coordinate(L, L)
+      })), 0.01);
+    }
+
+    @Test
+    void testRectilinearityLineStringShiftedX() {
+      // L-shape shifted X
+      assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+          new Coordinate(D, 0),
+          new Coordinate(D + L, 0),
+          new Coordinate(D + L, L)
+      })), 0.01);
+    }
+
+    @Test
+    void testRectilinearityLineStringShiftedY() {
+      // L-shape shifted Y
+      assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+          new Coordinate(0, D),
+          new Coordinate(L, D),
+          new Coordinate(L, D + L)
+      })), 0.01);
+    }
+
+    @Test
+    void testRectilinearityLineStringTilted() {
+      // L-shape tilted
+      assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
+          new Coordinate(L, 0),
+          new Coordinate(0, L),
+          new Coordinate(-L, 0)
+      })), 0.01);
+    }
+
+    @Test
+    void testRectilinearityLineStringCircle() throws ParseException {
+      // circle
+      var reader = new WKTReader();
+      assertEquals(0.0, Geo.squareness(reader.read(regular32gon).getBoundary()), 0.1);
+    }
+
+    @Test
+    void testRealWorldObject() throws ParseException {
+      var reader = new WKTReader();
+      // real world, simple
+      var example1 = "POLYGON ((38.3460976 49.0294022, 38.3461905 49.0293425, "
+          + "38.3462795 49.0294021, 38.3461866 49.0294617, 38.3460976 49.0294022))";
+      assertEquals(1.0, Geo.squareness(reader.read(example1)), 0.01);
+      // real world, complex
+      var example2 = "POLYGON ((38.3437718 49.0276361, 38.3438681 49.0275809, "
+          + "38.3438179 49.0275432, 38.3440056 49.0274357, 38.3440234 49.0274491, "
+          + "38.3441311 49.0273874, 38.3439048 49.0272175, 38.343646 49.0273657, "
+          + "38.3436218 49.0273475, 38.3435477 49.02739, 38.3435676 49.0274049, "
+          + "38.3435087 49.0274387, 38.3437718 49.0276361))";
+      assertEquals(1.0, Geo.squareness(reader.read(example2)), 0.01);
+      // real world, unsquare
+      var example3 = "POLYGON ((38.3452974 49.0268873, 38.3453977 49.0268312, "
+          + "38.3454916 49.026925, 38.3453901 49.0269725, 38.3452974 49.0268873))";
+      assertNotEquals(1.0, Geo.squareness(reader.read(example3)), 0.1);
+    }
   }
 
   @Test
