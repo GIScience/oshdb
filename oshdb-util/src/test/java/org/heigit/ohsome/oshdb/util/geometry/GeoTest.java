@@ -446,7 +446,49 @@ class GeoTest {
     }
 
     @Test
-    void testRectilinearityLineString() {
+    void testMultiPolygonAligned() {
+      // multi polygon: two aligned squares
+      assertEquals(1.0, Geo.squareness(gf.createMultiPolygon(new Polygon[] {
+          gf.createPolygon(gf.createLinearRing(new Coordinate[]{
+              new Coordinate(0, 0),
+              new Coordinate(L, 0),
+              new Coordinate(L, L),
+              new Coordinate(0, L),
+              new Coordinate(0, 0)
+          })),
+          gf.createPolygon(gf.createLinearRing(new Coordinate[]{
+              new Coordinate(2 * L, 0),
+              new Coordinate(3 * L, 0),
+              new Coordinate(3 * L, L),
+              new Coordinate(2 * L, L),
+              new Coordinate(2 * L, 0)
+          }))
+      })), 0.01);
+    }
+
+    @Test
+    void testMultiPolygonUnaligned() {
+      // multi polygon: two non-aligned squares
+      assertNotEquals(1.0, Geo.squareness(gf.createMultiPolygon(new Polygon[] {
+          gf.createPolygon(gf.createLinearRing(new Coordinate[]{
+              new Coordinate(L, 0),
+              new Coordinate(0, L),
+              new Coordinate(-L, 0),
+              new Coordinate(0, -L),
+              new Coordinate(L, 0)
+          })),
+          gf.createPolygon(gf.createLinearRing(new Coordinate[]{
+              new Coordinate(2 * L, 0),
+              new Coordinate(3 * L, 0),
+              new Coordinate(3 * L, L),
+              new Coordinate(2 * L, L),
+              new Coordinate(2 * L, 0)
+          }))
+      })), 0.01);
+    }
+
+    @Test
+    void testLineString() {
       // L-shape
       assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
           new Coordinate(0, 0),
@@ -456,7 +498,7 @@ class GeoTest {
     }
 
     @Test
-    void testRectilinearityLineStringShiftedX() {
+    void testLineStringShiftedX() {
       // L-shape shifted X
       assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
           new Coordinate(D, 0),
@@ -466,7 +508,7 @@ class GeoTest {
     }
 
     @Test
-    void testRectilinearityLineStringShiftedY() {
+    void testLineStringShiftedY() {
       // L-shape shifted Y
       assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
           new Coordinate(0, D),
@@ -476,7 +518,7 @@ class GeoTest {
     }
 
     @Test
-    void testRectilinearityLineStringTilted() {
+    void testLineStringTilted() {
       // L-shape tilted
       assertEquals(1.0, Geo.squareness(gf.createLineString(new Coordinate[]{
           new Coordinate(L, 0),
@@ -486,7 +528,7 @@ class GeoTest {
     }
 
     @Test
-    void testRectilinearityLineStringCircle() throws ParseException {
+    void testLineStringCircle() throws ParseException {
       // circle
       var reader = new WKTReader();
       assertEquals(0.0, Geo.squareness(reader.read(regular32gon).getBoundary()), 0.1);
