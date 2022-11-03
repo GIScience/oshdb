@@ -13,7 +13,8 @@ Changelog
 
 ### new features
 
-* Allow to flexibly combine (automatic) aggregation methods (like `aggregateByGeometry(…)` or `aggregateByTimestamp()`) with each other and with `filter` or `map`/`flatMap`, regardless of the order of the applied operations ([#451])
+* allow to flexibly combine (automatic) aggregation methods (like `aggregateByGeometry(…)` or `aggregateByTimestamp()`) with each other and with `filter` or `map`/`flatMap`, regardless of the order of the applied operations ([#451])
+* add new OSHDB filters: `perimeter`, `geometry.vertices`, `geometry.outers`, `geometry.inners`, `geometry.roundness` and `geometry.squareness` ([#436])
 
 ### bugfixes
 
@@ -36,6 +37,7 @@ Changelog
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#424]: https://github.com/GIScience/oshdb/pull/424
 [#433]: https://github.com/GIScience/oshdb/issues/433
+[#436]: https://github.com/GIScience/oshdb/pull/436
 [#438]: https://github.com/GIScience/oshdb/pull/438
 [#441]: https://github.com/GIScience/oshdb/pull/441
 [#443]: https://github.com/GIScience/oshdb/pull/443
@@ -45,6 +47,7 @@ Changelog
 [#453]: https://github.com/GIScience/oshdb/pull/453
 [#454]: https://github.com/GIScience/oshdb/pull/454
 [#459]: https://github.com/GIScience/oshdb/pull/459
+[#467]: https://github.com/GIScience/oshdb/pull/467
 
 
 
@@ -57,7 +60,6 @@ Changelog
 
 [#426]: https://github.com/GIScience/oshdb/pull/426
 [#428]: https://github.com/GIScience/oshdb/pull/428
-
 
 ## 0.7.1
 
