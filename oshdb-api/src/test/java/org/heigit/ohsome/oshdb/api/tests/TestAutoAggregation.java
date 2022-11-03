@@ -25,6 +25,7 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -111,9 +112,14 @@ class TestAutoAggregation {
       super(oshdb, viewClass);
     }
 
+    private MapReducerMock(MapReducerMock<X> other) {
+      super(other);
+    }
+
+    @NotNull
     @Override
     protected MapReducer<X> copy() {
-      return this;
+      return new MapReducerMock<>(this);
     }
 
     @Override
