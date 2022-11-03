@@ -27,7 +27,12 @@ public class JdbcTagTranslator implements TagTranslator {
       + " left join %s kv on k.id = kv.keyid"
       + " where k.txt = ? and kv.txt = any (?)", TableNames.E_KEY, TableNames.E_KEYVALUE);
 
-  private static final String OSHDB_OSM_TAG = String.format("SELECT k.txt, kv.txt, valueid"
+
+  private static final String OSHDB_OSM_KEY = String.format("SELECT txt, id"
+          + " from %s "
+          + " where id = any(?)", TableNames.E_KEY);
+
+  private static final String OSHDB_OSM_TAG = String.format("SELECT kv.txt, valueid"
       + " from %s k"
       + " left join %s kv on k.id = kv.keyid"
       + " where k.id = ? and kv.valueid = any (?)", TableNames.E_KEY, TableNames.E_KEYVALUE);
@@ -41,15 +46,12 @@ public class JdbcTagTranslator implements TagTranslator {
       + " where id = any (?)", TableNames.E_ROLE);
 
   private final DataSource source;
-  private final Cache<String, String> stringPool;
+  private final Cache<Integer, String> cacheKeys;
 
   public JdbcTagTranslator(DataSource source) {
     this.source = source;
-    stringPool = Caffeine.newBuilder().weakValues().build();
-  }
-
-  private String intern(String s) {
-    return stringPool.get(s, i -> i);
+    cacheKeys = Caffeine.newBuilder()
+            .build();
   }
 
   @Override
@@ -78,13 +80,14 @@ public class JdbcTagTranslator implements TagTranslator {
     var keyTags = Maps.<String, Map<String, OSMTag>>newHashMapWithExpectedSize(tags.size());
     tags.forEach(tag -> keyTags.computeIfAbsent(tag.getKey(), x -> new HashMap<>())
         .put(tag.getValue(), tag));
-
     var result = Maps.<OSMTag, OSHDBTag>newConcurrentMap();
     keyTags.entrySet().parallelStream()
       .map(entry -> loadTags(entry.getKey(), entry.getValue()))
       .forEach(result::putAll);
     return result;
   }
+
+
 
   private Map<OSMTag, OSHDBTag> loadTags(String key, Map<String, OSMTag> values) {
     try (var conn = source.getConnection();
@@ -139,34 +142,56 @@ public class JdbcTagTranslator implements TagTranslator {
 
   @Override
   public OSMTag lookupTag(OSHDBTag tag) {
-    return lookupTags(tag.getKey(), Map.of(tag.getValue(), tag)).get(tag);
+    var keyTxt = cacheKeys.getAll(Set.of(tag.getKey()), this::lookupKeys).get(tag.getKey());
+    return lookupTags(tag.getKey(), keyTxt, Map.of(tag.getValue(), tag)).get(tag);
   }
+
+
 
   @Override
   public Map<OSHDBTag, OSMTag> lookupTag(Set<? extends OSHDBTag> tags) {
     var keyTags = Maps.<Integer, Map<Integer, OSHDBTag>>newHashMapWithExpectedSize(tags.size());
     tags.forEach(tag -> keyTags.computeIfAbsent(tag.getKey(), x -> new HashMap<>())
         .put(tag.getValue(), tag));
-
+    var keys = cacheKeys.getAll(keyTags.keySet(), this::lookupKeys);
     var result = Maps.<OSHDBTag, OSMTag>newConcurrentMap();
     keyTags.entrySet().parallelStream()
-      .map(entry -> lookupTags(entry.getKey(), entry.getValue()))
+      .map(entry -> lookupTags(entry.getKey(), keys.get(entry.getKey()), entry.getValue()))
       .forEach(result::putAll);
     return result;
   }
 
-  private Map<OSHDBTag, OSMTag> lookupTags(int key, Map<Integer, OSHDBTag> values) {
+  private Map<? extends Integer, ? extends String> lookupKeys(Set<? extends Integer> osm) {
+    try (var conn = source.getConnection();
+         var sqlArray = createArray(conn, "int", osm);
+         var pstmt = conn.prepareStatement(OSHDB_OSM_KEY)) {
+      pstmt.setArray(1, sqlArray.get());
+      try (var rst = pstmt.executeQuery()) {
+        var map = Maps.<Integer, String>newHashMapWithExpectedSize(osm.size());
+        while (rst.next()) {
+          var keyTxt = rst.getString(1);
+          var keyId = rst.getInt(2);
+          map.put(keyId, keyTxt);
+        }
+        return map;
+      }
+    } catch (Exception e) {
+      throw new OSHDBException(e);
+    }
+  }
+
+
+  private Map<OSHDBTag, OSMTag> lookupTags(int keyId, String keyTxt, Map<Integer, OSHDBTag> values) {
     try (var conn = source.getConnection();
         var sqlArray = createArray(conn, "int", values.keySet());
         var pstmt = conn.prepareStatement(OSHDB_OSM_TAG)) {
-      pstmt.setInt(1, key);
+      pstmt.setInt(1, keyId);
       pstmt.setArray(2, sqlArray.get());
       try (var rst = pstmt.executeQuery()) {
         var map = Maps.<OSHDBTag, OSMTag>newHashMapWithExpectedSize(values.size());
         while (rst.next()) {
-          var keyTxt = intern(rst.getString(1));
-          var valTxt = rst.getString(2);
-          var valId = rst.getInt(3);
+          var valTxt = rst.getString(1);
+          var valId = rst.getInt(2);
           map.put(values.get(valId), new OSMTag(keyTxt, valTxt));
         }
         return map;

@@ -11,10 +11,10 @@ import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 
 public class CachedTagTranslator implements TagTranslator {
 
-  private TagTranslator source;
+  private final TagTranslator source;
 
-  private Cache<OSHDBTag, OSMTag> lookupOSHDBTag;
-  private Cache<OSHDBRole, OSMRole> lookupOSHDBRole;
+  private final Cache<OSHDBTag, OSMTag> lookupOSHDBTag;
+  private final Cache<OSHDBRole, OSMRole> lookupOSHDBRole;
 
   public CachedTagTranslator(TagTranslator source, long maxBytesValues, int maxNumRoles) {
     this.source = source;
@@ -50,7 +50,7 @@ public class CachedTagTranslator implements TagTranslator {
   @Override
   public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Set<? extends OSMTag> tags) {
     var oshdb = source.getOSHDBTagOf(tags);
-    oshdb.entrySet().forEach(entry -> lookupOSHDBTag.put(entry.getValue(), entry.getKey()));
+    oshdb.forEach((key, value) -> lookupOSHDBTag.put(value, key));
     return oshdb;
   }
 

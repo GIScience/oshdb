@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.util.tagtranslator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -17,7 +16,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the {@link DefaultTagTranslator} class.
+ * Tests the {@link TagTranslator} class.
  */
 class TagTranslatorTest {
   private static JdbcConnectionPool source;
@@ -25,23 +24,21 @@ class TagTranslatorTest {
   /**
    * Initialize tests by loading the H2 driver and open a connection via jdbc.
    *
-   * @throws ClassNotFoundException gets thrown if H2 driver class cannot be found
-   * @throws SQLException is thrown if the connection fails
    */
   @BeforeAll
-  static void setUpClass() throws ClassNotFoundException, SQLException {
+  static void setUpClass() {
     source = JdbcConnectionPool.create("jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r", "sa", "");
   }
 
   @AfterAll
-  static void breakDownClass() throws SQLException {
+  static void breakDownClass() {
     source.dispose();
   }
 
   TagTranslatorTest() {}
 
   @Test
-  void testTag2Int() throws OSHDBKeytablesNotFoundException, SQLException {
+  void testTag2Int() throws OSHDBKeytablesNotFoundException {
     OSMTag tag = new OSMTag("building", "yes");
     var instance = new JdbcTagTranslator(source);
     OSHDBTag expResult = new OSHDBTag(1, 0);
@@ -50,7 +47,7 @@ class TagTranslatorTest {
   }
 
   @Test
-  void testTags2Int() throws OSHDBKeytablesNotFoundException, SQLException {
+  void testTags2Int() throws OSHDBKeytablesNotFoundException {
     var tags = Map.of(
         new OSMTag("building", "yes"), new OSHDBTag(1, 0),
         new OSMTag("building", "residential"), new OSHDBTag(1, 2),
@@ -67,7 +64,7 @@ class TagTranslatorTest {
 
 
   @Test
-  void testTag2String() throws OSHDBKeytablesNotFoundException, SQLException {
+  void testTag2String() throws OSHDBKeytablesNotFoundException {
     OSHDBTag tag = new OSHDBTag(1, 2);
     OSMTag expResult = new OSMTag("building", "residential");
     var instance = new JdbcTagTranslator(source);
@@ -101,7 +98,7 @@ class TagTranslatorTest {
   }
 
   @Test
-  void testKey2Int() throws OSHDBKeytablesNotFoundException, SQLException {
+  void testKey2Int() throws OSHDBKeytablesNotFoundException {
     OSMTagKey key = new OSMTagKey("highway");
     var instance = new JdbcTagTranslator(source);
     OSHDBTagKey expResult = new OSHDBTagKey(2);
@@ -110,7 +107,7 @@ class TagTranslatorTest {
   }
 
   @Test
-  void testRole2Int() throws OSHDBKeytablesNotFoundException, SQLException {
+  void testRole2Int() throws OSHDBKeytablesNotFoundException {
     OSMRole role = new OSMRole("from");
     var instance = new JdbcTagTranslator(source);
     OSHDBRole expResult = OSHDBRole.of(4);
@@ -119,7 +116,7 @@ class TagTranslatorTest {
   }
 
   @Test
-  void testRole2String() throws OSHDBKeytablesNotFoundException, SQLException {
+  void testRole2String() throws OSHDBKeytablesNotFoundException {
     OSHDBRole role = OSHDBRole.of(1);
     var instance = new JdbcTagTranslator(source);
     OSMRole expResult = new OSMRole("inner");
@@ -131,7 +128,7 @@ class TagTranslatorTest {
   void testKeysIdentity() {
     var instance = new JdbcTagTranslator(source);
     var tags = new ArrayList<OSMTag>(10);
-    for (var i = 0; i < tags.size(); i++) {
+    for (var i = 0; i < 10; i++) {
       tags.add(instance.lookupTag(new OSHDBTag(1, i)));
     }
     for (var i = 1; i < tags.size(); i++) {
