@@ -1,28 +1,43 @@
 # OSHDBDriver
+## Installation
 
-To connect to the OSHDB using the OSHDBDriver you first have to define the configuration like
+Replace your OSHDB dependency with the following:
+
+```xml
+<dependency>
+   <groupId>org.heigit.ohsome</groupId>
+   <artifactId>oshdb-database-driver</artifactId>
+   <version>0.7.2</version>
+</dependency>
+```
+
+## Usage
+
+To connect to the OSHDB using the OSHDBDriver you first have to define the configuration like:
 
 ```java
-   Properties props = new Properties();
-    //props.put("oshdb", "h2:PATH_TO_H2");
+    Properties props = new Properties();
+    // For H2:
+    props.setProperty("oshdb", "h2:PATH_TO_H2");
+    // Or for Ignite:
     props.setProperty("oshdb","ignite:PATH_TO_CFG");
     props.setProperty("keytables","jdbc:postgresql://localhost/keytables-${prefix}?user=ohsome&password=secret");
 ```
 
-Alternatively you can read-in a .properties file with this information e.g. like so
+Alternatively you can read-in a `….properties` file with this information e.g. like so:
 
 ```java
     Properties props = new Properties();
-    try(Reader reader = new FileReader("filename")){
+    try(Reader reader = new FileReader("oshdb.properties")){
           props.load(reader);
     }
 ```
 
-Then connect to OSHDB using the driver like
+Then connect to OSHDB using the driver like:
 
 ```java
     OSHDBDriver.connect(props, (OSHDBConnection oshdb) -> {
-        //your oshdb code goes here
+        // your oshdb code goes here
         return 0;
     });
 ```
@@ -31,7 +46,7 @@ Alternatively you can connect using one of the specific type-bound methods such 
 
 ```java
     OSHDBDriver.connectToIgnite("PATH_TO_CFG", "KEYTABLES_CONNCTION_URL", oshdb -> {
-        //your oshdb code goes here
+        // your oshdb code goes here
         return 0;
     );
 ```
@@ -49,8 +64,10 @@ public class OSHDBDriverExample {
 
     public static void main(String[] args) throws Exception {
         Properties props = new Properties();
-        props.put("oshdb", "h2:PATH_TO_H2");
-        //props.setProperty("oshdb", "ignite:PATH_TO_CFG");
+        // For H2:
+        props.setProperty("oshdb", "h2:PATH_TO_H2");
+        // Or for Ignite:
+        props.setProperty("oshdb", "ignite:PATH_TO_CFG");
         props.setProperty("keytables", "jdbc:postgresql://localhost/keytables-global?user=ohsome&password=secret");
 
         OSHDBDriver.connect(props, oshdb -> {
