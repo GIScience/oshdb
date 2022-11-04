@@ -26,6 +26,8 @@ Contents
   Explains the design of the OSHDB data model.
 * [Installation](installation.md) <br>
   A guide for how to install the OSHDB from sources.
+* [Helpers](helpers) <br>
+  Documentation for helpers that reduce complexity in connection setup for OSHDB.
 
 See also
 --------

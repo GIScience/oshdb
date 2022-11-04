@@ -29,6 +29,6 @@ The global OSM history data set is divided into a set of partitions (grid cells)
 Keytables
 ---------
 
-In order to minimize memory needed to store the key and value strings of OSM tags, the OSHDB uses so called “keytables” that assign every string (e.g. the tag key `builing`) to a number. More often used strings are assigned to lower numbers compared to rarely used strings which are assigned to higher numbers.
+In order to minimize memory needed to store the key and value strings of OSM tags, the OSHDB uses so called “keytables” that assign every string (e.g. the tag key `building`) to a number. More often used strings are assigned to lower numbers compared to rarely used strings which are assigned to higher numbers.
 
 This allows the data stored in the OSH entities to be more compact compared to storing each complete string with each entity.

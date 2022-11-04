@@ -41,6 +41,9 @@ Now, we're ready to go and use the OSHDB to query the OSM history data. If we're
 OSHDBDatabase oshdb = new OSHDBH2("path/to/extract.oshdb");
 ```
 
+| 🛈 | Alternatively, we provide simple [connection helper](../manual/helpers). |
+|----|----------------------------------|
+
 ## 4. Select OSHDB view
 
 The next step is to decide which kind of analysis we want to perform on the OSM history data. Two different analysis views are provided by the OSHDB:
