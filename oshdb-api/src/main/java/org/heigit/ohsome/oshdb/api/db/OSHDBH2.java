@@ -1,26 +1,10 @@
 package org.heigit.ohsome.oshdb.api.db;
 
+import static java.util.Optional.ofNullable;
+
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
-import org.h2.jdbcx.JdbcDataSource;
-import org.heigit.ohsome.oshdb.OSHDB;
-import org.heigit.ohsome.oshdb.util.TableNames;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
-
-import static java.util.Optional.ofNullable;
 
 /**
  * OSHDB database backend connector to a H2 database.
