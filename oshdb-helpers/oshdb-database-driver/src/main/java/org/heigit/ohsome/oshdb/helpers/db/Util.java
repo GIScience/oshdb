@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 class Util {
 
-  private static final Pattern SUBSTITUTE = Pattern.compile("\\$\\{(\\w+)\\}");
+  private static final Pattern SUBSTITUTE = Pattern.compile("\\$\\{([^\\}]+)\\}");
 
   private Util() {}
 
