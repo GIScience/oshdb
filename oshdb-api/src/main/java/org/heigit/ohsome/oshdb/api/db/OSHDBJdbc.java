@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 public class OSHDBJdbc extends OSHDBDatabase {
 
   protected final DataSource dataSource;
-  protected final DataSource keytablesSource;
   protected final TagTranslator tagTranslator;
   private boolean useMultithreading = true;
 
@@ -39,8 +38,7 @@ public class OSHDBJdbc extends OSHDBDatabase {
 
   public OSHDBJdbc(DataSource source, DataSource keytables) {
     this.dataSource = source;
-    this.keytablesSource = keytables;
-    this.tagTranslator = new JdbcTagTranslator(keytablesSource);
+    this.tagTranslator = new JdbcTagTranslator(keytables);
   }
 
   @Override
