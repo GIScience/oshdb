@@ -81,18 +81,18 @@ public abstract class OSHDBApplication implements Callable<Integer> {
   public Integer call() throws Exception {
     props = new Properties();
     PropsUtil.load(props, configOrUrl.config);
-    PropsUtil.set(props, "oshdb", configOrUrl.oshdbUrl);
-    PropsUtil.set(props, "keytables", keytableUrl);
-    PropsUtil.set(props, "prefix", prefix);
-    PropsUtil.set(props, "multithreading", multithreading);
+    PropsUtil.set(props, OSHDBDriver.OSHDB_PROPERTY_NAME, configOrUrl.oshdbUrl);
+    PropsUtil.set(props, OSHDBDriver.KEYTABLES_PROPERTY_NAME, keytableUrl);
+    PropsUtil.set(props, OSHDBDriver.PREFIX_PROPERTY_NAME, prefix);
+    PropsUtil.set(props, OSHDBDriver.MULTITHREADING_PROPERTY_NAME, multithreading);
     return OSHDBDriver.connect(props, this::setAndRun);
   }
 
   private int setAndRun(OSHDBConnection connection) throws Exception {
-    configOrUrl.oshdbUrl = PropsUtil.get(props, "oshdb").orElseThrow();
-    keytableUrl = PropsUtil.get(props, "keytables").orElse(null);
-    prefix = PropsUtil.get(props, "prefix").orElse("");
-    multithreading = Boolean.valueOf(PropsUtil.get(props, "multithreading").orElse("false"));
+    configOrUrl.oshdbUrl = PropsUtil.get(props, OSHDBDriver.OSHDB_PROPERTY_NAME).orElseThrow();
+    keytableUrl = PropsUtil.get(props, OSHDBDriver.KEYTABLES_PROPERTY_NAME).orElse(null);
+    prefix = PropsUtil.get(props, OSHDBDriver.PREFIX_PROPERTY_NAME).orElse("");
+    multithreading = Boolean.valueOf(PropsUtil.get(props, OSHDBDriver.MULTITHREADING_PROPERTY_NAME).orElse("false"));
     return run(connection);
   }
 

@@ -28,6 +28,12 @@ import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
  */
 public class OSHDBDriver {
 
+  public static final String OSHDB_PROPERTY_NAME = "oshdb";
+  public static final String KEYTABLES_PROPERTY_NAME = "keytables";
+  public static final String PREFIX_PROPERTY_NAME = "prefix";
+  public static final String MULTITHREADING_PROPERTY_NAME = "multithreading";
+  public static final String IGNITE_URI_PREFIX = "ignite:";
+
   private OSHDBDriver() {
     throw new IllegalStateException("Driver class");
   }
@@ -53,9 +59,9 @@ public class OSHDBDriver {
    * @throws java.lang.Exception
    */
   public static int connect(Properties props, Execute connect) throws Exception {
-    var oshdb = getInterpolated(props, "oshdb")
+    var oshdb = getInterpolated(props, OSHDBDriver.OSHDB_PROPERTY_NAME)
         .orElseThrow(() ->  new IllegalArgumentException("need to have to specifiy oshdb!"));
-    if (oshdb.toLowerCase().startsWith("ignite:")) {
+    if (oshdb.toLowerCase().startsWith(IGNITE_URI_PREFIX)) {
       return connectToIgnite(props, connect);
     } else if (oshdb.toLowerCase().startsWith("h2:")) {
       return connectToH2(props, connect);
@@ -66,13 +72,13 @@ public class OSHDBDriver {
 
   public static int connectToH2(Properties props, Execute connect)
       throws Exception {
-    var prefix = getInterpolated(props, "prefix").orElse("");
-    props.put("prefix", prefix);
+    var prefix = getInterpolated(props, PREFIX_PROPERTY_NAME).orElse("");
+    props.put(PREFIX_PROPERTY_NAME, prefix);
     var h2 =
-        getInterpolated(props, "oshdb")
+        getInterpolated(props, OSHDB_PROPERTY_NAME)
         .map(value -> value.substring("h2:".length())).orElseThrow();
     var multithreading =
-        getInterpolated(props, "multithreading").filter("true"::equalsIgnoreCase).isPresent();
+        getInterpolated(props, MULTITHREADING_PROPERTY_NAME).filter("true"::equalsIgnoreCase).isPresent();
     return connectToH2(h2, prefix, multithreading, connect);
   }
 
@@ -90,8 +96,8 @@ public class OSHDBDriver {
       oshdb.prefix(prefix);
       oshdb.multithreading(multithreading);
       var props = new Properties();
-      props.setProperty("oshdb", h2);
-      props.setProperty("prefix", prefix);
+      props.setProperty(OSHDBDriver.OSHDB_PROPERTY_NAME, h2);
+      props.setProperty(PREFIX_PROPERTY_NAME, prefix);
       final var connection = new OSHDBConnection(props, oshdb, keyTables);
       return connect.apply(connection);
     }
@@ -101,14 +107,14 @@ public class OSHDBDriver {
   @SuppressWarnings("java:S112")
   private static int connectToIgnite(Properties props, Execute connect)
       throws Exception {
-    var cfg = getInterpolated(props, "oshdb").filter(value -> value.toLowerCase().startsWith("ignite:"))
-        .map(value -> value.substring("ignite:".length())).orElseThrow();
+    var cfg = getInterpolated(props, OSHDB_PROPERTY_NAME).filter(value -> value.toLowerCase().startsWith(IGNITE_URI_PREFIX))
+        .map(value -> value.substring(IGNITE_URI_PREFIX.length())).orElseThrow();
     try (var ignite = Ignition.start(cfg)) {
-      var prefix = getInterpolated(props, "prefix").orElseGet(() -> getActive(ignite));
-      props.put("prefix", prefix);
-      var keyTablesUrl = getInterpolated(props, "keytables")
+      var prefix = getInterpolated(props, PREFIX_PROPERTY_NAME).orElseGet(() -> getActive(ignite));
+      props.put(PREFIX_PROPERTY_NAME, prefix);
+      var keyTablesUrl = getInterpolated(props, OSHDBDriver.KEYTABLES_PROPERTY_NAME)
           .orElseThrow(() -> new IllegalArgumentException("missing keytables"));
-      props.put("keytables", keyTablesUrl);
+      props.put(OSHDBDriver.KEYTABLES_PROPERTY_NAME, keyTablesUrl);
       try (var ktConnection = DriverManager.getConnection(keyTablesUrl);
           var keytables = new OSHDBJdbc(ktConnection);
           var oshdb = new OSHDBIgnite(ignite)) {
@@ -120,6 +126,8 @@ public class OSHDBDriver {
   }
 
   private static String getActive(Ignite ignite) {
+    // TODO: extract "ohsome" string
+    //       one possible solution: https://github.com/GIScience/oshdb/issues/108
     return ignite.<String, String>cache("ohsome").get("active");
   }
 
