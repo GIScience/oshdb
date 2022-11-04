@@ -7,8 +7,8 @@
   </parent>
   
   <artifactId>oshdb-tool</artifactId>
-  <name>OSHDB Tools</name>
-  <description>Tools for the OSHDB</description>
+  <name>OSHDB CLI Toolkit</name>
+  <description>Toolkit for the OSHDB</description>
   
   <properties>
   </properties>
