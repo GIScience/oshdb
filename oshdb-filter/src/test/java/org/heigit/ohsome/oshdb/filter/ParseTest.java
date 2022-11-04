@@ -339,6 +339,46 @@ class ParseTest extends FilterTest {
   }
 
   @Test
+  void testGeometryFilterPerimeter() {
+    FilterExpression expression = parser.parse("perimeter:(1..10)");
+    assertTrue(expression instanceof GeometryFilterPerimeter);
+  }
+
+  @Test
+  void testGeometryFilterVertices() {
+    FilterExpression expression = parser.parse("geometry.vertices:(1..10)");
+    assertTrue(expression instanceof GeometryFilterVertices);
+  }
+
+  @Test
+  void testGeometryFilterOuters() {
+    FilterExpression expression = parser.parse("geometry.outers:2");
+    assertTrue(expression instanceof GeometryFilterOuterRings);
+    expression = parser.parse("geometry.outers:(1..10)");
+    assertTrue(expression instanceof GeometryFilterOuterRings);
+  }
+
+  @Test
+  void testGeometryFilterInners() {
+    FilterExpression expression = parser.parse("geometry.inners:0");
+    assertTrue(expression instanceof GeometryFilterInnerRings);
+    expression = parser.parse("geometry.inners:(1..10)");
+    assertTrue(expression instanceof GeometryFilterInnerRings);
+  }
+
+  @Test
+  void testGeometryFilterRoundness() {
+    FilterExpression expression = parser.parse("geometry.roundness:(0.8..)");
+    assertTrue(expression instanceof GeometryFilterRoundness);
+  }
+
+  @Test
+  void testGeometryFilterSquareness() {
+    FilterExpression expression = parser.parse("geometry.squareness:(0.8..)");
+    assertTrue(expression instanceof GeometryFilterSquareness);
+  }
+
+  @Test
   void testChangesetIdFilter() {
     FilterExpression expression = parser.parse("changeset:42");
     assertTrue(expression instanceof ChangesetIdFilterEquals);
