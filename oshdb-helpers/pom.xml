@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.heigit.ohsome</groupId>
+    <artifactId>oshdb-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>oshdb-helpers</artifactId>
+  <name>OSHDB Helpers</name>
+  <description>A collection of helpers to ease the usage of OSHDB in your own code.</description>
+  <packaging>pom</packaging>
+
+  <properties>
+  </properties>
+
+  <modules>
+    <module>oshdb-application-template</module>
+    <module>oshdb-database-driver</module>
+  </modules>
+
+</project>
