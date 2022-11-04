@@ -1,6 +1,6 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
+import static org.heigit.ohsome.oshdb.api.db.OSHDBIgnite.ComputeMode.LOCAL_PEEK;
 
 /**
  * {@inheritDoc}
@@ -14,6 +14,6 @@ class MapReduceOSHDBIgniteLocalPeekTest extends MapReduceOSHDBIgniteTest {
    * @throws Exception if something goes wrong
    */
   MapReduceOSHDBIgniteLocalPeekTest() throws Exception {
-    super(oshdb -> oshdb.computeMode(OSHDBIgnite.ComputeMode.LOCAL_PEEK));
+    super(oshdb -> oshdb.computeMode(LOCAL_PEEK));
   }
 }

@@ -21,31 +21,31 @@ class MapReduceOSHDBIgniteMissingCacheTest extends MapReduceOSHDBIgniteTest {
 
   @Override
   @Test()
-  void testOSMContributionView() throws Exception {
+  void testOSMContributionView() {
     assertThrows(OSHDBTableNotFoundException.class, super::testOSMContributionView);
   }
 
   @Override
   @Test()
-  void testOSMEntitySnapshotView() throws Exception {
+  void testOSMEntitySnapshotView() {
     assertThrows(OSHDBTableNotFoundException.class, super::testOSMEntitySnapshotView);
   }
 
   @Override
   @Test()
-  void testOSMContributionViewStream() throws Exception {
+  void testOSMContributionViewStream() {
     assertThrows(OSHDBTableNotFoundException.class, super::testOSMContributionViewStream);
   }
 
   @Override
   @Test()
-  void testOSMEntitySnapshotViewStream() throws Exception {
+  void testOSMEntitySnapshotViewStream() {
     assertThrows(OSHDBTableNotFoundException.class, super::testOSMEntitySnapshotViewStream);
   }
 
   @Override
   @Test()
-  void testTimeoutMapReduce() throws Exception {
+  void testTimeoutMapReduce() {
     assertThrows(OSHDBTableNotFoundException.class, this::timeoutMapReduce);
   }
 

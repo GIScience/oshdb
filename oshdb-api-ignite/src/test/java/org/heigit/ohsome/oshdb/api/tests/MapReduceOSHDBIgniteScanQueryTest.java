@@ -1,8 +1,8 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
+import static org.heigit.ohsome.oshdb.api.db.OSHDBIgnite.ComputeMode.SCAN_QUERY;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -17,12 +17,12 @@ class MapReduceOSHDBIgniteScanQueryTest extends MapReduceOSHDBIgniteTest {
    * @throws Exception if something goes wrong
    */
   MapReduceOSHDBIgniteScanQueryTest() throws Exception {
-    super(oshdb -> oshdb.computeMode(OSHDBIgnite.ComputeMode.SCAN_QUERY));
+    super(oshdb -> oshdb.computeMode(SCAN_QUERY));
   }
 
   @Override
   @Test
-  void testTimeoutStream() throws Exception {
+  void testTimeoutStream() {
     // ignore this test -> scanquery backend currently doesn't support timeouts for stream()
     assertTrue(true);
   }

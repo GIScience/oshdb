@@ -72,7 +72,7 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
       streamer.allowOverwrite(true);
 
       try (final ResultSet rst =
-          h2Stmt.executeQuery("select level, id, data from " + TableNames.T_NODES.toString())) {
+          h2Stmt.executeQuery("select level, id, data from " + TableNames.T_NODES)) {
         while (rst.next()) {
           final int level = rst.getInt(1);
           final long id = rst.getLong(2);
