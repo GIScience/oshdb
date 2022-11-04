@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.db;
 
 import static java.util.Optional.ofNullable;
+import static org.heigit.ohsome.oshdb.api.db.H2Support.pathToUrl;
 
 import java.nio.file.Path;
 import javax.sql.DataSource;
@@ -43,12 +44,6 @@ public class OSHDBH2 extends OSHDBJdbc {
   private OSHDBH2(JdbcConnectionPool ds) {
     super(ds);
     this.connectionPool = ds;
-  }
-
-  private static String pathToUrl(Path path) {
-    var absolutePath = path.toAbsolutePath().toString();
-    absolutePath = absolutePath.replaceAll("\\.mv\\.db$", "");
-    return String.format("jdbc:h2:%s;ACCESS_MODE_DATA=r", absolutePath);
   }
 
   @Override

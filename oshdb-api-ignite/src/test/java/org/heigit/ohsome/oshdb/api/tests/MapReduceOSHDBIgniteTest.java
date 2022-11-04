@@ -1,9 +1,11 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
+import static org.heigit.ohsome.oshdb.api.db.H2Support.pathToUrl;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,8 +24,8 @@ import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.logger.slf4j.Slf4jLogger;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
 import org.heigit.ohsome.oshdb.util.CellId;
@@ -63,11 +65,14 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
     ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_WAYS.toString(prefix)));
     ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_RELATIONS.toString(prefix)));
 
-    OSHDBH2 oshdbH2 = new OSHDBH2("../data/test-data");
+    JdbcConnectionPool oshdbH2 = JdbcConnectionPool.create(pathToUrl(Path.of("../data/test-data")), "sa",
+        "");
+
     // load test data into ignite cache
-    try (IgniteDataStreamer<Long, GridOSHNodes> streamer = ignite.dataStreamer(cache.getName())) {
-      Connection h2Conn = oshdbH2.getConnection();
-      Statement h2Stmt = h2Conn.createStatement();
+    try (IgniteDataStreamer<Long, GridOSHNodes> streamer = ignite.dataStreamer(cache.getName());
+        Connection h2Conn = oshdbH2.getConnection();
+        Statement h2Stmt = h2Conn.createStatement();
+    ) {
 
       streamer.allowOverwrite(true);
 
