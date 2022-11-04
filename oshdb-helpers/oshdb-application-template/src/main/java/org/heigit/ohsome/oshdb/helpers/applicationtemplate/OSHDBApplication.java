@@ -68,6 +68,12 @@ public abstract class OSHDBApplication implements Callable<Integer> {
   @SuppressWarnings("java:S112")
   protected abstract int run(OSHDBConnection oshdb) throws Exception;
 
+  /**
+   * Method to be called from the implemented application.
+   * @param clazz Class that will be started.
+   * @param args main args
+   * @throws Exception from application
+   */
   @SuppressWarnings("java:S112")
   public static void run(Class<? extends OSHDBApplication> clazz, String[] args)
       throws Exception {
@@ -95,7 +101,4 @@ public abstract class OSHDBApplication implements Callable<Integer> {
         PropsUtil.get(props, OSHDBDriver.MULTITHREADING_PROPERTY_NAME).orElse("false"));
     return run(connection);
   }
-
-
-
 }
