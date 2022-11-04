@@ -1,9 +1,13 @@
 package org.heigit.ohsome.oshdb.helpers.db;
 
 import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Properties;
+import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
+import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +19,15 @@ class OSHDBDriverH2Test {
     props.setProperty("oshdb", "h2:../../data/${test-file}");
     // relevant for getter test
     props.setProperty("test-file", "test-data");
+  }
+
+  @SuppressWarnings("ConstantConditions")
+  private static int testGetters(OSHDBConnection oshdb) {
+    assertTrue(oshdb.getProps() instanceof Properties);
+    assertTrue(oshdb.getOSHDB() instanceof OSHDBDatabase);
+    assertTrue(oshdb.getKeytables() instanceof OSHDBJdbc);
+    assertTrue(oshdb.getTagTranslator() instanceof TagTranslator);
+    return 0;
   }
 
   @Test
@@ -50,12 +63,6 @@ class OSHDBDriverH2Test {
   @Test
   @DisplayName("OSHDBConnection Getter")
   void getter() throws Exception {
-    OSHDBDriver.connect(props, oshdb -> {
-      assertNotNull(oshdb.getProps());
-      assertNotNull(oshdb.getOSHDB());
-      assertNotNull(oshdb.getKeytables());
-      assertNotNull(oshdb.getTagTranslator());
-      return 0;
-    });
+    OSHDBDriver.connect(props, OSHDBDriverH2Test::testGetters);
   }
 }
