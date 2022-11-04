@@ -70,6 +70,7 @@ public abstract class OSHDBApplication implements Callable<Integer> {
 
   /**
    * Method to be called from the implemented application.
+   *
    * @param clazz Class that will be started.
    * @param args main args
    * @throws Exception from application

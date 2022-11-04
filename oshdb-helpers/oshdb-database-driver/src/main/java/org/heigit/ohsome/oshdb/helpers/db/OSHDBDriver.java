@@ -60,7 +60,7 @@ public class OSHDBDriver {
    */
   public static int connect(Properties props, Execute connect) throws Exception {
     var oshdb = getInterpolated(props, OSHDBDriver.OSHDB_PROPERTY_NAME)
-        .orElseThrow(() ->  new IllegalArgumentException("need to have to specifiy oshdb!"));
+        .orElseThrow(() ->  new IllegalArgumentException("need to have to specify oshdb!"));
     if (oshdb.toLowerCase().startsWith(IGNITE_URI_PREFIX)) {
       return connectToIgnite(props, connect);
     } else if (oshdb.toLowerCase().startsWith("h2:")) {
@@ -70,7 +70,7 @@ public class OSHDBDriver {
     }
   }
 
-  public static int connectToH2(Properties props, Execute connect)
+  private static int connectToH2(Properties props, Execute connect)
       throws Exception {
     var prefix = getInterpolated(props, PREFIX_PROPERTY_NAME).orElse("");
     props.put(PREFIX_PROPERTY_NAME, prefix);
@@ -83,14 +83,9 @@ public class OSHDBDriver {
     return connectToH2(h2, prefix, multithreading, connect);
   }
 
-  public static int connectToH2(String url, String prefix, Execute connect)
-      throws Exception {
-    return connectToH2(url, prefix, true, connect);
-  }
-
   // OSHDBJdbc throws "Exception"
   @SuppressWarnings("java:S112")
-  public static int connectToH2(String h2, String prefix, boolean multithreading,
+  private static int connectToH2(String h2, String prefix, boolean multithreading,
       Execute connect) throws Exception {
     try (final var oshdb = new OSHDBH2(h2);
         final var keyTables = new OSHDBJdbc(oshdb.getConnection())) {
@@ -134,9 +129,12 @@ public class OSHDBDriver {
     return ignite.<String, String>cache("ohsome").get("active");
   }
 
+  /**
+   * Internally used execute interface that applies the given connection.
+   */
   @FunctionalInterface
-  @SuppressWarnings("java:S112")
   public interface Execute {
+    @SuppressWarnings("java:S112")
     int apply(OSHDBConnection oshdb) throws Exception;
   }
 }

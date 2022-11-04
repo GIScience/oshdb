@@ -42,15 +42,6 @@ Then connect to OSHDB using the driver like:
     });
 ```
 
-Alternatively you can connect using one of the specific type-bound methods such as 
-
-```java
-    OSHDBDriver.connectToIgnite("PATH_TO_CFG", "KEYTABLES_CONNCTION_URL", oshdb -> {
-        // your oshdb code goes here
-        return 0;
-    );
-```
-
 ## Example
 
 ```java
