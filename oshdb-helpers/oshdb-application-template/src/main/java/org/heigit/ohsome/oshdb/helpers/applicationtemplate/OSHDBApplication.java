@@ -42,10 +42,10 @@ import picocli.CommandLine.Option;
 @Command(mixinStandardHelpOptions = true, sortOptions = false)
 public abstract class OSHDBApplication implements Callable<Integer> {
 
-  @ArgGroup(exclusive=false, multiplicity= "1")
+  @ArgGroup(exclusive = false, multiplicity = "1")
   ConfigOrUrl configOrUrl;
 
-  static class ConfigOrUrl{
+  static class ConfigOrUrl {
     @Option(names = {"--props"}, description = ".properties file path")
     protected Path config;
 
@@ -59,22 +59,21 @@ public abstract class OSHDBApplication implements Callable<Integer> {
   @Option(names = {"--prefix"}, description = "prefix to use")
   protected String prefix;
 
-  @Option(names = {"--multithreading"}, description = "for jdbc based connections", negatable=true)
+  @Option(names = {
+      "--multithreading"}, description = "for jdbc based connections", negatable = true)
   protected Boolean multithreading = null;
 
   protected Properties props;
 
+  @SuppressWarnings("java:S112")
   protected abstract int run(OSHDBConnection oshdb) throws Exception;
 
-  public static void run(Class<? extends OSHDBApplication> clazz, String[] args) {
-    try {
-      var app = clazz.getDeclaredConstructor().newInstance();
-      int exit = new CommandLine(app).execute(args);
-      System.exit(exit);
-    } catch (Exception e) {
-      e.printStackTrace();
-      System.exit(1);
-    }
+  @SuppressWarnings("java:S112")
+  public static void run(Class<? extends OSHDBApplication> clazz, String[] args)
+      throws Exception {
+    var app = clazz.getDeclaredConstructor().newInstance();
+    int exit = new CommandLine(app).execute(args);
+    System.exit(exit);
   }
 
   @Override
@@ -92,7 +91,8 @@ public abstract class OSHDBApplication implements Callable<Integer> {
     configOrUrl.oshdbUrl = PropsUtil.get(props, OSHDBDriver.OSHDB_PROPERTY_NAME).orElseThrow();
     keytableUrl = PropsUtil.get(props, OSHDBDriver.KEYTABLES_PROPERTY_NAME).orElse(null);
     prefix = PropsUtil.get(props, OSHDBDriver.PREFIX_PROPERTY_NAME).orElse("");
-    multithreading = Boolean.valueOf(PropsUtil.get(props, OSHDBDriver.MULTITHREADING_PROPERTY_NAME).orElse("false"));
+    multithreading = Boolean.valueOf(
+        PropsUtil.get(props, OSHDBDriver.MULTITHREADING_PROPERTY_NAME).orElse("false"));
     return run(connection);
   }
 

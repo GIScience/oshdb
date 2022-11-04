@@ -4,12 +4,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-public class Util {
+class Util {
 
   private static final Pattern SUBSTITUTE = Pattern.compile("\\$\\{(\\w+)\\}");
 
   private Util() {}
-  public static Optional<String> getInterpolated(Properties props, String key) {
+
+  static Optional<String> getInterpolated(Properties props, String key) {
     return Optional.ofNullable(props.getProperty(key)).map(value -> interpolate(props, value));
   }
 

@@ -56,7 +56,7 @@ public class OSHDBDriver {
    *     </pre>
    * @param connect A Consumer for a OSHDBConnection e.g. a lambda
    * @return exit code
-   * @throws java.lang.Exception
+   * @throws Exception when an Exception is thrown in the underlying classes
    */
   public static int connect(Properties props, Execute connect) throws Exception {
     var oshdb = getInterpolated(props, OSHDBDriver.OSHDB_PROPERTY_NAME)
@@ -78,7 +78,8 @@ public class OSHDBDriver {
         getInterpolated(props, OSHDB_PROPERTY_NAME)
         .map(value -> value.substring("h2:".length())).orElseThrow();
     var multithreading =
-        getInterpolated(props, MULTITHREADING_PROPERTY_NAME).filter("true"::equalsIgnoreCase).isPresent();
+        getInterpolated(props, MULTITHREADING_PROPERTY_NAME).filter("true"::equalsIgnoreCase)
+            .isPresent();
     return connectToH2(h2, prefix, multithreading, connect);
   }
 
@@ -107,8 +108,10 @@ public class OSHDBDriver {
   @SuppressWarnings("java:S112")
   private static int connectToIgnite(Properties props, Execute connect)
       throws Exception {
-    var cfg = getInterpolated(props, OSHDB_PROPERTY_NAME).filter(value -> value.toLowerCase().startsWith(IGNITE_URI_PREFIX))
-        .map(value -> value.substring(IGNITE_URI_PREFIX.length())).orElseThrow();
+    var cfg = getInterpolated(props, OSHDB_PROPERTY_NAME)
+        .filter(value -> value.toLowerCase().startsWith(IGNITE_URI_PREFIX))
+        .map(value -> value.substring(IGNITE_URI_PREFIX.length()))
+        .orElseThrow();
     try (var ignite = Ignition.start(cfg)) {
       var prefix = getInterpolated(props, PREFIX_PROPERTY_NAME).orElseGet(() -> getActive(ignite));
       props.put(PREFIX_PROPERTY_NAME, prefix);
@@ -132,6 +135,7 @@ public class OSHDBDriver {
   }
 
   @FunctionalInterface
+  @SuppressWarnings("java:S112")
   public interface Execute {
     int apply(OSHDBConnection oshdb) throws Exception;
   }
