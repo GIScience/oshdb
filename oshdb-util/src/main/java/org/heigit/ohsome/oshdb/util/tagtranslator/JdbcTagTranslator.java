@@ -18,6 +18,7 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 
 public class JdbcTagTranslator implements TagTranslator {
+
   private static final String OSM_OSHDB_KEY = String.format("SELECT id, txt"
       + " from %s k"
       + " where k.txt = ?", TableNames.E_KEY);
@@ -26,7 +27,6 @@ public class JdbcTagTranslator implements TagTranslator {
       + " from %s k"
       + " left join %s kv on k.id = kv.keyid"
       + " where k.txt = ? and kv.txt = any (?)", TableNames.E_KEY, TableNames.E_KEYVALUE);
-
 
   private static final String OSHDB_OSM_KEY = String.format("SELECT txt, id"
           + " from %s"
