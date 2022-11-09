@@ -29,20 +29,19 @@ public class JdbcTagTranslator implements TagTranslator {
 
 
   private static final String OSHDB_OSM_KEY = String.format("SELECT txt, id"
-          + " from %s "
+          + " from %s"
           + " where id = any(?)", TableNames.E_KEY);
 
-  private static final String OSHDB_OSM_TAG = String.format("SELECT kv.txt, valueid"
-      + " from %s k"
-      + " left join %s kv on k.id = kv.keyid"
-      + " where k.id = ? and kv.valueid = any (?)", TableNames.E_KEY, TableNames.E_KEYVALUE);
+  private static final String OSHDB_OSM_TAG = String.format("SELECT txt, valueid"
+      + " from %s"
+      + " where keyid = ? and valueid = any (?)", TableNames.E_KEYVALUE);
 
   private static final String OSM_OSHDB_ROLE = String.format("SELECT id, txt"
-      + " from %s "
+      + " from %s"
       + " where txt = any (?)", TableNames.E_ROLE);
 
   private static final String OSHDB_OSM_ROLE = String.format("SELECT txt, id"
-      + " from %s "
+      + " from %s"
       + " where id = any (?)", TableNames.E_ROLE);
 
   private final DataSource source;
