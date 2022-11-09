@@ -17,6 +17,7 @@ import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 
+@SuppressWarnings("java:S1192")
 public class JdbcTagTranslator implements TagTranslator {
 
   private static final String OSM_OSHDB_KEY = String.format("SELECT id, txt"
