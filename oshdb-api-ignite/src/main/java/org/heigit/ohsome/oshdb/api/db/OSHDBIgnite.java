@@ -207,10 +207,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * @return the currently set onClose callback
    */
   public Optional<IgniteRunnable> onClose() {
-    if (this.onCloseCallback == null) {
-      return Optional.empty();
-    } else {
-      return Optional.of(this.onCloseCallback);
-    }
+    return Optional.ofNullable(this.onCloseCallback);
   }
+
 }
