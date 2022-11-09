@@ -49,6 +49,7 @@ public class FilterParser {
    * @param allowContributorFilters if true enables filtering by contributor/user id.
    */
   public FilterParser(TagTranslator tt, boolean allowContributorFilters) {
+    // todo: refactor this method into smaller chunks to make it more easily testable
     final Parser<Void> whitespace = Scanners.WHITESPACES.skipMany();
 
     final Parser<String> keystr = Patterns.regex("[a-zA-Z_0-9:-]+")
@@ -96,6 +97,15 @@ public class FilterParser {
         .map(ignored -> "*");
     final Parser<Void> area = Patterns.string("area").toScanner("area");
     final Parser<Void> length = Patterns.string("length").toScanner("length");
+    final Parser<Void> perimeter = Patterns.string("perimeter").toScanner("perimeter");
+    final Parser<Void> vertices = Patterns.string("geometry.vertices")
+        .toScanner("geometry.vertices");
+    final Parser<Void> outers = Patterns.string("geometry.outers").toScanner("geometry.outers");
+    final Parser<Void> inners = Patterns.string("geometry.inners").toScanner("geometry.inners");
+    final Parser<Void> roundness = Patterns.string("geometry.roundness")
+        .toScanner("geometry.roundness");
+    final Parser<Void> squareness = Patterns.string("geometry.squareness")
+        .toScanner("geometry.squareness");
     final Parser<Void> changeset = Patterns.string("changeset").toScanner("changeset");
     final Parser<Void> contributor = Patterns.string("contributor").toScanner("contributor");
 
@@ -194,7 +204,7 @@ public class FilterParser {
         Parsers.or(point, line, polygon, other))
         .map(geometryType -> new GeometryTypeFilter(geometryType, tt));
 
-    final Parser<ValueRange> floatingRange = Parsers.between(
+    final Parser<ValueRange> positiveFloatingRange = Parsers.between(
         Scanners.isChar('('),
         Parsers.or(
             Parsers.sequence(floatingNumber, dotdot, floatingNumber,
@@ -206,15 +216,53 @@ public class FilterParser {
         ),
         Scanners.isChar(')')
     );
+    final Parser<ValueRange> positiveIntegerRange = Parsers.between(
+        Scanners.isChar('('),
+        Parsers.or(
+            Parsers.sequence(number, dotdot, number,
+                (min, ignored, max) -> new ValueRange(min, max)),
+            number.followedBy(dotdot).map(
+                min -> new ValueRange(min, Double.POSITIVE_INFINITY)),
+            Parsers.sequence(dotdot, number).map(
+                max -> new ValueRange(0, max))
+        ),
+        Scanners.isChar(')')
+    );
+
+    // geometry filter
     final Parser<GeometryFilter> geometryFilterArea = Parsers.sequence(
-        area, colon, floatingRange
+        area, colon, positiveFloatingRange
     ).map(GeometryFilterArea::new);
     final Parser<GeometryFilter> geometryFilterLength = Parsers.sequence(
-        length, colon, floatingRange
+        length, colon, positiveFloatingRange
     ).map(GeometryFilterLength::new);
+    final Parser<GeometryFilter> geometryFilterPerimeter = Parsers.sequence(
+        perimeter, colon, positiveFloatingRange
+    ).map(GeometryFilterPerimeter::new);
+    final Parser<GeometryFilter> geometryFilterVertices = Parsers.sequence(
+        vertices, colon, positiveIntegerRange
+    ).map(GeometryFilterVertices::new);
+    final Parser<GeometryFilter> geometryFilterOuters = Parsers.sequence(
+        outers, colon, Parsers.or(positiveIntegerRange, number.map(n -> new ValueRange(n, n)))
+    ).map(GeometryFilterOuterRings::new);
+    final Parser<GeometryFilter> geometryFilterInners = Parsers.sequence(
+        inners, colon, Parsers.or(positiveIntegerRange, number.map(n -> new ValueRange(n, n)))
+    ).map(GeometryFilterInnerRings::new);
+    final Parser<GeometryFilter> geometryFilterRoundness = Parsers.sequence(
+        roundness, colon, positiveFloatingRange
+    ).map(GeometryFilterRoundness::new);
+    final Parser<GeometryFilter> geometryFilterSquareness = Parsers.sequence(
+        squareness, colon, positiveFloatingRange
+    ).map(GeometryFilterSquareness::new);
     final Parser<GeometryFilter> geometryFilter = Parsers.or(
         geometryFilterArea,
-        geometryFilterLength);
+        geometryFilterLength,
+        geometryFilterPerimeter,
+        geometryFilterVertices,
+        geometryFilterOuters,
+        geometryFilterInners,
+        geometryFilterRoundness,
+        geometryFilterSquareness);
 
     // changeset id filters
     final Parser<ChangesetIdFilterEquals> changesetIdFilter = Parsers.sequence(

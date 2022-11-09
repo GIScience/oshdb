@@ -26,6 +26,7 @@
     <module>oshdb-filter</module>
     <module>oshdb-api</module>
     <module>oshdb-api-ignite</module>
+    <module>oshdb-tool</module>
   </modules>
 
   <properties>
