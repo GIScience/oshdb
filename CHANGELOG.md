@@ -10,6 +10,7 @@ Changelog
 * remove Comparable interface from OSMEntity ([#449])
 * remove deprecated filter methods `osmType`, `osmTag` and `osmEntityFlter` (which were replaced by [OSHDB `filter`s](https://github.com/GIScience/oshdb/blob/0.7/documentation/manual/filters.md#oshdb-filter)) ([#451])
 * `OSMType.toString` returns lower-case name. ([#459])
+* rework of handling separate keytables, see [#470]
 
 ### new features
 
@@ -30,6 +31,7 @@ Changelog
 * update ignite dependency to version 2.14.0 ([#459], [#467])
 * add natural order to `OSHDBTag` ([#454])
 
+[#470]: https://github.com/GIScience/oshdb/pull/470
 [#419]: https://github.com/GIScience/oshdb/pull/419
 [#433]: https://github.com/GIScience/oshdb/issues/433
 [#438]: https://github.com/GIScience/oshdb/pull/438
