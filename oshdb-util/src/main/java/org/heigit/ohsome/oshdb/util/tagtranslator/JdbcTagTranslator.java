@@ -48,6 +48,12 @@ public class JdbcTagTranslator implements TagTranslator {
   private final DataSource source;
   private final Cache<Integer, String> cacheKeys;
 
+  /**
+   * Attention:
+   * This tag translator relies on a pooled datasource for thread-safety.
+   *
+   * @param source the (pooled) datasource
+   */
   public JdbcTagTranslator(DataSource source) {
     this.source = source;
     cacheKeys = Caffeine.newBuilder()
