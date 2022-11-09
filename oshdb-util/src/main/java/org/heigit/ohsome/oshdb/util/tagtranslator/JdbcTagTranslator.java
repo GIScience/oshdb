@@ -29,8 +29,8 @@ public class JdbcTagTranslator implements TagTranslator {
       + " where k.txt = ? and kv.txt = any (?)", TableNames.E_KEY, TableNames.E_KEYVALUE);
 
   private static final String OSHDB_OSM_KEY = String.format("SELECT txt, id"
-          + " from %s"
-          + " where id = any(?)", TableNames.E_KEY);
+      + " from %s"
+      + " where id = any(?)", TableNames.E_KEY);
 
   private static final String OSHDB_OSM_TAG = String.format("SELECT txt, valueid"
       + " from %s"
@@ -166,7 +166,7 @@ public class JdbcTagTranslator implements TagTranslator {
     return result;
   }
 
-  private Map<? extends Integer, ? extends String> lookupKeys(Set<? extends Integer> osm) {
+  private Map<Integer, String> lookupKeys(Set<? extends Integer> osm) {
     try (var conn = source.getConnection();
          var sqlArray = createArray(conn, "int", osm);
          var pstmt = conn.prepareStatement(OSHDB_OSM_KEY)) {

@@ -135,5 +135,6 @@ public class OSHDBJdbc extends OSHDBDatabase {
 
   @Override
   public void close() throws Exception {
+    //nothing to do
   }
 }

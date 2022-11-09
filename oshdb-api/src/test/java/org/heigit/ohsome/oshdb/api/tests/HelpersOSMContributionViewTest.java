@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -32,11 +33,11 @@ class HelpersOSMContributionViewTest {
 
   private static final double DELTA = 1e-8;
 
-  HelpersOSMContributionViewTest() throws Exception {
+  HelpersOSMContributionViewTest() {
     oshdb = new OSHDBH2("../data/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducer() throws Exception {
+  private MapReducer<OSMContribution> createMapReducer() {
     return OSMContributionView
         .on(oshdb)
         .areaOfInterest(bbox)
@@ -85,7 +86,7 @@ class HelpersOSMContributionViewTest {
         .sum(contribution -> 1);
 
     assertEquals(42, result4.get(EnumSet.of(ContributionType.CREATION).toString()));
-    assertEquals(null, result4.get(EnumSet.of(ContributionType.DELETION).toString()));
+    assertNull(result4.get(EnumSet.of(ContributionType.DELETION).toString()));
   }
 
   @Test
@@ -135,7 +136,7 @@ class HelpersOSMContributionViewTest {
             contribution.getContributionTypes().contains(ContributionType.TAG_CHANGE) ? 1 : 0)
         .average();
 
-    assertEquals(1.0, result1.doubleValue(), DELTA);
+    assertEquals(1.0, result1, DELTA);
 
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
@@ -161,7 +162,7 @@ class HelpersOSMContributionViewTest {
             .contains(ContributionType.CREATION))
         .average(contribution -> contribution.getEntityAfter().getId() % 2);
 
-    assertEquals(0.5, result4.get(true).doubleValue(), DELTA);
+    assertEquals(0.5, result4.get(true), DELTA);
   }
 
   @Test
@@ -174,7 +175,7 @@ class HelpersOSMContributionViewTest {
             2 * (contribution.getEntityAfter().getId() % 2)
         ));
 
-    assertEquals(1.0, result1.doubleValue(), DELTA);
+    assertEquals(1.0, result1, DELTA);
 
     // many timestamps
     SortedMap<OSHDBTimestamp, Double> result2 = this.createMapReducer()
@@ -203,7 +204,7 @@ class HelpersOSMContributionViewTest {
             2 * (contribution.getEntityAfter().getId() % 2)
         ));
 
-    assertEquals(1.0, result4.get(true).doubleValue(), DELTA);
+    assertEquals(1.0, result4.get(true), DELTA);
   }
 
   @Test
@@ -252,7 +253,7 @@ class HelpersOSMContributionViewTest {
         .timestamps(timestamps2)
         .map(x -> null)
         .uniq();
-    assertEquals(result5.size(), 1);
+    assertEquals(1, result5.size() );
   }
 
 }

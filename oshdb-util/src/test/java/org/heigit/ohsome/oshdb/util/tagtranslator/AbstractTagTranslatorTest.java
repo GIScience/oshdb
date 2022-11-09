@@ -1,7 +1,7 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -128,7 +128,7 @@ public abstract class AbstractTagTranslatorTest {
       tags.add(instance.lookupTag(new OSHDBTag(1, i)));
     }
     for (var i = 1; i < tags.size(); i++) {
-      assertTrue(tags.get(i - 1).getKey() == tags.get(i).getKey());
+      assertSame(tags.get(i - 1).getKey(), tags.get(i).getKey());
     }
   }
 }

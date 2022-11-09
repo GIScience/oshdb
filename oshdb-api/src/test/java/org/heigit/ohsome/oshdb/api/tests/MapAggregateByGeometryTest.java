@@ -39,18 +39,18 @@ class MapAggregateByGeometryTest {
 
   private static final double DELTA = 1e-4;
 
-  MapAggregateByGeometryTest() throws Exception {
+  MapAggregateByGeometryTest() {
     oshdb = new OSHDBH2("../data/test-data");
   }
 
-  private MapReducer<OSMContribution> createMapReducerOSMContribution() throws Exception {
+  private MapReducer<OSMContribution> createMapReducerOSMContribution() {
     return OSMContributionView
         .on(oshdb)
         .areaOfInterest(bbox)
         .filter("type:way and highway=*");
   }
 
-  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() throws Exception {
+  private MapReducer<OSMEntitySnapshot> createMapReducerOSMEntitySnapshot() {
     return OSMEntitySnapshotView
         .on(oshdb)
         .areaOfInterest(bbox)
@@ -205,13 +205,13 @@ class MapAggregateByGeometryTest {
 
   @SuppressWarnings("ResultOfMethodCallIgnored") //  we test for a thrown exception here
   @Test()
-  void testCombinedWithAggregateByTimestampUnsupportedOrder3() throws Exception {
-    assertThrows(UnsupportedOperationException.class, () -> {
+  void testCombinedWithAggregateByTimestampUnsupportedOrder3() {
+    assertThrows(UnsupportedOperationException.class, () ->
       createMapReducerOSMEntitySnapshot()
           .timestamps(timestamps1)
           .groupByEntity()
           .aggregateByGeometry(getSubRegions())
-          .collect();
-    });
+          .collect()
+    );
   }
 }
