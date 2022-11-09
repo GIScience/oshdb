@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.util.celliterator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ObjectInputStream;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -15,7 +14,6 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.tagtranslator.JdbcTagTranslator;
-import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -30,7 +28,7 @@ class IterateByContributionTest {
    * Set up of test framework, loading H2 driver and connection via jdbc.
    */
   @BeforeAll
-  static void setUpClass() throws ClassNotFoundException, SQLException {
+  static void setUpClass() {
     // connect to the "Big"DB
     source =  JdbcConnectionPool.create(
         "jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
@@ -53,7 +51,7 @@ class IterateByContributionTest {
     int countCreated = 0;
     int countOther = 0;
 
-    var tt = new JdbcTagTranslator(source);
+    var tagTranslator = new JdbcTagTranslator(source);
     try (var conn = source.getConnection();
         var stmt = conn.createStatement();
         var oshCellsRawData = stmt.executeQuery("select data from " + TableNames.T_NODES)) {
@@ -70,7 +68,7 @@ class IterateByContributionTest {
         List<IterateAllEntry> result = (new CellIterator(
             timestamps,
             OSHDBBoundingBox.bboxWgs84Coordinates(8.0, 9.0, 49.0, 50.0),
-            new DefaultTagInterpreter(tt),
+            new DefaultTagInterpreter(tagTranslator),
             oshEntity -> oshEntity.getId() == 617308093,
             osmEntity -> true,
             false
