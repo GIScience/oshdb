@@ -9,8 +9,6 @@ import com.google.common.collect.Streams;
 import com.tdunning.math.stats.TDigest;
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +32,6 @@ import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.generic.NumberUtils;
 import org.heigit.ohsome.oshdb.api.generic.WeightedValue;
 import org.heigit.ohsome.oshdb.filter.AndOperator;
@@ -52,7 +49,6 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
@@ -68,7 +64,6 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 import org.heigit.ohsome.oshdb.util.taginterpreter.DefaultTagInterpreter;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
-import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.ohsome.oshdb.util.time.IsoDateTimeParser;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
@@ -132,7 +127,6 @@ public abstract class MapReducer<X> implements
   protected static final String UNSUPPORTED_GROUPING = "Unsupported grouping: %s";
 
   protected transient OSHDBDatabase oshdb;
-  protected transient OSHDBJdbc keytables;
 
   protected Long timeout = null;
 
@@ -154,7 +148,6 @@ public abstract class MapReducer<X> implements
   }
 
   // utility objects
-  private transient TagTranslator tagTranslator = null;
   private TagInterpreter tagInterpreter = null;
 
   // settings and filters
@@ -179,12 +172,10 @@ public abstract class MapReducer<X> implements
   // copy constructor
   protected MapReducer(MapReducer<?> obj) {
     this.oshdb = obj.oshdb;
-    this.keytables = obj.keytables;
 
     this.viewClass = obj.viewClass;
     this.grouping = obj.grouping;
 
-    this.tagTranslator = obj.tagTranslator;
     this.tagInterpreter = obj.tagInterpreter;
 
     this.tstamps = obj.tstamps;
@@ -202,38 +193,6 @@ public abstract class MapReducer<X> implements
   // -----------------------------------------------------------------------------------------------
   // "Setting" methods and associated internal helpers
   // -----------------------------------------------------------------------------------------------
-
-  /**
-   * Sets the keytables database to use in the calculations to resolve strings (osm tags, roles)
-   * into internally used identifiers. If this function is never called, the main database
-   * (specified during the construction of this object) is used for this.
-   *
-   * @param keytables the database to use for resolving strings into internal identifiers
-   * @return a modified copy of this mapReducer (can be used to chain multiple commands together)
-   */
-  @Contract(pure = true)
-  public MapReducer<X> keytables(OSHDBJdbc keytables) {
-    if (keytables != this.oshdb && this.oshdb instanceof OSHDBJdbc) {
-      Connection c = ((OSHDBJdbc) this.oshdb).getConnection();
-      boolean oshdbContainsKeytables = true;
-      try {
-        new TagTranslator(c).close();
-      } catch (OSHDBKeytablesNotFoundException e) {
-        // this is the expected path -> the oshdb doesn't have the key tables
-        oshdbContainsKeytables = false;
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-      if (oshdbContainsKeytables) {
-        LOG.warn("It looks like as if the current OSHDB comes with keytables included. "
-            + "Usually this means that you should use this file's keytables "
-            + "and should not set the keytables manually.");
-      }
-    }
-    MapReducer<X> ret = this.copy();
-    ret.keytables = keytables;
-    return ret;
-  }
 
   /**
    * Sets the tagInterpreter to use in the analysis. The tagInterpreter is used internally to
@@ -440,7 +399,7 @@ public abstract class MapReducer<X> implements
   private MapReducer<X> osmTag(OSHDBTag tag) {
     MapReducer<X> ret = this.copy();
     ret.preFilters.add(oshEntity -> oshEntity.hasTagKey(tag.getKey()));
-    ret.filters.add(osmEntity -> osmEntity.getTags().hasTagValue(tag.getKey(), tag.getValue()));
+    ret.filters.add(osmEntity -> osmEntity.getTags().hasTag(tag));
     return ret;
   }
 
@@ -591,7 +550,7 @@ public abstract class MapReducer<X> implements
   @Override
   @Contract(pure = true)
   public MapReducer<X> filter(String f) {
-    return this.filter(new FilterParser(this.getTagTranslator()).parse(f));
+    return this.filter(new FilterParser(oshdb.getTagTranslator()).parse(f));
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -1695,24 +1654,9 @@ public abstract class MapReducer<X> implements
 
   protected TagInterpreter getTagInterpreter() throws ParseException, IOException {
     if (this.tagInterpreter == null) {
-      this.tagInterpreter = new DefaultTagInterpreter(this.getTagTranslator());
+      this.tagInterpreter = new DefaultTagInterpreter(oshdb.getTagTranslator());
     }
     return this.tagInterpreter;
-  }
-
-  protected TagTranslator getTagTranslator() {
-    if (this.tagTranslator == null) {
-      try {
-        if (this.keytables == null) {
-          throw new OSHDBKeytablesNotFoundException();
-        }
-        this.tagTranslator = new TagTranslator(this.keytables.getConnection());
-      } catch (OSHDBKeytablesNotFoundException e) {
-        LOG.error(e.getMessage());
-        throw new RuntimeException(e);
-      }
-    }
-    return this.tagTranslator;
   }
 
   // Helper that chains multiple oshEntity filters together

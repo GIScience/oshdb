@@ -45,11 +45,11 @@ class OSHDBTagsTest {
   void testArrayHasTagValue() {
     var tags = OSHDBTags.of(kvs);
 
-    assertTrue(tags.hasTagValue(1, 2));
+    assertTrue(tags.hasTag(1, 2));
 
-    assertFalse(tags.hasTagValue(2, 2));
-    assertFalse(tags.hasTagValue(3, 4));
-    assertFalse(tags.hasTagValue(5, 6));
+    assertFalse(tags.hasTag(2, 2));
+    assertFalse(tags.hasTag(3, 4));
+    assertFalse(tags.hasTag(5, 6));
   }
 
   @Test()

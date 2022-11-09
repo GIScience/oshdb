@@ -141,13 +141,13 @@ class OSMWayTest {
     OSMWay instance =
         OSM.way(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 3}, new OSMMember[] {part, part});
     boolean expResult = false;
-    boolean result = instance.getTags().hasTagValue(1, 1);
+    boolean result = instance.getTags().hasTag(1, 1);
     assertEquals(expResult, result);
 
     part = new OSMMember(1L, OSMType.NODE, 1);
     instance = OSM.way(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 3}, new OSMMember[] {part, part});
     expResult = true;
-    result = instance.getTags().hasTagValue(1, 1);
+    result = instance.getTags().hasTag(1, 1);
     assertEquals(expResult, result);
   }
 

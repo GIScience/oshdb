@@ -142,7 +142,7 @@ class OSMRelationTest {
     OSMRelation instance =
         OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 2, 2, 3}, new OSMMember[] {part, part});
     boolean expResult = false;
-    boolean result = instance.getTags().hasTagValue(1, 1);
+    boolean result = instance.getTags().hasTag(1, 1);
     assertEquals(expResult, result);
   }
 
@@ -152,7 +152,7 @@ class OSMRelationTest {
     OSMRelation instance =
         OSM.relation(1L, 1, 1L, 1L, 1, new int[] {1, 1, 2, 3}, new OSMMember[] {part, part});
     boolean expResult = true;
-    boolean result = instance.getTags().hasTagValue(1, 1);
+    boolean result = instance.getTags().hasTag(1, 1);
     assertEquals(expResult, result);
   }
 }

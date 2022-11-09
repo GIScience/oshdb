@@ -10,6 +10,7 @@ Changelog
 * remove Comparable interface from OSMEntity ([#449])
 * remove deprecated filter methods `osmType`, `osmTag` and `osmEntityFlter` (which were replaced by [OSHDB `filter`s](https://github.com/GIScience/oshdb/blob/0.7/documentation/manual/filters.md#oshdb-filter)) ([#451])
 * `OSMType.toString` returns lower-case name. ([#459])
+* rework of handling separate keytables, see [#470] ([#470])
 
 ### new features
 
@@ -48,7 +49,7 @@ Changelog
 [#454]: https://github.com/GIScience/oshdb/pull/454
 [#459]: https://github.com/GIScience/oshdb/pull/459
 [#467]: https://github.com/GIScience/oshdb/pull/467
-
+[#470]: https://github.com/GIScience/oshdb/pull/470
 
 
 ## 0.7.2

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.lang.IgniteRunnable;
@@ -18,6 +19,8 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.tagtranslator.JdbcTagTranslator;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 
 /**
  * OSHDB database backend connector to a Ignite system.
@@ -40,6 +43,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   }
 
   private final Ignite ignite;
+  private final TagTranslator tagTranslator;
   private final boolean owner;
   private ComputeMode computeMode = ComputeMode.LOCAL_PEEK;
 
@@ -50,8 +54,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    *
    * @throws OSHDBException if cluster state is not active.
    */
-  public OSHDBIgnite() {
-    this(new File("ignite-config.xml"));
+  public OSHDBIgnite(DataSource keytables) {
+    this(new File("ignite-config.xml"), keytables);
   }
 
   /**
@@ -60,8 +64,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * @param ignite Ignite instance to use.
    * @throws OSHDBException if cluster state is not active.
    */
-  public OSHDBIgnite(Ignite ignite) {
-    this(ignite, false);
+  public OSHDBIgnite(Ignite ignite, DataSource keytables) {
+    this(ignite, false, keytables);
   }
 
   /**
@@ -70,8 +74,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * @param igniteConfigFilePath ignite configuration file
    * @throws OSHDBException if cluster state is not active.
    */
-  public OSHDBIgnite(String igniteConfigFilePath) {
-    this(new File(igniteConfigFilePath));
+  public OSHDBIgnite(String igniteConfigFilePath, DataSource keytables) {
+    this(new File(igniteConfigFilePath), keytables);
   }
 
   /**
@@ -80,13 +84,15 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * @param igniteConfig ignite configuration file
    * @throws OSHDBException if cluster state is not active.
    */
-  public OSHDBIgnite(File igniteConfig) {
-    this(startClient(igniteConfig), true);
+  public OSHDBIgnite(File igniteConfig, DataSource keytables) {
+    this(startClient(igniteConfig), true, keytables);
   }
 
-  private OSHDBIgnite(Ignite ignite, boolean owner) {
+  public OSHDBIgnite(Ignite ignite, boolean owner, DataSource keytables) {
     this.ignite = ignite;
     this.owner = owner;
+    this.tagTranslator = new JdbcTagTranslator(keytables);
+
     checkStateActive();
   }
 
@@ -100,6 +106,11 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     if (!cluster.state().active()) {
       throw new OSHDBException("cluster not in state active!");
     }
+  }
+
+  @Override
+  public TagTranslator getTagTranslator() {
+    return tagTranslator;
   }
 
   @Override
@@ -196,10 +207,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
    * @return the currently set onClose callback
    */
   public Optional<IgniteRunnable> onClose() {
-    if (this.onCloseCallback == null) {
-      return Optional.empty();
-    } else {
-      return Optional.of(this.onCloseCallback);
-    }
+    return Optional.ofNullable(this.onCloseCallback);
   }
+
 }

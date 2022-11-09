@@ -1,16 +1,16 @@
 package org.heigit.ohsome.oshdb.api.db;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.base.Joiner;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcMultithread;
 import org.heigit.ohsome.oshdb.api.mapreducer.backend.MapReducerJdbcSinglethread;
@@ -19,28 +19,31 @@ import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTableNotFoundException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
+import org.heigit.ohsome.oshdb.util.tagtranslator.JdbcTagTranslator;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * OSHDB database backend connector to a JDBC database file.
  */
-public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
+public class OSHDBJdbc extends OSHDBDatabase {
 
-  protected Connection connection;
+  protected final DataSource dataSource;
+  protected final TagTranslator tagTranslator;
   private boolean useMultithreading = true;
 
-  public OSHDBJdbc(String classToLoad, String jdbcString)
-      throws SQLException, ClassNotFoundException {
-    this(classToLoad, jdbcString, "sa", "");
+  public OSHDBJdbc(DataSource source) {
+    this(source, source);
   }
 
-  public OSHDBJdbc(String classToLoad, String jdbcString, String user, String pw)
-      throws SQLException, ClassNotFoundException {
-    Class.forName(classToLoad);
-    this.connection = DriverManager.getConnection(jdbcString, user, pw);
+  public OSHDBJdbc(DataSource source, DataSource keytables) {
+    this.dataSource = source;
+    this.tagTranslator = new JdbcTagTranslator(keytables);
   }
 
-  public OSHDBJdbc(Connection conn) {
-    this.connection = conn;
+  @Override
+  public TagTranslator getTagTranslator() {
+    return tagTranslator;
   }
 
   @Override
@@ -51,13 +54,29 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
   @Override
   public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
     try {
-      Collection<String> expectedTables = Stream.of(OSMType.values())
-          .map(TableNames::forOSMType).filter(Optional::isPresent).map(Optional::get)
-          .map(t -> t.toString(this.prefix()).toLowerCase())
-          .collect(Collectors.toList());
-      List<String> allTables = new LinkedList<>();
-      var metaData = getConnection().getMetaData();
-      try (var rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
+      Collection<String> expectedTables = getExpectedTables();
+      checkTables(expectedTables);
+    } catch (SQLException e) {
+      throw new OSHDBException(e);
+    }
+
+    return mapReducer(forClass);
+  }
+
+  @NotNull
+  private Collection<String> getExpectedTables() {
+    return Stream.of(OSMType.values())
+        .map(TableNames::forOSMType)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(table -> table.toString(this.prefix()).toLowerCase())
+        .collect(toList());
+  }
+
+  private void checkTables(Collection<String> expectedTables) throws SQLException {
+    try (var conn = getConnection()) {
+      try (var rs = getTables(conn)) {
+        var allTables = new HashSet<String>();
         while (rs.next()) {
           allTables.add(rs.getString("TABLE_NAME").toLowerCase());
         }
@@ -65,38 +84,44 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
           throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedTables));
         }
       }
-    } catch (SQLException e) {
-      throw new OSHDBException(e);
     }
-    MapReducer<X> mapReducer;
+  }
+
+  private static ResultSet getTables(Connection connection) throws SQLException {
+    return connection
+        .getMetaData()
+        .getTables(null, null, "%", new String[]{"TABLE"});
+  }
+
+  @NotNull
+  private <X extends OSHDBMapReducible> MapReducer<X> mapReducer(Class<X> forClass) {
     if (this.useMultithreading) {
-      mapReducer = new MapReducerJdbcMultithread<>(this, forClass);
-    } else {
-      mapReducer = new MapReducerJdbcSinglethread<>(this, forClass);
+      return new MapReducerJdbcMultithread<>(this, forClass);
     }
-    mapReducer = mapReducer.keytables(this);
-    return mapReducer;
+
+    return new MapReducerJdbcSinglethread<>(this, forClass);
   }
 
   @Override
   public String metadata(String property) {
     var table = TableNames.T_METADATA.toString(this.prefix());
     var selectSql = String.format("select value from %s where key=?", table);
-    try (PreparedStatement stmt = connection.prepareStatement(selectSql)) {
+    try (var conn = getConnection();
+         var stmt = conn.prepareStatement(selectSql)) {
       stmt.setString(1, property);
       try (var result = stmt.executeQuery()) {
         if (result.next()) {
           return result.getString(1);
         }
+        return null;
       }
     } catch (SQLException e) {
       throw new OSHDBException(e);
     }
-    return null;
   }
 
-  public Connection getConnection() {
-    return this.connection;
+  public Connection getConnection() throws SQLException {
+    return dataSource.getConnection();
   }
 
   public OSHDBJdbc multithreading(boolean useMultithreading) {
@@ -110,6 +135,6 @@ public class OSHDBJdbc extends OSHDBDatabase implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    this.connection.close();
+    //nothing to do
   }
 }

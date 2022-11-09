@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import java.io.IOException;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
@@ -19,6 +19,7 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBKeytablesNotFoundException;
+import org.heigit.ohsome.oshdb.util.tagtranslator.JdbcTagTranslator;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,28 +28,29 @@ import org.junit.jupiter.api.BeforeEach;
  * Tests the parsing of filters and the application to OSM entities.
  */
 abstract class FilterTest {
+  protected JdbcConnectionPool source;
   protected FilterParser parser;
   protected TagTranslator tagTranslator;
 
   @BeforeEach
   void setup() throws SQLException, ClassNotFoundException, OSHDBKeytablesNotFoundException {
-    Class.forName("org.h2.Driver");
-    this.tagTranslator = new TagTranslator(DriverManager.getConnection(
-        "jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
-        "sa", ""
-    ));
+    this.source = JdbcConnectionPool.create(
+            "jdbc:h2:../data/test-data;ACCESS_MODE_DATA=r",
+            "sa", ""
+    );
+    this.tagTranslator = new JdbcTagTranslator(source);
     this.parser = new FilterParser(this.tagTranslator);
   }
 
   @AfterEach
   void teardown() throws SQLException {
-    this.tagTranslator.getConnection().close();
+    source.dispose();
   }
 
   protected int[] createTestTags(String... keyValues) {
     ArrayList<Integer> tags = new ArrayList<>(keyValues.length);
     for (int i = 0; i < keyValues.length; i += 2) {
-      OSHDBTag t = tagTranslator.getOSHDBTagOf(keyValues[i], keyValues[i + 1]);
+      OSHDBTag t = tagTranslator.getOSHDBTagOf(keyValues[i], keyValues[i + 1]).get();
       tags.add(t.getKey());
       tags.add(t.getValue());
     }

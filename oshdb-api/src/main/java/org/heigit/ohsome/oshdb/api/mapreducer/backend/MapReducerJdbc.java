@@ -1,15 +1,17 @@
 package org.heigit.ohsome.oshdb.api.mapreducer.backend;
 
+import static java.util.Spliterators.spliteratorUnknownSize;
+import static java.util.stream.Collectors.joining;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Spliterators;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
@@ -20,6 +22,7 @@ import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CancelableProcessS
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.TableNames;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 
@@ -36,8 +39,9 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
   }
 
   // copy constructor
-  MapReducerJdbc(MapReducerJdbc obj) {
-    super(obj);
+  MapReducerJdbc(MapReducerJdbc<?> source) {
+    super(source);
+    this.executionStartTimeMillis = source.executionStartTimeMillis;
   }
 
   @Override
@@ -46,22 +50,6 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
       throw new OSHDBTimeoutException();
     }
     return true;
-  }
-
-  protected ResultSet getOshCellsRawDataFromDb(CellIdRange cellIdRange)
-      throws SQLException {
-    String sqlQuery = this.typeFilter.stream()
-        .map(osmType ->
-            TableNames.forOSMType(osmType).map(tn -> tn.toString(this.oshdb.prefix()))
-        )
-        .filter(Optional::isPresent).map(Optional::get)
-        .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
-        .collect(Collectors.joining(" union all "));
-    PreparedStatement pstmt = ((OSHDBJdbc) this.oshdb).getConnection().prepareStatement(sqlQuery);
-    pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
-    pstmt.setLong(2, cellIdRange.getStart().getId());
-    pstmt.setLong(3, cellIdRange.getEnd().getId());
-    return pstmt.executeQuery();
   }
 
   /**
@@ -73,46 +61,86 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
         (new ObjectInputStream(oshCellsRawData.getBinaryStream(1))).readObject();
   }
 
+  protected String sqlQuery() {
+    return this.typeFilter.stream()
+        .map(osmType -> TableNames.forOSMType(osmType)
+                .map(tn -> tn.toString(this.oshdb.prefix())))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(tn -> "(select data from " + tn + " where level = ?1 and id between ?2 and ?3)")
+        .collect(joining(" union all "));
+  }
+
   @Nonnull
   protected Stream<GridOSHEntity> getOshCellsStream(CellIdRange cellIdRange) {
     try {
       if (this.typeFilter.isEmpty()) {
         return Stream.empty();
       }
-      ResultSet oshCellsRawData = getOshCellsRawDataFromDb(cellIdRange);
-      if (!oshCellsRawData.next()) {
-        return Stream.empty();
-      }
-      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-          new Iterator<GridOSHEntity>() {
-            @Override
-            public boolean hasNext() {
-              try {
-                return !oshCellsRawData.isClosed();
-              } catch (SQLException e) {
-                throw new RuntimeException(e);
-              }
-            }
 
-            @Override
-            public GridOSHEntity next() {
-              try {
-                if (!hasNext()) {
-                  throw new NoSuchElementException();
-                }
-                GridOSHEntity data = readOshCellRawData(oshCellsRawData);
-                if (!oshCellsRawData.next()) {
-                  oshCellsRawData.close();
-                }
-                return data;
-              } catch (IOException | ClassNotFoundException | SQLException e) {
-                throw new RuntimeException(e);
-              }
-            }
-          }, 0
+      var conn = ((OSHDBJdbc) this.oshdb).getConnection();
+      var pstmt = conn.prepareStatement(sqlQuery());
+      pstmt.setInt(1, cellIdRange.getStart().getZoomLevel());
+      pstmt.setLong(2, cellIdRange.getStart().getId());
+      pstmt.setLong(3, cellIdRange.getEnd().getId());
+      var oshCellsRawData = pstmt.executeQuery();
+      return StreamSupport.stream(spliteratorUnknownSize(
+          new GridOSHEntityIterator(oshCellsRawData, pstmt, conn), 0
       ), false);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new OSHDBException(e);
+    }
+  }
+
+  private class GridOSHEntityIterator implements Iterator<GridOSHEntity> {
+
+    private final ResultSet oshCellsRawData;
+    private final PreparedStatement preparedStatement;
+    private final Connection conn;
+    GridOSHEntity next;
+
+    public GridOSHEntityIterator(ResultSet oshCellsRawData, PreparedStatement pstmt, Connection conn) {
+      this.oshCellsRawData = oshCellsRawData;
+      this.preparedStatement = pstmt;
+      this.conn = conn;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return next != null || (next = getNext()) != null;
+    }
+
+    @Override
+    public GridOSHEntity next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      var grid = next;
+      next = null;
+      return grid;
+    }
+
+    private GridOSHEntity getNext() {
+      try {
+        if (!oshCellsRawData.next()) {
+          try {
+            oshCellsRawData.close();
+            preparedStatement.close();
+          } finally {
+            conn.close();
+          }
+          return null;
+        }
+        return readOshCellRawData(oshCellsRawData);
+      } catch (IOException | ClassNotFoundException | SQLException e) {
+        var exception = new OSHDBException(e);
+        try {
+          conn.close();
+        } catch (Exception e2) {
+          exception.addSuppressed(e2);
+        }
+        throw exception;
+      }
     }
   }
 }

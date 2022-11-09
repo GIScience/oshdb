@@ -57,8 +57,8 @@ public class GeometryTypeFilter implements Filter {
    */
   public GeometryTypeFilter(@Nonnull GeometryType geometryType, TagTranslator tt) {
     this.geometryType = geometryType;
-    this.typeMultipolygon = tt.getOSHDBTagOf(tagTypeMultipolygon);
-    this.typeBoundary = tt.getOSHDBTagOf(tagTypeBoundary);
+    this.typeMultipolygon = tt.getOSHDBTagOf(tagTypeMultipolygon).orElse(new OSHDBTag(-1, -1));
+    this.typeBoundary = tt.getOSHDBTagOf(tagTypeBoundary).orElse(new OSHDBTag(-1, -2));
   }
 
   private GeometryTypeFilter(
@@ -150,8 +150,8 @@ public class GeometryTypeFilter implements Filter {
         OSMMember[] wayNodes = ((OSMWay) entity).getMembers();
         return wayNodes.length >= 4 && wayNodes[0].getId() == wayNodes[wayNodes.length - 1].getId();
       } else if (osmType == OSMType.RELATION) {
-        return entity.getTags().hasTagValue(typeMultipolygon.getKey(), typeMultipolygon.getValue())
-            || entity.getTags().hasTagValue(typeBoundary.getKey(), typeBoundary.getValue());
+        return entity.getTags().hasTag(typeMultipolygon)
+            || entity.getTags().hasTag(typeBoundary);
       }
     }
     return true;

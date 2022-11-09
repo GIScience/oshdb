@@ -69,8 +69,8 @@ class NegateTest extends FilterTest {
 
   @Test
   void testTagFilterEqualsAnyOf() {
-    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
-    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential").get();
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track").get();
     FilterExpression expression = new TagFilterEqualsAnyOf(Arrays.asList(tag1, tag2));
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof TagFilterNotEqualsAnyOf);
@@ -78,8 +78,8 @@ class NegateTest extends FilterTest {
 
   @Test
   void testTagFilterNotEqualsAnyOf() {
-    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential");
-    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track");
+    OSHDBTag tag1 = tagTranslator.getOSHDBTagOf("highway", "residential").get();
+    OSHDBTag tag2 = tagTranslator.getOSHDBTagOf("highway", "track").get();
     FilterExpression expression = new TagFilterNotEqualsAnyOf(Arrays.asList(tag1, tag2));
     FilterExpression negation = expression.negate();
     assertTrue(negation instanceof TagFilterEqualsAnyOf);

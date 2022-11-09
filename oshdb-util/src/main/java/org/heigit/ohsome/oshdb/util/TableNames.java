@@ -54,6 +54,8 @@ public enum TableNames {
 
   /**
    * Returns the table name with a given {@link String} prepended.
+   *
+   * @return table name with prefix
    */
   public String toString(String prefix) {
     if (prefix != null && !prefix.trim().isEmpty()) {
@@ -64,6 +66,8 @@ public enum TableNames {
 
   /**
    * Returns the {@link TableNames} object for a given {@link OSMType}.
+   *
+   * @return TableName for type
    */
   public static Optional<TableNames> forOSMType(OSMType type) {
     switch (type) {
