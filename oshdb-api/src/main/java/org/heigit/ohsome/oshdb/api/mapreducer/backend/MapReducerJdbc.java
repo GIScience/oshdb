@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.joining;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -38,8 +39,9 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
   }
 
   // copy constructor
-  MapReducerJdbc(MapReducerJdbc obj) {
-    super(obj);
+  MapReducerJdbc(MapReducerJdbc<?> source) {
+    super(source);
+    this.executionStartTimeMillis = source.executionStartTimeMillis;
   }
 
   @Override
@@ -83,7 +85,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
       pstmt.setLong(3, cellIdRange.getEnd().getId());
       var oshCellsRawData = pstmt.executeQuery();
       return StreamSupport.stream(spliteratorUnknownSize(
-          new GridOSHEntityIterator(oshCellsRawData, conn), 0
+          new GridOSHEntityIterator(oshCellsRawData, pstmt, conn), 0
       ), false);
     } catch (SQLException e) {
       throw new OSHDBException(e);
@@ -93,11 +95,13 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
   private class GridOSHEntityIterator implements Iterator<GridOSHEntity> {
 
     private final ResultSet oshCellsRawData;
+    private final PreparedStatement preparedStatement;
     private final Connection conn;
     GridOSHEntity next;
 
-    public GridOSHEntityIterator(ResultSet oshCellsRawData, Connection conn) {
+    public GridOSHEntityIterator(ResultSet oshCellsRawData, PreparedStatement pstmt, Connection conn) {
       this.oshCellsRawData = oshCellsRawData;
+      this.preparedStatement = pstmt;
       this.conn = conn;
     }
 
@@ -121,6 +125,7 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
         if (!oshCellsRawData.next()) {
           try {
             oshCellsRawData.close();
+            preparedStatement.close();
           } finally {
             conn.close();
           }
