@@ -36,11 +36,6 @@ public class OSHDBH2 extends OSHDBJdbc {
     this(pathToUrl(path), user, password);
   }
 
-  public OSHDBH2(DataSource ds) {
-    super(ds);
-    this.connectionPool = null;
-  }
-
   private OSHDBH2(JdbcConnectionPool ds) {
     super(ds);
     this.connectionPool = ds;
