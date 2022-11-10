@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.helpers.db;
 
 import static org.heigit.ohsome.oshdb.helpers.db.Util.getInterpolated;
 
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Properties;
 import org.apache.ignite.Ignite;
@@ -113,9 +114,10 @@ public class OSHDBDriver {
           .orElseThrow(() -> new IllegalArgumentException("missing keytables"));
       props.put(OSHDBDriver.KEYTABLES_PROPERTY_NAME, keyTablesUrl);
       // initialize data source for keytables
-      try (var dsKeytables = new HikariDataSource();
+      var hcKeytables = new HikariConfig();
+      hcKeytables.setJdbcUrl(keyTablesUrl);
+      try (var dsKeytables = new HikariDataSource(hcKeytables);
           var oshdb = new OSHDBIgnite(ignite, dsKeytables)) {
-        dsKeytables.setJdbcUrl(keyTablesUrl);
         oshdb.prefix(prefix);
         var connection = new OSHDBConnection(props, oshdb);
         return connect.apply(connection);
