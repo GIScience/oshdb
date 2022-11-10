@@ -52,6 +52,8 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   /**
    * Create a new OSHDBDatabase based on default ("ignite-config.xml") configuration.
    *
+   * @param prefix Prefix for cache/table names
+   * @param keytables DataSource for external Keytables
    * @throws OSHDBException if cluster state is not active.
    */
   public OSHDBIgnite(String prefix, DataSource keytables) {

@@ -22,14 +22,35 @@ public class OSHDBH2 extends OSHDBJdbc {
     this(databaseFile, "sa", "");
   }
 
+  /**
+   * Opens a connection to oshdb data stored in a H2 database file.
+   *
+   * @param databaseFile the file name and path to the H2 database file. (the ".mv.db" file ending
+   *        of H2 should be omitted here)
+   */
   public OSHDBH2(String databaseFile) {
     this(Path.of(databaseFile));
   }
 
+  /**
+   * Opens a connection to oshdb data stored in a H2 database file.
+   *
+   * @param url the JDBC URL to the H2 database file.
+   * @param user username for the H2 JDBC connection
+   * @param password password for the H2 JDBC connection
+   */
   public OSHDBH2(String url, String user, String password) {
     this(JdbcConnectionPool.create(url, user, password));
   }
 
+  /**
+   * Opens a connection to oshdb data stored in a H2 database file.
+   *
+   * @param path the file name and path to the H2 database file. (the ".mv.db" file ending
+   *        of H2 should be omitted here)
+   * @param user username for the H2 JDBC connection
+   * @param password password for the H2 JDBC connection
+   */
   public OSHDBH2(Path path, String user, String password) {
     this(pathToUrl(path), user, password);
   }
@@ -47,7 +68,7 @@ public class OSHDBH2 extends OSHDBJdbc {
   @Override
   public void close() throws Exception {
     try {
-       connectionPool.dispose();
+      connectionPool.dispose();
     } finally {
       super.close();
     }
