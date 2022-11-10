@@ -752,6 +752,11 @@ public abstract class MapReducer<X> implements
 
     GeometrySplitter<U> gs = new GeometrySplitter<>(geometries);
 
+    var prevMapper = this.getMapper();
+    SerializableFunction<Object, Iterable<X>> prevFlatMapper =
+        this.mappers.stream().noneMatch(MapFunction::isFlatMapper)
+            ? root -> (Iterable<X>) List.of(prevMapper.apply(root))
+            : this.getFlatMapper();
     MapReducer<? extends Entry<U, ? extends OSHDBMapReducible>> mapRed;
     if (isOSMContributionViewQuery()) {
       mapRed = this.flatMap((ignored, root) ->
@@ -765,7 +770,8 @@ public abstract class MapReducer<X> implements
     }
     MapAggregator<U, ?> mapAgg = mapRed
         .aggregateBy(Entry::getKey, geometries.keySet())
-        .map(Entry::getValue);
+        .map(Entry::getValue)
+        .flatMap(prevFlatMapper::apply);
     @SuppressWarnings("unchecked") // no mapper functions have been applied so the type is still X
     MapAggregator<U, X> result = (MapAggregator<U, X>) mapAgg;
     return result;
