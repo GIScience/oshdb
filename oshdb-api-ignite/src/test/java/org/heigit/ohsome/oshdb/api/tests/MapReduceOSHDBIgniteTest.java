@@ -32,6 +32,9 @@ import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.TableNames;
 
 abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
+
+  static final String PREFIX = "tests";
+  static final String KEYTABLES = "../data/test-data";
   static final Ignite ignite;
 
   static {
@@ -54,17 +57,17 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
     ignite.cluster().state(ClusterState.ACTIVE);
 
     CacheConfiguration<Long, GridOSHNodes> cacheCfg =
-        new CacheConfiguration<>(TableNames.T_NODES.toString(prefix));
+        new CacheConfiguration<>(TableNames.T_NODES.toString(PREFIX));
     cacheCfg.setStatisticsEnabled(true);
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
     IgniteCache<Long, GridOSHNodes> cache = ignite.getOrCreateCache(cacheCfg);
     cache.clear();
     // dummy caches for ways+relations (at the moment we don't use them in the actual TestMapReduce)
-    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_WAYS.toString(prefix)));
-    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_RELATIONS.toString(prefix)));
+    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_WAYS.toString(PREFIX)));
+    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_RELATIONS.toString(PREFIX)));
 
-    loadTestdataIntoIgnite(ignite, cache.getName(),  "../data/test-data");
+    loadTestdataIntoIgnite(ignite, cache.getName(), KEYTABLES);
 
     JdbcConnectionPool oshdbH2 = JdbcConnectionPool.create(pathToUrl(Path.of(keytables)), "sa",
         "");
@@ -103,7 +106,7 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
 
 
   MapReduceOSHDBIgniteTest(Consumer<OSHDBIgnite> computeMode) throws Exception {
-    super(initOshdb("tests", "../data/test-data", computeMode));
+    super(initOshdb(PREFIX, KEYTABLES, computeMode));
   }
 
   MapReduceOSHDBIgniteTest(String prefix, String keytables, Consumer<OSHDBIgnite> computeMode) throws Exception {
