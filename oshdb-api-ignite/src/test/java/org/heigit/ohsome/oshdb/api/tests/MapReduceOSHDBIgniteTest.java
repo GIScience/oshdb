@@ -32,6 +32,9 @@ import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.TableNames;
 
 abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
+
+  static final String PREFIX = "tests";
+  static final String KEYTABLES = "../data/test-data";
   static final Ignite ignite;
 
   static {
@@ -50,32 +53,41 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
     ignite = Ignition.start(cfg);
   }
 
-  private static OSHDBDatabase initOshdb(Consumer<OSHDBIgnite> computeMode) {
-    final String prefix = "tests";
+  private static OSHDBDatabase initOshdb(String prefix, String keytables, Consumer<OSHDBIgnite> computeMode) {
     ignite.cluster().state(ClusterState.ACTIVE);
 
     CacheConfiguration<Long, GridOSHNodes> cacheCfg =
-        new CacheConfiguration<>(TableNames.T_NODES.toString(prefix));
+        new CacheConfiguration<>(TableNames.T_NODES.toString(PREFIX));
     cacheCfg.setStatisticsEnabled(true);
     cacheCfg.setBackups(0);
     cacheCfg.setCacheMode(CacheMode.PARTITIONED);
     IgniteCache<Long, GridOSHNodes> cache = ignite.getOrCreateCache(cacheCfg);
     cache.clear();
     // dummy caches for ways+relations (at the moment we don't use them in the actual TestMapReduce)
-    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_WAYS.toString(prefix)));
-    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_RELATIONS.toString(prefix)));
+    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_WAYS.toString(PREFIX)));
+    ignite.getOrCreateCache(new CacheConfiguration<>(TableNames.T_RELATIONS.toString(PREFIX)));
 
-    JdbcConnectionPool oshdbH2 = JdbcConnectionPool.create(pathToUrl(Path.of("../data/test-data")), "sa",
+    loadTestdataIntoIgnite(ignite, cache.getName(), KEYTABLES);
+
+    JdbcConnectionPool oshdbH2 = JdbcConnectionPool.create(pathToUrl(Path.of(keytables)), "sa",
+        "");
+
+    ignite.cluster().state(ClusterState.ACTIVE_READ_ONLY);
+
+    var oshdb = new OSHDBIgnite(ignite, prefix, oshdbH2);
+    computeMode.accept(oshdb);
+    return oshdb;
+  }
+
+  private static void loadTestdataIntoIgnite(Ignite ignite, String cache, String keytables) {
+    JdbcConnectionPool oshdbH2 = JdbcConnectionPool.create(pathToUrl(Path.of(keytables)), "sa",
         "");
 
     // load test data into ignite cache
-    try (IgniteDataStreamer<Long, GridOSHNodes> streamer = ignite.dataStreamer(cache.getName());
+    try (IgniteDataStreamer<Long, GridOSHNodes> streamer = ignite.dataStreamer(cache);
         Connection h2Conn = oshdbH2.getConnection();
-        Statement h2Stmt = h2Conn.createStatement();
-    ) {
-
+        Statement h2Stmt = h2Conn.createStatement()) {
       streamer.allowOverwrite(true);
-
       try (final ResultSet rst =
           h2Stmt.executeQuery("select level, id, data from " + TableNames.T_NODES)) {
         while (rst.next()) {
@@ -85,25 +97,19 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
           final GridOSHNodes grid = (GridOSHNodes) ois.readObject();
           streamer.addData(CellId.getLevelId(level, id), grid);
         }
-      } catch (IOException | ClassNotFoundException e) {
-        e.printStackTrace();
-        fail(e.toString());
       }
-    } catch (SQLException e) {
-      // TODO Auto-generated catch block
+    } catch (IOException | ClassNotFoundException | SQLException e) {
       e.printStackTrace();
       fail(e.toString());
     }
-
-    ignite.cluster().state(ClusterState.ACTIVE_READ_ONLY);
-
-    var oshdb = new OSHDBIgnite(ignite, oshdbH2);
-    oshdb.prefix(prefix);
-    computeMode.accept(oshdb);
-    return oshdb;
   }
 
+
   MapReduceOSHDBIgniteTest(Consumer<OSHDBIgnite> computeMode) throws Exception {
-    super(initOshdb(computeMode));
+    super(initOshdb(PREFIX, KEYTABLES, computeMode));
+  }
+
+  MapReduceOSHDBIgniteTest(String prefix, String keytables, Consumer<OSHDBIgnite> computeMode) throws Exception {
+    super(initOshdb(prefix, keytables, computeMode));
   }
 }

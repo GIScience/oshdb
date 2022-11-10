@@ -52,43 +52,52 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   /**
    * Create a new OSHDBDatabase based on default ("ignite-config.xml") configuration.
    *
+   * @param prefix Prefix for cache/table names
+   * @param keytables DataSource for external Keytables
    * @throws OSHDBException if cluster state is not active.
    */
-  public OSHDBIgnite(DataSource keytables) {
-    this(new File("ignite-config.xml"), keytables);
+  public OSHDBIgnite(String prefix, DataSource keytables) {
+    this(new File("ignite-config.xml"), prefix, keytables);
   }
 
   /**
    * Creates a new OSHDBDatabase using the given Ignite instance.
    *
    * @param ignite Ignite instance to use.
+   * @param prefix Prefix for cache/table names
+   * @param keytables DataSource for external Keytables
    * @throws OSHDBException if cluster state is not active.
    */
-  public OSHDBIgnite(Ignite ignite, DataSource keytables) {
-    this(ignite, false, keytables);
+  public OSHDBIgnite(Ignite ignite, String prefix, DataSource keytables) {
+    this(ignite, false, prefix, keytables);
   }
 
   /**
    * Opens a connection to oshdb data stored on an Ignite cluster.
    *
    * @param igniteConfigFilePath ignite configuration file
+   * @param prefix Prefix for cache/table names
+   * @param keytables DataSource for external Keytables
    * @throws OSHDBException if cluster state is not active.
    */
-  public OSHDBIgnite(String igniteConfigFilePath, DataSource keytables) {
-    this(new File(igniteConfigFilePath), keytables);
+  public OSHDBIgnite(String igniteConfigFilePath, String prefix, DataSource keytables) {
+    this(new File(igniteConfigFilePath), prefix, keytables);
   }
 
   /**
    * Opens a connection to oshdb data stored on an Ignite cluster.
    *
    * @param igniteConfig ignite configuration file
+   * @param prefix Prefix for cache/table names
+   * @param keytables DataSource for external Keytables
    * @throws OSHDBException if cluster state is not active.
    */
-  public OSHDBIgnite(File igniteConfig, DataSource keytables) {
-    this(startClient(igniteConfig), true, keytables);
+  public OSHDBIgnite(File igniteConfig, String prefix, DataSource keytables) {
+    this(startClient(igniteConfig), true, prefix, keytables);
   }
 
-  public OSHDBIgnite(Ignite ignite, boolean owner, DataSource keytables) {
+  private OSHDBIgnite(Ignite ignite, boolean owner, String prefix, DataSource keytables) {
+    super(prefix);
     this.ignite = ignite;
     this.owner = owner;
     this.tagTranslator = new JdbcTagTranslator(keytables);
@@ -114,17 +123,12 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   }
 
   @Override
-  public OSHDBIgnite prefix(String prefix) {
-    return (OSHDBIgnite) super.prefix(prefix);
-  }
-
-  @Override
   public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
     MapReducer<X> mapReducer;
     Collection<String> allCaches = this.getIgnite().cacheNames();
     Collection<String> expectedCaches = Stream.of(OSMType.values())
         .map(TableNames::forOSMType).filter(Optional::isPresent).map(Optional::get)
-        .map(t -> t.toString(this.prefix()))
+        .map(t -> t.toString(prefix))
         .collect(Collectors.toList());
     if (!allCaches.containsAll(expectedCaches)) {
       throw new OSHDBTableNotFoundException(Joiner.on(", ").join(expectedCaches));
