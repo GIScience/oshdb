@@ -1,10 +1,8 @@
 package org.heigit.ohsome.oshdb.api.db;
 
-import static java.util.Optional.ofNullable;
 import static org.heigit.ohsome.oshdb.api.db.H2Support.pathToUrl;
 
 import java.nio.file.Path;
-import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
 
 /**
@@ -37,13 +35,8 @@ public class OSHDBH2 extends OSHDBJdbc {
   }
 
   private OSHDBH2(JdbcConnectionPool ds) {
-    super(ds);
+    super(ds, "");
     this.connectionPool = ds;
-  }
-
-  @Override
-  public OSHDBH2 prefix(String prefix) {
-    return (OSHDBH2) super.prefix(prefix);
   }
 
   @Override
@@ -54,7 +47,7 @@ public class OSHDBH2 extends OSHDBJdbc {
   @Override
   public void close() throws Exception {
     try {
-      ofNullable(connectionPool).ifPresent(JdbcConnectionPool::dispose);
+       connectionPool.dispose();
     } finally {
       super.close();
     }

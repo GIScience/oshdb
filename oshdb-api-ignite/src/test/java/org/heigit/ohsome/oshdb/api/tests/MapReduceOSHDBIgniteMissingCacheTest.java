@@ -15,8 +15,7 @@ class MapReduceOSHDBIgniteMissingCacheTest extends MapReduceOSHDBIgniteTest {
    * @throws Exception if something goes wrong
    */
   MapReduceOSHDBIgniteMissingCacheTest() throws Exception {
-    super(oshdb -> {});
-    this.oshdb.prefix("<test caches not present>");
+    super("<test caches not present>", "../data/test-data-without-keytables", oshdb -> {});
   }
 
   @Override

@@ -24,7 +24,7 @@ import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * OSHDB database backend connector to a JDBC database file.
+ * OSHDB database backend connector to a JDBC database.
  */
 public class OSHDBJdbc extends OSHDBDatabase {
 
@@ -32,11 +32,25 @@ public class OSHDBJdbc extends OSHDBDatabase {
   protected final TagTranslator tagTranslator;
   private boolean useMultithreading = true;
 
-  public OSHDBJdbc(DataSource source) {
-    this(source, source);
+  /**
+   * Creates a new OSHDBJdbc connection.
+   *
+   * @param source DataSource for oshdb. DataSource implementation has to be thread-safe!
+   * @param prefix Prefix for "table/cache" name
+   */
+  public OSHDBJdbc(DataSource source, String prefix) {
+    this(source, prefix, source);
   }
 
-  public OSHDBJdbc(DataSource source, DataSource keytables) {
+  /**
+   * Creates a new OSHDBJdbc connection.
+   *
+   * @param source DataSource for oshdb. DataSource implementation has to be thread-safe!
+   * @param prefix Prefix for "table/cache" name
+   * @param keytables DataSource for separate keytables
+   */
+  public OSHDBJdbc(DataSource source, String prefix, DataSource keytables) {
+    super(prefix);
     this.dataSource = source;
     this.tagTranslator = new JdbcTagTranslator(keytables);
   }
@@ -44,11 +58,6 @@ public class OSHDBJdbc extends OSHDBDatabase {
   @Override
   public TagTranslator getTagTranslator() {
     return tagTranslator;
-  }
-
-  @Override
-  public OSHDBJdbc prefix(String prefix) {
-    return (OSHDBJdbc) super.prefix(prefix);
   }
 
   @Override
@@ -69,7 +78,7 @@ public class OSHDBJdbc extends OSHDBDatabase {
         .map(TableNames::forOSMType)
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .map(table -> table.toString(this.prefix()).toLowerCase())
+        .map(table -> table.toString(prefix).toLowerCase())
         .collect(toList());
   }
 
@@ -104,7 +113,7 @@ public class OSHDBJdbc extends OSHDBDatabase {
 
   @Override
   public String metadata(String property) {
-    var table = TableNames.T_METADATA.toString(this.prefix());
+    var table = TableNames.T_METADATA.toString(prefix);
     var selectSql = String.format("select value from %s where key=?", table);
     try (var conn = getConnection();
          var stmt = conn.prepareStatement(selectSql)) {

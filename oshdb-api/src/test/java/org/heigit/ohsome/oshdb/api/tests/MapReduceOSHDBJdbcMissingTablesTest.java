@@ -16,9 +16,7 @@ class MapReduceOSHDBJdbcMissingTablesTest extends MapReduceTest {
    * @throws Exception if something goes wrong
    */
   MapReduceOSHDBJdbcMissingTablesTest() throws Exception {
-    super((new OSHDBH2("../data/test-data"))
-        .prefix("<test tables not present>")
-    );
+    super(new OSHDBH2("../data/test-data-without-keytables"));
   }
 
   @Override
@@ -47,7 +45,7 @@ class MapReduceOSHDBJdbcMissingTablesTest extends MapReduceTest {
 
   @Override
   @Test()
-  void testTimeoutMapReduce() throws Exception {
+  void testTimeoutMapReduce() {
     assertThrows(OSHDBTableNotFoundException.class, this::timeoutMapReduce);
   }
 

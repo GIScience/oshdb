@@ -10,8 +10,13 @@ import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
  * OSHDB database backend connector.
  */
 public abstract class OSHDBDatabase implements AutoCloseable {
-  private String prefix = "";
+
+  protected final String prefix;
   private Long timeout = null;
+
+  protected OSHDBDatabase(String prefix) {
+    this.prefix = prefix;
+  }
 
   public abstract TagTranslator getTagTranslator();
 
@@ -20,7 +25,7 @@ public abstract class OSHDBDatabase implements AutoCloseable {
    * oshdb backend implemenation.
    *
    * @param forClass the data type class to iterate over in the `mapping` function of the generated
-   *        MapReducer
+   *                 MapReducer
    * @return a new mapReducer object operating on the given OSHDB backend
    */
   public abstract <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass);
@@ -31,14 +36,6 @@ public abstract class OSHDBDatabase implements AutoCloseable {
    * <p>For example copyright information, currentness of the data, spatial extent, etc.</p>
    */
   public abstract String metadata(String property);
-
-  /**
-   * Sets the "table/cache" name prefix to be used with this oshdb.
-   */
-  public OSHDBDatabase prefix(String prefix) {
-    this.prefix = prefix;
-    return this;
-  }
 
   /**
    * Returns the currently set db "table/cache" name prefix.
@@ -96,4 +93,5 @@ public abstract class OSHDBDatabase implements AutoCloseable {
       return OptionalLong.of(this.timeout);
     }
   }
+
 }
