@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -47,7 +48,7 @@ public interface TagTranslator {
    */
   Optional<OSHDBTag> getOSHDBTagOf(OSMTag tag);
 
-  Map<OSMTag, OSHDBTag> getOSHDBTagOf(Set<? extends OSMTag> tags);
+  Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags);
 
   /**
    * Get oshdb's internal representation of a role (string).
@@ -67,7 +68,7 @@ public interface TagTranslator {
    */
   Optional<OSHDBRole> getOSHDBRoleOf(OSMRole role);
 
-  Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Set<? extends OSMRole> roles);
+  Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles);
 
   /**
    * Get a tag's string representation from oshdb's internal data format.

@@ -6,6 +6,7 @@ import static org.heigit.ohsome.oshdb.util.tagtranslator.ClosableSqlArray.create
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Maps;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -82,7 +83,7 @@ public class JdbcTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Set<? extends OSMTag> tags) {
+  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags) {
     var keyTags = Maps.<String, Map<String, OSMTag>>newHashMapWithExpectedSize(tags.size());
     tags.forEach(tag -> keyTags.computeIfAbsent(tag.getKey(), x -> new HashMap<>())
         .put(tag.getValue(), tag));
@@ -122,11 +123,11 @@ public class JdbcTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Set< ? extends OSMRole> roles) {
+  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles) {
     return loadRoles(roles);
   }
 
-  private Map<OSMRole, OSHDBRole> loadRoles(Set<? extends OSMRole> roles) {
+  private Map<OSMRole, OSHDBRole> loadRoles(Collection<OSMRole> roles) {
     try (var conn = source.getConnection();
         var sqlArray =
             createArray(conn, "text", roles.stream().map(OSMRole::toString).collect(toList()));
