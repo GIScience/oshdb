@@ -80,19 +80,17 @@ public class OSHDBDriver {
     var multithreading =
         getInterpolated(props, MULTITHREADING_PROPERTY_NAME).filter("true"::equalsIgnoreCase)
             .isPresent();
-    return connectToH2(h2, prefix, multithreading, connect);
+    return connectToH2(h2, multithreading, connect);
   }
 
   // OSHDBJdbc throws "Exception"
   @SuppressWarnings("java:S112")
-  private static int connectToH2(String h2, String prefix, boolean multithreading,
+  private static int connectToH2(String h2, boolean multithreading,
       Execute connect) throws Exception {
     try (final var oshdb = new OSHDBH2(h2)) {
-      oshdb.prefix(prefix);
       oshdb.multithreading(multithreading);
       var props = new Properties();
       props.setProperty(OSHDBDriver.OSHDB_PROPERTY_NAME, h2);
-      props.setProperty(PREFIX_PROPERTY_NAME, prefix);
       final var connection = new OSHDBConnection(props, oshdb);
       return connect.apply(connection);
     }
@@ -117,8 +115,7 @@ public class OSHDBDriver {
       var hcKeytables = new HikariConfig();
       hcKeytables.setJdbcUrl(keyTablesUrl);
       try (var dsKeytables = new HikariDataSource(hcKeytables);
-          var oshdb = new OSHDBIgnite(ignite, dsKeytables)) {
-        oshdb.prefix(prefix);
+          var oshdb = new OSHDBIgnite(ignite, prefix, dsKeytables)) {
         var connection = new OSHDBConnection(props, oshdb);
         return connect.apply(connection);
       }

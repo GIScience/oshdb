@@ -56,7 +56,7 @@ public abstract class OSHDBApplication implements Callable<Integer> {
   @Option(names = {"--keytables"}, description = "keytablesUrl jdbc:...")
   protected String keytableUrl;
 
-  @Option(names = {"--prefix"}, description = "prefix to use")
+  @Option(names = {"--prefix"}, description = "prefix to use for ignite")
   protected String prefix;
 
   @Option(names = {
