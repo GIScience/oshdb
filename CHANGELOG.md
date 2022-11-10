@@ -11,7 +11,8 @@ Changelog
 * remove deprecated filter methods `osmType`, `osmTag` and `osmEntityFlter` (which were replaced by [OSHDB `filter`s](https://github.com/GIScience/oshdb/blob/0.7/documentation/manual/filters.md#oshdb-filter)) ([#451])
 * `OSMType.toString` returns lower-case name. ([#459])
 * rework of handling separate keytables, see [#470] ([#470])
-* `prefix` is now a mandatory parameter for OSHDB(Jdbc|Ignite). [(#478)]
+* `prefix` is now a mandatory parameter for OSHDB(Jdbc|Ignite). ([#478])
+* `OSHDBH2` no longer supports `DataSource`s as argument. ([#478])
 
 ### new features
 
