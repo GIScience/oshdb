@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +24,13 @@ import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
 import org.heigit.ohsome.oshdb.util.mappable.OSHDBMapReducible;
 import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestampList;
 import org.heigit.ohsome.oshdb.util.time.OSHDBTimestamps;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -47,7 +48,7 @@ class TestAutoAggregation {
   private static final OSHDBDatabase oshdb = new OSHDBDatabaseMock();
 
   @Test
-  void testAggregateByGeometryThenMapSum() throws UnsupportedOperationException, Exception {
+  void testAggregateByGeometryThenMapSum() throws Exception {
     var geometries = Map.of("TEST", area);
     var mr = new MapReducerMock<>(oshdb, OSMEntitySnapshot.class);
 
@@ -60,7 +61,7 @@ class TestAutoAggregation {
   }
 
   @Test
-  void testMapThenAggregateByGeometrySum() throws UnsupportedOperationException, Exception {
+  void testMapThenAggregateByGeometrySum() throws Exception {
     var geometries = Map.of("TEST", area);
     var mr = new MapReducerMock<>(oshdb, OSMEntitySnapshot.class);
 
@@ -74,7 +75,7 @@ class TestAutoAggregation {
   }
 
   @Test
-  void testMapThenAggregateByGeometryCollect() throws UnsupportedOperationException, Exception {
+  void testMapThenAggregateByGeometryCollect() throws Exception {
     var geometries = Map.of("TEST", area);
     var mr = new MapReducerMock<>(oshdb, OSMEntitySnapshot.class);
 
@@ -92,8 +93,18 @@ class TestAutoAggregation {
    *
    */
   private static class OSHDBDatabaseMock extends OSHDBDatabase {
+
+    public OSHDBDatabaseMock(){
+      super("");
+    }
+
     @Override
-    public void close() throws Exception {}
+    public TagTranslator getTagTranslator() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void close() {}
 
     @Override
     public <X extends OSHDBMapReducible> MapReducer<X> createMapReducer(Class<X> forClass) {
@@ -124,33 +135,32 @@ class TestAutoAggregation {
 
     @Override
     protected Stream<X> mapStreamCellsOSMContribution(
-        SerializableFunction<OSMContribution, X> mapper) throws Exception {
+        SerializableFunction<OSMContribution, X> mapper)  {
       throw new UnsupportedOperationException();
     }
 
     @Override
     protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
-        SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception {
+        SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) {
       throw new UnsupportedOperationException();
     }
 
     @Override
     protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-        SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+        SerializableFunction<OSMEntitySnapshot, X> mapper) {
       throw new UnsupportedOperationException();
     }
 
     @Override
     protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
-        SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception {
+        SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) {
       throw new UnsupportedOperationException();
     }
 
     @Override
     protected <R, S> S mapReduceCellsOSMContribution(
         SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier,
-        SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
-            throws Exception {
+        SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       throw new UnsupportedOperationException();
     }
 
@@ -158,16 +168,15 @@ class TestAutoAggregation {
     protected <R, S> S flatMapReduceCellsOSMContributionGroupedById(
         SerializableFunction<List<OSMContribution>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-        SerializableBinaryOperator<S> combiner) throws Exception {
+        SerializableBinaryOperator<S> combiner) {
       throw new UnsupportedOperationException();
     }
 
     @Override
     protected <R, S> S mapReduceCellsOSMEntitySnapshot(
         SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
-        SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
-            throws Exception {
-      return nodes.stream().map(n -> snapshot(n)).map(mapper).reduce(identitySupplier.get(),
+        SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
+      return nodes.stream().map(TestAutoAggregation::snapshot).map(mapper).reduce(identitySupplier.get(),
           accumulator, combiner);
     }
 
@@ -175,20 +184,19 @@ class TestAutoAggregation {
     protected <R, S> S flatMapReduceCellsOSMEntitySnapshotGroupedById(
         SerializableFunction<List<OSMEntitySnapshot>, Iterable<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
-        SerializableBinaryOperator<S> combiner) throws Exception {
+        SerializableBinaryOperator<S> combiner) {
       return Streams.stream(mapper.apply(nodes.stream()
-          .map(n -> snapshot(n))
+          .map(TestAutoAggregation::snapshot)
           .collect(Collectors.toList())))
           .reduce(identitySupplier.get(), accumulator, combiner);
     }
-
   }
 
   private static OSMEntitySnapshot snapshot(OSHNode node) {
-    var timestamp = timestamps.get().first();;
+    var timestamp = timestamps.get().first();
     var data = new IterateByTimestampEntry(timestamp, node.getVersions().iterator().next(), node,
-        new LazyEvaluatedObject<Geometry>(point),
-        new LazyEvaluatedObject<Geometry>(point));
+        new LazyEvaluatedObject<>(point),
+        new LazyEvaluatedObject<>(point));
     return new OSMEntitySnapshotImpl(data);
   }
 
