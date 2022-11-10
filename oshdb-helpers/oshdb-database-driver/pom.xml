@@ -13,6 +13,7 @@
   <description>TODO</description>
 
   <properties>
+    <hikaricp.version>5.0.1</hikaricp.version>
   </properties>
 
   <dependencies>
@@ -21,6 +22,12 @@
       <artifactId>oshdb-api-ignite</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
+    </dependency>
+    <!-- hikari database connection pool -->
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>${hikaricp.version}</version>
     </dependency>
   </dependencies>
 

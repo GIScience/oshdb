@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Properties;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,6 @@ class OSHDBDriverH2Test {
   private static int testGetters(OSHDBConnection oshdb) {
     assertTrue(oshdb.getProps() instanceof Properties);
     assertTrue(oshdb.getOSHDB() instanceof OSHDBDatabase);
-    assertTrue(oshdb.getKeytables() instanceof OSHDBJdbc);
     assertTrue(oshdb.getTagTranslator() instanceof TagTranslator);
     return 0;
   }

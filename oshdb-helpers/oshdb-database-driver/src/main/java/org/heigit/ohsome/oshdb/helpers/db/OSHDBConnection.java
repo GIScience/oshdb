@@ -2,7 +2,6 @@ package org.heigit.ohsome.oshdb.helpers.db;
 
 import java.util.Properties;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 import org.heigit.ohsome.oshdb.api.mapreducer.MapReducer;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMContributionView;
 import org.heigit.ohsome.oshdb.api.mapreducer.OSMEntitySnapshotView;
@@ -15,23 +14,21 @@ public class OSHDBConnection {
 
   private final Properties props;
   private final OSHDBDatabase oshdb;
-  private final OSHDBJdbc keytables;
   private final TagTranslator tagTranslator;
 
-  public OSHDBConnection(Properties props, OSHDBDatabase oshdb, OSHDBJdbc keytables)
+  public OSHDBConnection(Properties props, OSHDBDatabase oshdb)
       throws OSHDBKeytablesNotFoundException {
     this.props = props;
     this.oshdb = oshdb;
-    this.keytables = keytables;
-    this.tagTranslator = new TagTranslator(keytables.getConnection());
+    this.tagTranslator = oshdb.getTagTranslator();
   }
 
   public MapReducer<OSMContribution> getContributionView() {
-    return OSMContributionView.on(oshdb).keytables(keytables);
+    return OSMContributionView.on(oshdb);
   }
 
   public MapReducer<OSMEntitySnapshot> getSnapshotView() {
-    return OSMEntitySnapshotView.on(oshdb).keytables(keytables);
+    return OSMEntitySnapshotView.on(oshdb);
   }
 
   public Properties getProps() {
@@ -40,10 +37,6 @@ public class OSHDBConnection {
 
   public OSHDBDatabase getOSHDB() {
     return oshdb;
-  }
-
-  public OSHDBJdbc getKeytables() {
-    return keytables;
   }
 
   public TagTranslator getTagTranslator() {

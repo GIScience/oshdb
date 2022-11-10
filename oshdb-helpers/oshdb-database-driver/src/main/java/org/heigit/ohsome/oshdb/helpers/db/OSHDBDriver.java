@@ -2,13 +2,12 @@ package org.heigit.ohsome.oshdb.helpers.db;
 
 import static org.heigit.ohsome.oshdb.helpers.db.Util.getInterpolated;
 
-import java.sql.DriverManager;
+import com.zaxxer.hikari.HikariDataSource;
 import java.util.Properties;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.heigit.ohsome.oshdb.api.db.OSHDBH2;
 import org.heigit.ohsome.oshdb.api.db.OSHDBIgnite;
-import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
 
 /**
  * A basic OSHDBDriver class for connecting to h2 or ignite oshdb instances.
@@ -87,14 +86,13 @@ public class OSHDBDriver {
   @SuppressWarnings("java:S112")
   private static int connectToH2(String h2, String prefix, boolean multithreading,
       Execute connect) throws Exception {
-    try (final var oshdb = new OSHDBH2(h2);
-        final var keyTables = new OSHDBJdbc(oshdb.getConnection())) {
+    try (final var oshdb = new OSHDBH2(h2)) {
       oshdb.prefix(prefix);
       oshdb.multithreading(multithreading);
       var props = new Properties();
       props.setProperty(OSHDBDriver.OSHDB_PROPERTY_NAME, h2);
       props.setProperty(PREFIX_PROPERTY_NAME, prefix);
-      final var connection = new OSHDBConnection(props, oshdb, keyTables);
+      final var connection = new OSHDBConnection(props, oshdb);
       return connect.apply(connection);
     }
   }
@@ -107,17 +105,19 @@ public class OSHDBDriver {
         .filter(value -> value.toLowerCase().startsWith(IGNITE_URI_PREFIX))
         .map(value -> value.substring(IGNITE_URI_PREFIX.length()))
         .orElseThrow();
+    // start ignite
     try (var ignite = Ignition.start(cfg)) {
       var prefix = getInterpolated(props, PREFIX_PROPERTY_NAME).orElseGet(() -> getActive(ignite));
       props.put(PREFIX_PROPERTY_NAME, prefix);
       var keyTablesUrl = getInterpolated(props, OSHDBDriver.KEYTABLES_PROPERTY_NAME)
           .orElseThrow(() -> new IllegalArgumentException("missing keytables"));
       props.put(OSHDBDriver.KEYTABLES_PROPERTY_NAME, keyTablesUrl);
-      try (var ktConnection = DriverManager.getConnection(keyTablesUrl);
-          var keytables = new OSHDBJdbc(ktConnection);
-          var oshdb = new OSHDBIgnite(ignite)) {
+      // initialize data source for keytables
+      try (var dsKeytables = new HikariDataSource();
+          var oshdb = new OSHDBIgnite(ignite, dsKeytables)) {
+        dsKeytables.setJdbcUrl(keyTablesUrl);
         oshdb.prefix(prefix);
-        var connection = new OSHDBConnection(props, oshdb, keytables);
+        var connection = new OSHDBConnection(props, oshdb);
         return connect.apply(connection);
       }
     }
