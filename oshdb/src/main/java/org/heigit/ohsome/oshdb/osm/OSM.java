@@ -2,10 +2,12 @@ package org.heigit.ohsome.oshdb.osm;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.OSHDBTags;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
@@ -26,6 +28,12 @@ public class OSM {
     return new Node(id, version, timestamp, changeset, userId, tags, longitude, latitude);
   }
 
+  public static OSMNode node(final long id, final int version, final long timestamp,
+      final long changeset, final int userId, final List<OSHDBTag> tags, final int longitude,
+      final int latitude) {
+    return new Node(id, version, timestamp, changeset, userId, toKV(tags), longitude, latitude);
+  }
+
   /**
    * Creates a new {@code OSMWay} instance.
    */
@@ -34,12 +42,32 @@ public class OSM {
     return new Way(id, version, timestamp, changeset, userId, tags, refs);
   }
 
+  public static OSMWay way(final long id, final int version, final long timestamp,
+      final long changeset, final int userId, final List<OSHDBTag> tags, final OSMMember[] refs) {
+    return new Way(id, version, timestamp, changeset, userId, toKV(tags), refs);
+  }
+
   /**
    * Creates a new {@code OSMRelation} instance.
    */
   public static OSMRelation relation(final long id, final int version, final long timestamp,
       final long changeset, final int userId, final int[] tags, final OSMMember[] members) {
     return new Relation(id, version, timestamp, changeset, userId, tags, members);
+  }
+
+  public static OSMRelation relation(final long id, final int version, final long timestamp,
+      final long changeset, final int userId, final List<OSHDBTag> tags, final OSMMember[] members) {
+    return new Relation(id, version, timestamp, changeset, userId, toKV(tags), members);
+  }
+
+  private static int[] toKV(List<OSHDBTag> tags) {
+    var kv = new int[tags.size() * 2];
+    for (var i=0; i < tags.size(); i++) {
+      var tag = tags.get(i);
+      kv[i * 2] = tag.getKey();
+      kv[i * 2 + 1] = tag.getValue();
+    }
+    return kv;
   }
 
   private abstract static class Entity implements OSMEntity {
