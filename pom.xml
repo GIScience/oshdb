@@ -28,6 +28,7 @@
     <module>oshdb-api-ignite</module>
     <module>oshdb-tool</module>
     <module>oshdb-helpers</module>
+    <module>oshdb-osm-source</module>
   </modules>
 
   <properties>
