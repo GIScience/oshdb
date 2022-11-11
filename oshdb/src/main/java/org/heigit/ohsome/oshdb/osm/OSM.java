@@ -62,10 +62,10 @@ public class OSM {
 
   private static int[] toKV(List<OSHDBTag> tags) {
     var kv = new int[tags.size() * 2];
-    for (var i=0; i < tags.size(); i++) {
-      var tag = tags.get(i);
-      kv[i * 2] = tag.getKey();
-      kv[i * 2 + 1] = tag.getValue();
+    var i = 0;
+    for (var tag : tags) {
+      kv[i++] = tag.getKey();
+      kv[i++] = tag.getValue();
     }
     return kv;
   }
