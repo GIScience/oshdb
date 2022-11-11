@@ -1,11 +1,10 @@
 package org.heigit.ohsome.oshdb.api.tests;
 
-import static org.heigit.ohsome.oshdb.api.db.H2Support.pathToUrl;
+import static org.heigit.ohsome.oshdb.api.db.H2Support.createJdbcPoolFromPath;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -69,8 +68,7 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
 
     loadTestdataIntoIgnite(ignite, cache.getName(), KEYTABLES);
 
-    JdbcConnectionPool oshdbH2 = JdbcConnectionPool.create(pathToUrl(Path.of(keytables)), "sa",
-        "");
+    JdbcConnectionPool oshdbH2 = createJdbcPoolFromPath(keytables);
 
     ignite.cluster().state(ClusterState.ACTIVE_READ_ONLY);
 
@@ -80,8 +78,7 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
   }
 
   private static void loadTestdataIntoIgnite(Ignite ignite, String cache, String keytables) {
-    JdbcConnectionPool oshdbH2 = JdbcConnectionPool.create(pathToUrl(Path.of(keytables)), "sa",
-        "");
+    JdbcConnectionPool oshdbH2 = createJdbcPoolFromPath(keytables);
 
     // load test data into ignite cache
     try (IgniteDataStreamer<Long, GridOSHNodes> streamer = ignite.dataStreamer(cache);
