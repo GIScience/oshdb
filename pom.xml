@@ -27,6 +27,7 @@
     <module>oshdb-api</module>
     <module>oshdb-api-ignite</module>
     <module>oshdb-tool</module>
+    <module>oshdb-helpers</module>
   </modules>
 
   <properties>
