@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.api.db;
 
-import static org.heigit.ohsome.oshdb.api.db.H2Support.pathToUrl;
+import static org.heigit.ohsome.oshdb.api.db.H2Support.createJdbcPool;
+import static org.heigit.ohsome.oshdb.api.db.H2Support.createJdbcPoolFromPath;
 
 import java.nio.file.Path;
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -10,6 +11,8 @@ import org.h2.jdbcx.JdbcConnectionPool;
  */
 public class OSHDBH2 extends OSHDBJdbc {
 
+  public static final String DEFAULT_USER = "sa";
+  public static final String DEFAULT_PASSWORD = "";
   private final JdbcConnectionPool connectionPool;
 
   /**
@@ -19,7 +22,7 @@ public class OSHDBH2 extends OSHDBJdbc {
    *        of H2 should be omitted here)
    */
   public OSHDBH2(Path databaseFile) {
-    this(databaseFile, "sa", "");
+    this(createJdbcPoolFromPath(databaseFile));
   }
 
   /**
@@ -29,7 +32,7 @@ public class OSHDBH2 extends OSHDBJdbc {
    *        of H2 should be omitted here)
    */
   public OSHDBH2(String databaseFile) {
-    this(Path.of(databaseFile));
+    this(createJdbcPoolFromPath(databaseFile));
   }
 
   /**
@@ -40,7 +43,7 @@ public class OSHDBH2 extends OSHDBJdbc {
    * @param password password for the H2 JDBC connection
    */
   public OSHDBH2(String url, String user, String password) {
-    this(JdbcConnectionPool.create(url, user, password));
+    this(createJdbcPool(url, user, password));
   }
 
   /**
@@ -52,7 +55,7 @@ public class OSHDBH2 extends OSHDBJdbc {
    * @param password password for the H2 JDBC connection
    */
   public OSHDBH2(Path path, String user, String password) {
-    this(pathToUrl(path), user, password);
+    this(createJdbcPoolFromPath(path, user, password));
   }
 
   private OSHDBH2(JdbcConnectionPool ds) {
