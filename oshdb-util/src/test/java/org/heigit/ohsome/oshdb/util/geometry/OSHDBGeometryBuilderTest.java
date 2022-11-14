@@ -12,7 +12,6 @@ import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
-import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaAlways;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaMultipolygonAllOuters;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaNever;
@@ -296,7 +295,7 @@ class OSHDBGeometryBuilderTest extends OSHDBGeometryTest {
     var areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
     var timestamp = TimestampParser.toOSHDBTimestamp("2001-01-01");
     return relMembers -> {
-      var relation = OSM.relation(1, 1, timestamp.getEpochSecond(), 0, 0, null, relMembers);
+      var relation = OSM.relation(1, 1, timestamp.getEpochSecond(), 0, 0, new int[0], relMembers);
       var geom = OSHDBGeometryBuilder.getGeometry(relation, timestamp, areaDecider);
       assertTrue(geom.isValid());
       tester.accept(geom);

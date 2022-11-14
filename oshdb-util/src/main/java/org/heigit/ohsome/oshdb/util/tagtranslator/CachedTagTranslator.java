@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.util.tagtranslator;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class CachedTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Set<? extends OSMTag> tags) {
+  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags) {
     var oshdb = source.getOSHDBTagOf(tags);
     oshdb.forEach((key, value) -> lookupOSHDBTag.put(value, key));
     return oshdb;
@@ -60,7 +61,7 @@ public class CachedTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Set<? extends OSMRole> roles) {
+  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles) {
     return source.getOSHDBRoleOf(roles);
   }
 
