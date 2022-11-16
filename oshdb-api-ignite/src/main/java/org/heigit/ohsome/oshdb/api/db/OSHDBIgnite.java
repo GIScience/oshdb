@@ -1,7 +1,10 @@
 package org.heigit.ohsome.oshdb.api.db;
 
+import static java.lang.String.format;
+
 import com.google.common.base.Joiner;
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,6 +46,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
   }
 
   private final Ignite ignite;
+  private final DataSource keytables;
   private final TagTranslator tagTranslator;
   private final boolean owner;
   private ComputeMode computeMode = ComputeMode.LOCAL_PEEK;
@@ -100,6 +104,7 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
     super(prefix);
     this.ignite = ignite;
     this.owner = owner;
+    this.keytables = keytables;
     this.tagTranslator = new JdbcTagTranslator(keytables);
 
     checkStateActive();
@@ -151,8 +156,20 @@ public class OSHDBIgnite extends OSHDBDatabase implements AutoCloseable {
 
   @Override
   public String metadata(String property) {
-    // todo: implement this
-    return null;
+    var table = TableNames.T_METADATA.toString();
+    var selectSql = format("select value from %s where key=?", table);
+    try (var conn = keytables.getConnection();
+        var stmt = conn.prepareStatement(selectSql)) {
+      stmt.setString(1, property);
+      try (var result = stmt.executeQuery()) {
+        if (result.next()) {
+          return result.getString(1);
+        }
+        return null;
+      }
+    } catch (SQLException e) {
+      throw new OSHDBException(e);
+    }
   }
 
   /**
