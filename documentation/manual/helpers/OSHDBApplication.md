@@ -30,7 +30,7 @@ public class MyApplication extends OSHDBApplication {
 Activate you application by executing it in the `main` method:
 
 ```java
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         OSHDBApplication.run(MyApplication.class, args);
     }
 ```
@@ -65,30 +65,32 @@ To run your application/query execute it in a command line. To configure the osh
 ```java
 package mypackage;
 
+import org.heigit.ohsome.oshdb.helpers.applicationtemplate.OSHDBApplication;
+import org.heigit.ohsome.oshdb.helpers.db.OSHDBConnection;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import picocli.CommandLine;
 
 public class MyApplication extends OSHDBApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         OSHDBApplication.run(MyApplication.class, args);
     }
 
-    @CommandLine.Option(defaultValue="2018-05-01", names = {"--ts"}, description = "target timestamp, default=${DEFAULT-VALUE}")
+    @CommandLine.Option(defaultValue = "2018-05-01", names = {"--ts"}, description = "target timestamp, default=${DEFAULT-VALUE}")
     protected String ts;
 
     @Override
     protected int run(OSHDBConnection oshdb) throws Exception {
         OSHDBBoundingBox bbox = OSHDBBoundingBox.bboxWgs84Coordinates(8.651133, 49.387611, 8.6561, 49.390513);
-        
+
         Integer result = oshdb.getSnapshotView()
                 .areaOfInterest(bbox)
                 .filter("type:node")
                 .timestamps(this.ts)
                 .count();
-        
+
         System.out.println(result);
-        
+
         return 0;
     }
 
