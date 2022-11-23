@@ -7,7 +7,7 @@ Replace your OSHDB dependency with the following:
 <dependency>
    <groupId>org.heigit.ohsome</groupId>
    <artifactId>oshdb-application-template</artifactId>
-   <version>0.7.2</version>
+   <version>1.0.0</version>
 </dependency>
 ```
 

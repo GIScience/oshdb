@@ -1,7 +1,7 @@
 Changelog
 =========
 
-## 1.0.0-SNAPSHOT (current master)
+## 1.0.0
 
 ### breaking changes
 
@@ -11,14 +11,14 @@ Changelog
 * remove deprecated filter methods `osmType`, `osmTag` and `osmEntityFlter` (which were replaced by [OSHDB `filter`s](https://github.com/GIScience/oshdb/blob/0.7/documentation/manual/filters.md#oshdb-filter)) ([#451])
 * `OSMType.toString` returns lower-case name. ([#459])
 * rework of handling separate keytables, see [#470] ([#470])
-* `prefix` is now a mandatory parameter for OSHDB(Jdbc|Ignite). ([#478])
+* `prefix` is now a mandatory parameter for `OSHDBJdbc` and `OSHDBIgnite`. ([#478])
 * `OSHDBH2` no longer supports `DataSource`s as argument. ([#478])
 
 ### new features
 
 * allow to flexibly combine (automatic) aggregation methods (like `aggregateByGeometry(…)` or `aggregateByTimestamp()`) with each other and with `filter` or `map`/`flatMap`, regardless of the order of the applied operations ([#451])
 * add new OSHDB filters: `perimeter`, `geometry.vertices`, `geometry.outers`, `geometry.inners`, `geometry.roundness` and `geometry.squareness` ([#436])
-* add OSHDB-helpers module providing two helpers (OSHDBDriver and OSHDBApplication) to simplify database setup ([#474])
+* add OSHDB-helpers module providing two helpers (`OSHDBDriver` and `OSHDBApplication`) to simplify database setup ([#474])
 
 ### bugfixes
 
@@ -53,6 +53,7 @@ Changelog
 [#459]: https://github.com/GIScience/oshdb/pull/459
 [#467]: https://github.com/GIScience/oshdb/pull/467
 [#470]: https://github.com/GIScience/oshdb/pull/470
+[#474]: https://github.com/GIScience/oshdb/pull/474
 [#478]: https://github.com/GIScience/oshdb/pull/478
 
 
