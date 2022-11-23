@@ -15,7 +15,7 @@ This _first steps_ tutorial will guide you through each of these steps individua
 
 ## 1. Download an OSHDB extract
 
-For your first steps, we recommend that you download one of the available OSHDB data extracts from our [download server](https://downloads.ohsome.org/OSHDB/v0.7/). We will use this data file to run a simple analysis query on it.
+For your first steps, we recommend that you download one of the available OSHDB data extracts from our [download server](https://downloads.ohsome.org/OSHDB/v1.0/). We will use this data file to run a simple analysis query on it.
 
 ## 2. Add maven dependency
 
