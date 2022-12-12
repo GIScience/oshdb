@@ -49,7 +49,7 @@ package mypackage;
 
 import java.util.Properties;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.helpers.OSHDBDriver;
+import org.heigit.ohsome.oshdb.helpers.db.OSHDBDriver;
 
 public class OSHDBDriverExample {
 
