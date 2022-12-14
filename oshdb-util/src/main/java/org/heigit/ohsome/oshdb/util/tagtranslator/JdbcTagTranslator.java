@@ -46,7 +46,7 @@ public class JdbcTagTranslator implements TagTranslator {
       + " from %s"
       + " where id = any (?)", TableNames.E_ROLE);
 
-  private final DataSource source;
+  protected final DataSource source;
   private final Cache<Integer, String> cacheKeys;
 
   /**
