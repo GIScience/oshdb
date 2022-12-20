@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
+import static java.lang.String.format;
 import static java.util.function.Predicate.not;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -18,17 +19,30 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 
 public class AddingJdbcTagTranslator extends JdbcTagTranslator implements AddingTagTranslator {
 
-  private static final String OSM_OSHDB_KEYS = String.format("SELECT id, txt, values"
+  private static final String LOCK_TABLE = "locks";
+
+  private static final String LOCK = "updater";
+
+  private static final String OSM_OSHDB_KEYS = format("SELECT id, txt, values"
       + " FROM %s WHERE txt = any(?)", TableNames.E_KEY);
 
-  private static final String INSERT_OSM_OSHDB_KEYS = String.format("INSERT INTO %s"
+  private static final String INSERT_OSM_OSHDB_KEYS = format("INSERT INTO %s"
       + " (id, txt, values) VALUES (?, ?, ?)", TableNames.E_KEY);
 
-  private static final String UPDATE_OSM_OSHDB_KEYS = String.format("UPDATE %s"
+  private static final String UPDATE_OSM_OSHDB_KEYS = format("UPDATE %s"
       + " SET values = ? WHERE id = ?", TableNames.E_KEY);
 
-  private static final String INSERT_OSM_OSHDB_TAG = String.format("INSERT INTO %s"
+  private static final String INSERT_OSM_OSHDB_TAG = format("INSERT INTO %s"
       + " (keyid, valueid, txt) VALUES (?, ?, ?)", TableNames.E_KEYVALUE);
+
+  private static final String CREATE_LOG_TABLE = format("CREATE TABLE IF NOT EXISTS %s"
+      + " (lock VARCHAR PRIMARY KEY, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP", LOCK_TABLE);
+
+  private static final String TRY_TO_LOCK = format("INSERT INTO %s (lock) VALUES (?)", LOCK_TABLE);
+
+  private static final String RELEASE_LOCK = format("DELETE FROM %s WHERE lock = ?", LOCK_TABLE);
+
+
   public static final int INSERT_MAX_BATCH_COUNT = 10_000;
 
 
@@ -63,8 +77,42 @@ public class AddingJdbcTagTranslator extends JdbcTagTranslator implements Adding
    */
   public AddingJdbcTagTranslator(DataSource source) {
     super(source);
+    createLockTable();
     cacheOSMKeys = Caffeine.newBuilder().build();
     keySequence = new AtomicInteger(getMaxKeyId());
+  }
+
+  private void createLockTable(){
+    try (var conn = source.getConnection();
+         var stmt = conn.createStatement()) {
+      stmt.executeUpdate(CREATE_LOG_TABLE);
+    } catch (SQLException e) {
+      throw new OSHDBException(e);
+    }
+  }
+
+  public void tryToLock() {
+    try (var conn = source.getConnection();
+         var pstmt = conn.prepareStatement(TRY_TO_LOCK)) {
+      pstmt.setString(1, LOCK);
+      if (pstmt.executeUpdate() != 1) {
+        throw new OSHDBException("could not insert lock");
+      }
+    } catch (Exception e) {
+      throw new OSHDBException("could not acquire lock \"" + LOCK +"\"", e);
+    }
+  }
+
+  public void releaseLock() {
+    try (var conn = source.getConnection();
+        var pstmt = conn.prepareStatement(RELEASE_LOCK)) {
+      pstmt.setString(1, LOCK);
+      if (pstmt.executeUpdate() != 1) {
+        throw new OSHDBException("could not release lock");
+      }
+    } catch (Exception e) {
+      throw new OSHDBException("could not release lock \"" + LOCK +"\"", e);
+    }
   }
 
   private int getMaxKeyId() {
@@ -82,21 +130,22 @@ public class AddingJdbcTagTranslator extends JdbcTagTranslator implements Adding
 
   @Override
   public synchronized Map<OSMTag, OSHDBTag> getOrAddOSHDBTagOf(Collection<OSMTag> tags) {
-    var present = getOSHDBTagOf(tags);
-    var missing = Maps.<String, Map<String, OSMTag>>newHashMapWithExpectedSize(tags.size() - present.size());
-    tags.stream()
-        .filter(not(present::containsKey))
-        .forEach(tag -> missing.computeIfAbsent(tag.getKey(), x -> new HashMap<>())
-            .put(tag.getValue(), tag));
-
-    try (var conn = source.getConnection()) {
-      var keys = cacheOSMKeys.getAll(missing.keySet(), missingKeys -> loadKeys(conn, missingKeys));
-      var result = addTags(conn, missing, keys);
-      updateKeys(conn, keys);
-      return result;
-    } catch (Exception e) {
-      throw new OSHDBException(e);
-    }
+      var present = getOSHDBTagOf(tags);
+      var missing = Maps.<String, Map<String, OSMTag>>newHashMapWithExpectedSize(
+          tags.size() - present.size());
+      tags.stream()
+          .filter(not(present::containsKey))
+          .forEach(tag -> missing.computeIfAbsent(tag.getKey(), x -> new HashMap<>())
+              .put(tag.getValue(), tag));
+      try (var conn = source.getConnection()) {
+        var keys = cacheOSMKeys.getAll(missing.keySet(),
+            missingKeys -> loadKeys(conn, missingKeys));
+        var result = addTags(conn, missing, keys);
+        updateKeys(conn, keys);
+        return result;
+      } catch (Exception e) {
+        throw new OSHDBException(e);
+      }
   }
 
   private Map<String, KeyIdValueSequence> loadKeys(Connection conn, Set<? extends String> keys) {
