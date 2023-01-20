@@ -8,12 +8,10 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.store.OSHDBData;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.rocksdb.BloomFilter;
 import org.rocksdb.Cache;
 import org.rocksdb.ColumnFamilyDescriptor;
@@ -86,27 +84,13 @@ class EntityStore {
     return result;
   }
 
-  Map<Long, List<OSHDBData>> byGrid(Collection<Long> gridIds) {
-    var result = Maps.<Long, List<OSHDBData>>newHashMapWithExpectedSize(gridIds.size());
-    gridIds.forEach(gridId -> result.put(gridId, byGrid(gridId)));
-    return result;
-  }
-
-  private List<OSHDBData> byGrid(long gridId) {
-    try {
-      return byGridE(gridId);
-    } catch (RocksDBException e) {
-      throw new OSHDBException(e);
-    }
-  }
-
-  private List<OSHDBData> byGridE(long gridId) throws RocksDBException {
+  List<OSHDBData> byGrid(long gridId) throws RocksDBException {
     var gridKey = idToBytes(gridId);
     var gridEntityKey = gridEntityKey(gridKey, idToBytes(0));
-    var list = new ArrayList<OSHDBData>();
-    try (var opts = new ReadOptions().setIterateUpperBound(new Slice(idToBytes(gridId + 1)))) {
-      var itr = db.newIterator(opts);
+    try (var opts = new ReadOptions().setIterateUpperBound(new Slice(idToBytes(gridId + 1)));
+         var itr = db.newIterator(opts);) {
       itr.seek(gridEntityKey);
+      var list = new ArrayList<OSHDBData>();
       for (; itr.isValid(); itr.next()) {
         var key = itr.key();
         var data = itr.value();
@@ -114,24 +98,15 @@ class EntityStore {
         list.add(OSHDBData.of(type, entityId, gridId, data));
       }
       itr.status();
+      return list;
     }
-    return list;
   }
 
   private byte[] gridEntityKey(byte[] gridId, byte[] entityId) {
     return ByteBuffer.allocate(Long.BYTES * 2).put(gridId).put(entityId).array();
   }
 
-
-  void put(List<OSHDBData> entities) {
-    try {
-      putE(entities);
-    } catch (RocksDBException e) {
-      throw new OSHDBException(e);
-    }
-  }
-
-  void putE(List<OSHDBData> entities) throws RocksDBException {
+  void put(List<OSHDBData> entities) throws RocksDBException {
     var opt = new ReadOptions();
     var cfsList = new ColumnFamilyHandle[entities.size()];
     Arrays.fill(cfsList, cfHandles.get(1));

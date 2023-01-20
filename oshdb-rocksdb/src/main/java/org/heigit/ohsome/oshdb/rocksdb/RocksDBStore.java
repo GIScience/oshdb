@@ -12,27 +12,14 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.store.BackRefs;
 import org.heigit.ohsome.oshdb.store.OSHDBData;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
-import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.rocksdb.LRUCache;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 /**
- * directory layout:
- * store
- * ├── backrefs
- * │   ├── node
- * │   ├── relation
- * │   └── way
- * ├── entities
- * │   ├── node
- * │   ├── relation
- * │   └── way
- * └── grids
- *     ├── node
- *     ├── relation
- *     └── way
+ * directory layout: store ├── backrefs │   ├── node │   ├── relation │   └── way ├── entities │
+ * ├── node │   ├── relation │   └── way └── grids ├── node ├── relation └── way
  */
 public class RocksDBStore extends OSHDBStore {
 
@@ -50,7 +37,7 @@ public class RocksDBStore extends OSHDBStore {
         Files.createDirectories(p);
         entityStore.put(type, new EntityStore(type, p, cache));
       }
-    } catch(RocksDBException e) {
+    } catch (RocksDBException e) {
       entityStore.values().forEach(EntityStore::close);
       throw new OSHDBException(e);
     }
@@ -74,19 +61,23 @@ public class RocksDBStore extends OSHDBStore {
 
   @Override
   public void entities(List<OSHDBData> entities) {
-    entities.stream().collect(Collectors.groupingBy(OSHDBData::getType))
-        .forEach((type, list) -> entityStore.get(type).put(list));
+    try {
+      var map = entities.stream().collect(Collectors.groupingBy(OSHDBData::getType));
+      for (var entry : map.entrySet()) {
+        entityStore.get(entry.getKey()).put(entry.getValue());
+      }
+    } catch (RocksDBException e) {
+      throw new OSHDBException(e);
+    }
   }
 
   @Override
-  public Map<Long, List<OSHDBData>> entitiesByGrid(OSMType type, Collection<Long> gridIds) {
-    var store = entityStore.get(type);
-    return store.byGrid(gridIds);
-  }
-
-  @Override
-  public Map<CellId, List<OSHDBData>> grids(OSMType type, Collection<CellId> cellIds) {
-    return null;
+  public List<OSHDBData> entitiesByGrid(OSMType type, long gridId) {
+    try {
+      return entityStore.get(type).byGrid(gridId);
+    } catch (RocksDBException e) {
+      throw new OSHDBException(e);
+    }
   }
 
   @Override
