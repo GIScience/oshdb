@@ -1,8 +1,12 @@
 package org.heigit.ohsome.oshdb.rocksdb;
 
+import static org.heigit.ohsome.oshdb.rocksdb.RocksDBUtil.bytesToId;
 import static org.heigit.ohsome.oshdb.rocksdb.RocksDBUtil.cfOptions;
+import static org.heigit.ohsome.oshdb.rocksdb.RocksDBUtil.idToBytes;
+import static org.heigit.ohsome.oshdb.rocksdb.RocksDBUtil.idsToKeys;
 import static org.rocksdb.RocksDB.DEFAULT_COLUMN_FAMILY;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -58,10 +62,7 @@ class EntityStore {
     var cfsList = new ColumnFamilyHandle[ids.size()];
     Arrays.fill(cfsList, cfHandles.get(1));
 
-    var keys = new ArrayList<byte[]>(ids.size());
-    for (Long id : ids) {
-      keys.add(idToBytes(id));
-    }
+    var keys = RocksDBUtil.idsToKeys(ids, ids.size());
     var entityGridId = db.multiGetAsList(opt, Arrays.asList(cfsList), keys);
 
     var gridEntityKey = new ArrayList<byte[]>(keys.size());
@@ -88,7 +89,7 @@ class EntityStore {
     var gridKey = idToBytes(gridId);
     var gridEntityKey = gridEntityKey(gridKey, idToBytes(0));
     try (var opts = new ReadOptions().setIterateUpperBound(new Slice(idToBytes(gridId + 1)));
-         var itr = db.newIterator(opts);) {
+         var itr = db.newIterator(opts)) {
       itr.seek(gridEntityKey);
       var list = new ArrayList<OSHDBData>();
       for (; itr.isValid(); itr.next()) {
@@ -110,11 +111,7 @@ class EntityStore {
     var opt = new ReadOptions();
     var cfsList = new ColumnFamilyHandle[entities.size()];
     Arrays.fill(cfsList, cfHandles.get(1));
-
-    var keys = new ArrayList<byte[]>(entities.size());
-    for (var entity : entities) {
-      keys.add(idToBytes(entity.getId()));
-    }
+    var keys = idsToKeys(Iterables.transform(entities, OSHDBData::getId), entities.size());
     var entityGridId = db.multiGetAsList(opt, Arrays.asList(cfsList), keys);
 
     try (var wb = new WriteBatch()) {
@@ -139,15 +136,6 @@ class EntityStore {
       db.write(new WriteOptions(), wb);
     }
   }
-
-  private byte[] idToBytes(long id) {
-    return ByteBuffer.allocate(Long.BYTES).putLong(id).array();
-  }
-
-  private long bytesToId(byte[] id) {
-    return ByteBuffer.wrap(id).getLong();
-  }
-
 
   void close() {
     cfHandles.forEach(ColumnFamilyHandle::close);

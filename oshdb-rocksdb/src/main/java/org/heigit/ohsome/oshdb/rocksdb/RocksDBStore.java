@@ -3,11 +3,9 @@ package org.heigit.ohsome.oshdb.rocksdb;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.store.BackRefs;
 import org.heigit.ohsome.oshdb.store.OSHDBData;
@@ -30,24 +28,31 @@ public class RocksDBStore extends OSHDBStore {
   public static RocksDBStore open(Path path, long cacheSize) throws IOException, OSHDBException {
     Files.createDirectories(path);
     var entityStore = new EnumMap<OSMType, EntityStore>(OSMType.class);
+    var backRefStore = new EnumMap<OSMType, BackRefStore>(OSMType.class);
+
     var cache = new LRUCache(cacheSize);
     try {
       for (var type : OSMType.values()) {
         var p = path.resolve("entities/" + type);
         Files.createDirectories(p);
         entityStore.put(type, new EntityStore(type, p, cache));
+        p = path.resolve("backrefs/" + type);
+        Files.createDirectories(p);
+        backRefStore.put(type, new BackRefStore(type, p, cache));
       }
     } catch (RocksDBException e) {
       entityStore.values().forEach(EntityStore::close);
       throw new OSHDBException(e);
     }
-    return new RocksDBStore(entityStore);
+    return new RocksDBStore(entityStore, backRefStore);
   }
 
   private final Map<OSMType, EntityStore> entityStore;
+  private final Map<OSMType, BackRefStore> backRefStore;
 
-  private RocksDBStore(Map<OSMType, EntityStore> entityStore) {
+  private RocksDBStore(Map<OSMType, EntityStore> entityStore, Map<OSMType, BackRefStore> backRefStore) {
     this.entityStore = entityStore;
+    this.backRefStore = backRefStore;
   }
 
   @Override
@@ -60,12 +65,9 @@ public class RocksDBStore extends OSHDBStore {
   }
 
   @Override
-  public void entities(List<OSHDBData> entities) {
+  public void putEntities(OSMType type, List<OSHDBData> entities) {
     try {
-      var map = entities.stream().collect(Collectors.groupingBy(OSHDBData::getType));
-      for (var entry : map.entrySet()) {
-        entityStore.get(entry.getKey()).put(entry.getValue());
-      }
+      entityStore.get(type).put(entities);
     } catch (RocksDBException e) {
       throw new OSHDBException(e);
     }
@@ -81,8 +83,21 @@ public class RocksDBStore extends OSHDBStore {
   }
 
   @Override
-  public Map<Long, BackRefs> backRefs(OSMType type, Collection<Long> ids) {
-    return null;
+  public Map<Long, BackRefs> backRefs(OSMType type, List<Long> ids) {
+    try {
+      return backRefStore.get(type).backRefs(ids);
+    } catch (RocksDBException e) {
+      throw new OSHDBException(e);
+    }
+  }
+
+  @Override
+  public void appendBackRefs(OSMType type, List<BackRefs> backRefs) {
+    try {
+      backRefStore.get(type).append(backRefs);
+    } catch (RocksDBException e) {
+      throw new OSHDBException(e);
+    }
   }
 
   @Override

@@ -1,5 +1,8 @@
 package org.heigit.ohsome.oshdb.rocksdb;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.Cache;
@@ -44,5 +47,21 @@ public class RocksDBUtil {
     options.setTableFormatConfig(tableConfig);
 
     return options;
+  }
+
+  public static byte[] idToBytes(long id) {
+    return ByteBuffer.allocate(Long.BYTES).putLong(id).array();
+  }
+
+  public static long bytesToId(byte[] id) {
+    return ByteBuffer.wrap(id).getLong();
+  }
+
+  public static List<byte[]> idsToKeys(Iterable<Long> ids, int size) {
+    var keys = new ArrayList<byte[]>(size);
+    for (var id : ids) {
+      keys.add(idToBytes(id));
+    }
+    return keys;
   }
 }
