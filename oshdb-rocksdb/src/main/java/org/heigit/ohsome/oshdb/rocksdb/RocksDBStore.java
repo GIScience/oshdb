@@ -103,5 +103,6 @@ public class RocksDBStore extends OSHDBStore {
   @Override
   public void close() {
     entityStore.values().forEach(EntityStore::close);
+    backRefStore.values().forEach(BackRefStore::close);
   }
 }

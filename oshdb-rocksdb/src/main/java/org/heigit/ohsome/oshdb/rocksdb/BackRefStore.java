@@ -137,4 +137,10 @@ public class BackRefStore {
     }
     return Sets.newHashSet(result);
   }
+
+  void close() {
+    cfHandles.forEach(ColumnFamilyHandle::close);
+    db.close();
+    dbOptions.close();
+  }
 }
