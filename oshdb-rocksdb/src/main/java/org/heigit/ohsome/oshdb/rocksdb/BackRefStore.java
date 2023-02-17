@@ -6,6 +6,7 @@ import static org.rocksdb.RocksDB.DEFAULT_COLUMN_FAMILY;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +29,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.StringAppendOperator;
 
-public class BackRefStore {
+public class BackRefStore implements Closeable {
   private static final int WAY = 1;
   private static final int RELATION = 2;
 
@@ -138,7 +139,7 @@ public class BackRefStore {
     return Sets.newHashSet(result);
   }
 
-  void close() {
+  public void close() {
     cfHandles.forEach(ColumnFamilyHandle::close);
     db.close();
     dbOptions.close();

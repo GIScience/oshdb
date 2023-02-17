@@ -8,6 +8,7 @@ import static org.rocksdb.RocksDB.DEFAULT_COLUMN_FAMILY;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import org.rocksdb.Slice;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
-class EntityStore {
+class EntityStore implements Closeable {
 
   private final OSMType type;
   private final Path path;
@@ -137,7 +138,7 @@ class EntityStore {
     }
   }
 
-  void close() {
+  public void close() {
     cfHandles.forEach(ColumnFamilyHandle::close);
     db.close();
     dbOptions.close();

@@ -11,6 +11,7 @@ import org.heigit.ohsome.oshdb.store.BackRefs;
 import org.heigit.ohsome.oshdb.store.OSHDBData;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
+import org.rocksdb.Cache;
 import org.rocksdb.LRUCache;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -42,15 +43,18 @@ public class RocksDBStore extends OSHDBStore {
       }
     } catch (RocksDBException e) {
       entityStore.values().forEach(EntityStore::close);
+      cache.close();
       throw new OSHDBException(e);
     }
-    return new RocksDBStore(entityStore, backRefStore);
+    return new RocksDBStore(cache, entityStore, backRefStore);
   }
 
+  private final Cache cache;
   private final Map<OSMType, EntityStore> entityStore;
   private final Map<OSMType, BackRefStore> backRefStore;
 
-  private RocksDBStore(Map<OSMType, EntityStore> entityStore, Map<OSMType, BackRefStore> backRefStore) {
+  private RocksDBStore(Cache cache, Map<OSMType, EntityStore> entityStore, Map<OSMType, BackRefStore> backRefStore) {
+    this.cache = cache;
     this.entityStore = entityStore;
     this.backRefStore = backRefStore;
   }
@@ -101,8 +105,14 @@ public class RocksDBStore extends OSHDBStore {
   }
 
   @Override
+  public String toString() {
+    return "" + cache.getUsage();
+  }
+
+  @Override
   public void close() {
     entityStore.values().forEach(EntityStore::close);
     backRefStore.values().forEach(BackRefStore::close);
+    cache.close();
   }
 }
