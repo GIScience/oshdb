@@ -26,13 +26,12 @@ public class RocksDBStore extends OSHDBStore {
     RocksDB.loadLibrary();
   }
 
-  public static RocksDBStore open(Path path, long cacheSize) throws IOException, OSHDBException {
-    Files.createDirectories(path);
+  public static RocksDBStore open(Path path, long cacheSize) throws OSHDBException {
     var entityStore = new EnumMap<OSMType, EntityStore>(OSMType.class);
     var backRefStore = new EnumMap<OSMType, BackRefStore>(OSMType.class);
-
     var cache = new LRUCache(cacheSize);
     try {
+      Files.createDirectories(path);
       for (var type : OSMType.values()) {
         var p = path.resolve("entities/" + type);
         Files.createDirectories(p);
@@ -41,7 +40,7 @@ public class RocksDBStore extends OSHDBStore {
         Files.createDirectories(p);
         backRefStore.put(type, new BackRefStore(type, p, cache));
       }
-    } catch (RocksDBException e) {
+    } catch (Exception e) {
       entityStore.values().forEach(EntityStore::close);
       cache.close();
       throw new OSHDBException(e);
