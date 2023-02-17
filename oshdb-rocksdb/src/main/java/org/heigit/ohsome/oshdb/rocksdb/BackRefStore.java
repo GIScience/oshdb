@@ -28,6 +28,7 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.StringAppendOperator;
+import org.rocksdb.util.SizeUnit;
 
 public class BackRefStore extends RocksStore implements Closeable {
   private static final int WAY = 1;
@@ -42,7 +43,11 @@ public class BackRefStore extends RocksStore implements Closeable {
   public BackRefStore(OSMType type, Path path, Cache cache) throws RocksDBException {
     this.type = type;
     this.path = path;
-    dbOptions = dbOptions();
+    dbOptions = new DBOptions()
+        .setCreateIfMissing(true)
+        .setCreateMissingColumnFamilies(true)
+        .setMaxBackgroundJobs(6)
+        .setBytesPerSync(SizeUnit.MB);
     cfHandles = new ArrayList<>();
     try {
       var cfDescriptors = List.of(

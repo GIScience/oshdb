@@ -28,6 +28,7 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.Slice;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
+import org.rocksdb.util.SizeUnit;
 
 class EntityStore extends RocksStore implements Closeable {
 
@@ -40,7 +41,11 @@ class EntityStore extends RocksStore implements Closeable {
   EntityStore(OSMType type, Path path, Cache cache) throws RocksDBException {
     this.type = type;
     this.path = path;
-    dbOptions = dbOptions();
+    dbOptions = new DBOptions()
+        .setCreateIfMissing(true)
+        .setCreateMissingColumnFamilies(true)
+        .setMaxBackgroundJobs(6)
+        .setBytesPerSync(SizeUnit.MB);
     cfHandles = new ArrayList<>();
     try {
       var cfDescriptors = List.of(
