@@ -29,7 +29,7 @@ import org.rocksdb.Slice;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
-class EntityStore implements Closeable {
+class EntityStore extends RocksStore implements Closeable {
 
   private final OSMType type;
   private final Path path;
@@ -40,7 +40,7 @@ class EntityStore implements Closeable {
   EntityStore(OSMType type, Path path, Cache cache) throws RocksDBException {
     this.type = type;
     this.path = path;
-    dbOptions = RocksDBUtil.dbOptions();
+    dbOptions = dbOptions();
     cfHandles = new ArrayList<>();
     try {
       var cfDescriptors = List.of(

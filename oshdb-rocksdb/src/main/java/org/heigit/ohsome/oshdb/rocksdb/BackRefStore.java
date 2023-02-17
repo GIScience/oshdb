@@ -29,7 +29,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.StringAppendOperator;
 
-public class BackRefStore implements Closeable {
+public class BackRefStore extends RocksStore implements Closeable {
   private static final int WAY = 1;
   private static final int RELATION = 2;
 
@@ -42,7 +42,7 @@ public class BackRefStore implements Closeable {
   public BackRefStore(OSMType type, Path path, Cache cache) throws RocksDBException {
     this.type = type;
     this.path = path;
-    dbOptions = RocksDBUtil.dbOptions();
+    dbOptions = dbOptions();
     cfHandles = new ArrayList<>();
     try {
       var cfDescriptors = List.of(

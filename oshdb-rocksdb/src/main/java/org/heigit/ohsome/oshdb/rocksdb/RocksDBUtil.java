@@ -14,15 +14,8 @@ import org.rocksdb.util.SizeUnit;
 
 public class RocksDBUtil {
 
-  public static DBOptions dbOptions() {
-    return new DBOptions()
-        .setCreateIfMissing(true)
-        .setCreateMissingColumnFamilies(true)
-        .setMaxBackgroundJobs(6)
-        .setBytesPerSync(SizeUnit.MB)
-//        .setWriteBufferManager(wbManager);
-//        .setDbWriteBufferSize(64 * SizeUnit.GB)
-    ;
+  private RocksDBUtil() {
+    throw new IllegalStateException("Utility class");
   }
 
   public static ColumnFamilyOptions cfOptions(Cache cache) {
