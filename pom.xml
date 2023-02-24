@@ -28,6 +28,8 @@
     <module>oshdb-api-ignite</module>
     <module>oshdb-tool</module>
     <module>oshdb-helpers</module>
+    <module>oshdb-store</module>
+    <module>oshdb-rocksdb</module>
   </modules>
 
   <properties>
