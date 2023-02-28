@@ -45,11 +45,6 @@ public class RocksDBStore implements OSHDBStore {
   }
 
   @Override
-  public OSHData entity(OSMType type, long id) {
-    return entities(type, Set.of(id)).get(id);
-  }
-
-  @Override
   public Map<Long, OSHData> entities(OSMType type, Set<Long> ids) {
     try {
       return entityStore.get(type).entities(ids);
@@ -76,11 +71,6 @@ public class RocksDBStore implements OSHDBStore {
     } catch (RocksDBException e) {
       throw new OSHDBException(e);
     }
-  }
-
-  @Override
-  public BackRef backRef(OSMType type, long id) {
-    return backRefs(type, Set.of(id)).get(id);
   }
 
   @Override

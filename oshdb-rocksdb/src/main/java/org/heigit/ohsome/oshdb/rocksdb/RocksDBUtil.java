@@ -63,8 +63,4 @@ public class RocksDBUtil {
   public static byte[] idToKey(long id) {
     return ByteBuffer.allocate(Long.BYTES).putLong(id).array();
   }
-
-  public static long keyToId(byte[] key) {
-    return ByteBuffer.wrap(key).getLong();
-  }
 }
