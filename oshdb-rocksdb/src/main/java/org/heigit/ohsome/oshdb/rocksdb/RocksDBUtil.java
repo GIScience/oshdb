@@ -4,6 +4,9 @@ import static org.rocksdb.CompactionPriority.MinOverlappingRatio;
 import static org.rocksdb.CompressionType.LZ4_COMPRESSION;
 import static org.rocksdb.CompressionType.ZSTD_COMPRESSION;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.Cache;
@@ -31,7 +34,6 @@ public class RocksDBUtil {
 
   public static ColumnFamilyOptions cfOptions(
       Cache cache, Consumer<BlockBasedTableConfig> blockTableConfig) {
-
     var tableConfig = new BlockBasedTableConfig()
         .setBlockCache(cache)
         .setBlockSize(16 * SizeUnit.KB)
@@ -48,5 +50,21 @@ public class RocksDBUtil {
     cfOptions.setLevelCompactionDynamicLevelBytes(true);
     cfOptions.setTableFormatConfig(tableConfig);
     return cfOptions;
+  }
+
+  public static List<byte[]> idsToKeys(Iterable<Long> ids, int size) {
+    var keys = new ArrayList<byte[]>(size);
+    for (var id : ids) {
+      keys.add(idToKey(id));
+    }
+    return keys;
+  }
+
+  public static byte[] idToKey(long id) {
+    return ByteBuffer.allocate(Long.BYTES).putLong(id).array();
+  }
+
+  public static long keyToId(byte[] key) {
+    return ByteBuffer.wrap(key).getLong();
   }
 }

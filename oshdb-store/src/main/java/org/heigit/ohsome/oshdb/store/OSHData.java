@@ -7,12 +7,17 @@ public class OSHData {
    private final OSMType type;
    private final long id;
 
-   public OSHData(OSMType type, long id) {
-      this.type = type;
-      this.id = id;
-   }
+   private long gridId;
+   private byte[] data;
 
-   public OSMType getType() {
+  public OSHData(OSMType type, long id, long gridId, byte[] data) {
+     this.type = type;
+     this.id = id;
+     this.gridId = gridId;
+     this.data = data;
+  }
+
+  public OSMType getType() {
       return type;
    }
 
@@ -20,7 +25,15 @@ public class OSHData {
       return id;
    }
 
-   @Override
+  public long getGridId() {
+    return gridId;
+  }
+
+  public byte[] getData() {
+    return data;
+  }
+
+  @Override
    public boolean equals(Object o) {
       if (this == o) {
          return true;

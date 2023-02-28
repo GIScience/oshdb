@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.rocksdb;
 
+import static java.util.Optional.ofNullable;
 import static org.heigit.ohsome.oshdb.rocksdb.RocksDBUtil.cfOptions;
 import static org.rocksdb.RocksDB.DEFAULT_COLUMN_FAMILY;
 
@@ -8,7 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.heigit.ohsome.oshdb.osm.OSMType;
+import org.heigit.ohsome.oshdb.store.BackRef;
 import org.rocksdb.BloomFilter;
 import org.rocksdb.Cache;
 import org.rocksdb.ColumnFamilyDescriptor;
@@ -51,10 +55,18 @@ public class BackRefStore implements AutoCloseable {
     }
   }
 
+  public Map<Long, BackRef> backRefs(Set<Long> ids) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  public void update(List<BackRef> backRefs) throws RocksDBException {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
   @Override
   public void close() {
     cfHandles.forEach(ColumnFamilyHandle::close);
-    db.close();
+    ofNullable(db).ifPresent(RocksDB::close);
     dbOptions.close();
   }
 
@@ -62,4 +74,6 @@ public class BackRefStore implements AutoCloseable {
   public String toString() {
     return "BackRefStore " + type;
   }
+
+
 }
