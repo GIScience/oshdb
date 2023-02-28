@@ -82,7 +82,7 @@ public class EntityStore implements AutoCloseable {
         .filter(key -> key.length != 0)
         .collect(Collectors.toList());
 
-    var data = db.multiGetAsList(gridEntityKeys);
+    var data = db.multiGetAsList(opt, gridEntityKeys);
     @SuppressWarnings("UnstableApiUsage")
     var entities = zip(gridEntityKeys.stream(), data.stream(), this::gridEntityToOSHData)
         .filter(Objects::nonNull)
@@ -111,6 +111,7 @@ public class EntityStore implements AutoCloseable {
         }
         wb.put(entityGridCFHandle(), key, gridKey);
         wb.put(gridEntityDataCFHandle(), gridEntityKey(gridKey, key), entity.getData());
+        idx++;
       }
       db.write(new WriteOptions(), wb);
     }
