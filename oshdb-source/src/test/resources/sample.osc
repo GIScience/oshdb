@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osmChange version="0.6" generator="osmdbt-create-diff/0.6">
+  <modify>
+    <node id="267259573" version="3" timestamp="2023-03-02T14:36:51Z" uid="12551976" user="rms_ALG" changeset="133214654" lat="50.2156476" lon="11.9501611">
+      <tag k="entrance" v="yes"/>
+      <tag k="level" v="1"/>
+      <tag k="name" v="Ausgang Richtung Am Lamitzsteig"/>
+      <tag k="public_transport" v="entrance"/>
+      <tag k="ref" v="HM"/>
+    </node>
+    <node id="317255572" version="2" timestamp="2023-03-02T14:36:40Z" uid="5064615" user="rempshaener" changeset="133214646" lat="51.130804" lon="6.7247314"/>
+  </modify>
+  <delete>
+    <node id="419010513" version="3" timestamp="2023-03-02T14:36:51Z" uid="12551976" user="rms_ALG" changeset="133214654" lat="50.2148443" lon="11.9504193"/>
+  </delete>
+  <modify>
+    <node id="419010595" version="4" timestamp="2023-03-02T14:36:51Z" uid="12551976" user="rms_ALG" changeset="133214654" lat="50.2148449" lon="11.9504766">
+      <tag k="entrance" v="yes"/>
+      <tag k="name" v="Ausgang Richtung Christian-Heinrich-Sandler-Straße"/>
+      <tag k="public_transport" v="entrance"/>
+      <tag k="ref" v="HU"/>
+      <tag k="wheelchair" v="no"/>
+    </node>
+    <node id="449382530" version="2" timestamp="2023-03-02T14:37:31Z" uid="12744433" user="VLD175" changeset="133214677" lat="35.9381493" lon="-77.5249271"/>
+  </modify>
+  <create>
+    <node id="10704519666" version="1" timestamp="2023-03-02T14:37:34Z" uid="18513947" user="Optimus_Prime_Yahoo" changeset="133214678" lat="37.0644868" lon="36.2695053"/>
+  </create>
+  <modify>
+    <way id="8353735" version="17" timestamp="2023-03-02T14:36:41Z" uid="10402229" user="te42kyfo" changeset="133214633">
+      <nd ref="25300316"/>
+      <nd ref="2137983311"/>
+      <nd ref="2334329899"/>
+      <nd ref="255463104"/>
+      <nd ref="2334329905"/>
+      <nd ref="25300314"/>
+      <nd ref="2102071638"/>
+      <nd ref="255463450"/>
+      <nd ref="2102071652"/>
+      <tag k="cycleway:both" v="no"/>
+      <tag k="highway" v="residential"/>
+      <tag k="maxspeed" v="30"/>
+      <tag k="name" v="Langenaustraße"/>
+      <tag k="sidewalk" v="right"/>
+      <tag k="smoothness" v="good"/>
+      <tag k="surface" v="asphalt"/>
+      <tag k="width" v="6"/>
+    </way>
+  </modify>
+  <delete>
+    <way id="63095592" version="2" timestamp="2023-03-02T14:37:30Z" uid="4363" user="Pmz" changeset="133214676"/>
+    <way id="63097851" version="2" timestamp="2023-03-02T14:37:30Z" uid="4363" user="Pmz" changeset="133214676"/>
+    <way id="63097985" version="2" timestamp="2023-03-02T14:37:30Z" uid="4363" user="Pmz" changeset="133214676"/>
+  </delete>
+  <modify>
+    <way id="138922727" version="5" timestamp="2023-03-02T14:37:19Z" uid="6071455" user="faustopachera" changeset="133212163">
+      <nd ref="1522948711"/>
+      <nd ref="1522948837"/>
+      <nd ref="1522948866"/>
+      <nd ref="1522948273"/>
+      <nd ref="1522947997"/>
+      <nd ref="1522948711"/>
+      <tag k="building" v="apartments"/>
+      <tag k="building:levels" v="3"/>
+      <tag k="roof:shape" v="gabled"/>
+    </way>
+  </modify>
+  <create>
+    <way id="1150723036" version="1" timestamp="2023-03-02T14:37:37Z" uid="574675" user="Bálint" changeset="133214682">
+      <nd ref="10704485410"/>
+      <nd ref="10704485411"/>
+      <tag k="barrier" v="wall"/>
+      <tag k="ruins" v="ys"/>
+    </way>
+  </create>
+  <modify>
+  </modify>
+  <create>
+    <relation id="15549519" version="1" timestamp="2023-03-02T14:37:22Z" uid="172867" user="AmiFritz" changeset="133214669">
+      <member type="way" ref="40776641" role="street"/>
+      <member type="way" ref="749052050" role="street"/>
+      <member type="node" ref="10704515502" role="house"/>
+      <tag k="name" v="Rue Stendhal"/>
+      <tag k="ref:FR:FANTOIR" v="870854950C"/>
+      <tag k="type" v="associatedStreet"/>
+    </relation>
+  </create>
+</osmChange>

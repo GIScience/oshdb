@@ -30,6 +30,7 @@
     <module>oshdb-helpers</module>
     <module>oshdb-store</module>
     <module>oshdb-rocksdb</module>
+    <module>oshdb-source</module>
   </modules>
 
   <properties>

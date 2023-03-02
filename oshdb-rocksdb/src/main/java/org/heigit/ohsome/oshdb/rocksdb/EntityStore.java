@@ -38,6 +38,7 @@ import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
 public class EntityStore implements AutoCloseable {
+
   private static final byte[] EMPTY = new byte[0];
   private static final byte[] KEY_ZERO = idToKey(0);
 

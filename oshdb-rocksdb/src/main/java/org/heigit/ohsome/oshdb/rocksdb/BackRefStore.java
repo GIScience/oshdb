@@ -24,7 +24,6 @@ import org.rocksdb.util.SizeUnit;
 
 public class BackRefStore implements AutoCloseable {
 
-
   private final OSMType type;
   private final DBOptions dbOptions;
   private final List<ColumnFamilyHandle> cfHandles;

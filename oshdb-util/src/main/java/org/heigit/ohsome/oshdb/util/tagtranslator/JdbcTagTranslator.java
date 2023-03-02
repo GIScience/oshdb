@@ -78,12 +78,10 @@ public class JdbcTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Optional<OSHDBTag> getOSHDBTagOf(OSMTag tag) {
-    return Optional.ofNullable(loadTags(tag.getKey(), Map.of(tag.getValue(), tag)).get(tag));
-  }
-
-  @Override
-  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags) {
+  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags, TRANSLATE_OPTION option) {
+    if (option != TRANSLATE_OPTION.READONLY) {
+      throw new UnsupportedOperationException("mutating jdbc translator is not supported yet");
+    }
     var keyTags = Maps.<String, Map<String, OSMTag>>newHashMapWithExpectedSize(tags.size());
     tags.forEach(tag -> keyTags.computeIfAbsent(tag.getKey(), x -> new HashMap<>())
         .put(tag.getValue(), tag));
@@ -118,12 +116,10 @@ public class JdbcTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Optional<OSHDBRole> getOSHDBRoleOf(OSMRole role) {
-    return Optional.ofNullable(loadRoles(Set.of(role)).get(role));
-  }
-
-  @Override
-  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles) {
+  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles, TRANSLATE_OPTION option) {
+    if (option != TRANSLATE_OPTION.READONLY) {
+      throw new UnsupportedOperationException("mutating jdbc translator is not supported yet");
+    }
     return loadRoles(roles);
   }
 
