@@ -1,15 +1,18 @@
 Changelog
 =========
 
-## 1.1.0-SNAPSHOT (current master)
+## 1.1.0
 
 ### breaking changes
 
-* java 17 is now a requirement for oshdb
+* java 17 is now a requirement ([#488])
 
 ### other changes
 
-* dependency version updates
+* dependency version updates ([#488])
+
+[#488]: https://github.com/GIScience/oshdb/pull/488
+
 
 ## 1.0.0
 
