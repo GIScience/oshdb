@@ -1,7 +1,7 @@
 OSHDB Application Programming Interface
 =======================================
 
-The OSHDB API provides a library that can be used to write custom analysis queries of OSM history data. It is based on the [MapReduce](https://en.wikipedia.org/wiki/MapReduce) programming model, which is also offered by the [Stream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Stream.html) class in Java 11.
+The OSHDB API provides a library that can be used to write custom analysis queries of OSM history data. It is based on the [MapReduce](https://en.wikipedia.org/wiki/MapReduce) programming model, which is also offered by the [Stream](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/stream/Stream.html) class in Java.
 
 The [first steps tutorial](../first-steps) explains the main components of the OSHDB API and how they can be used to perform a simple analysis query. On the following sub-pages, the different parts of the API are described in more detail.
 

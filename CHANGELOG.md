@@ -3,6 +3,13 @@ Changelog
 
 ## 1.1.0-SNAPSHOT (current master)
 
+### breaking changes
+
+* java 17 is now a requirement for oshdb
+
+### other changes
+
+* dependency version updates
 
 ## 1.0.0
 
