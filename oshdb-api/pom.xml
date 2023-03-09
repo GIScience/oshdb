@@ -13,8 +13,8 @@
   <description>API to query the OpenStreetMap History Database. Includes MapReduce functionality to filter, analyze and aggregate data.</description>
 
   <properties>
-    <tdigest.version>3.2</tdigest.version>
-    <mavenjar.version>3.2.0</mavenjar.version>
+    <tdigest.version>3.3</tdigest.version>
+    <mavenjar.version>3.3.0</mavenjar.version>
   </properties>
 
   <dependencies>
