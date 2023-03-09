@@ -25,7 +25,7 @@ If you already have an existing Java maven project, the OSHDB-API can be added t
 <dependency>
   <groupId>org.heigit.ohsome</groupId>
   <artifactId>oshdb-api</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 
@@ -80,7 +80,7 @@ In our example, we only want to look at OSM way objects which have the `building
     .filter("type:way and building=*")
 ```
 
-There are a variety of available filter selectors which can be combined into a [filter](https://github.com/GIScience/oshdb/tree/1.0.0/documentation/first-steps) string: each one specifies a property which OSM objects can have. These selectors can be combined into a filter string using boolean operators and parentheses. If multiple `filter`s are set, the result will contain only the OSM objects which match all given filters.
+There are a variety of available filter selectors which can be combined into a [filter](https://github.com/GIScience/oshdb/tree/1.1.0/documentation/first-steps) string: each one specifies a property which OSM objects can have. These selectors can be combined into a filter string using boolean operators and parentheses. If multiple `filter`s are set, the result will contain only the OSM objects which match all given filters.
 
 ## 7. Calculating intermediate results
 
