@@ -43,7 +43,7 @@ abstract class MapReduceOSHDBIgniteTest extends MapReduceTest {
     cfg.setIgniteInstanceName("OSHDB-Unit-Tests_" + rndPort);
     cfg.setBinaryConfiguration((new BinaryConfiguration()).setCompactFooter(false));
     cfg.setGridLogger(new Slf4jLogger());
-    cfg.setWorkDirectory("/tmp");
+    cfg.setWorkDirectory("/tmp/oshdb-tests-ignite");
     cfg.setDiscoverySpi((new TcpDiscoverySpi())
         .setLocalPort(rndPort)
         .setLocalPortRange(0)
