@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>oshdb-parent</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1-beta-1</version>
   <name>OSHDB parent module</name>
   <description>Common dependencies, settings and profiles that are shared by all components of the OSHDB</description>
   <packaging>pom</packaging>
