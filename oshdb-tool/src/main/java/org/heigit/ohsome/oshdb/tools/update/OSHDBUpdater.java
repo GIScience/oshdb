@@ -74,10 +74,21 @@ public class OSHDBUpdater {
   }
 
   private Object nodes(Map<Long, List<OSMEntity>> entities) {
-    var bla = store.entities(NODE, entities.keySet());
-    var blu = store.backRefs(NODE, entities.keySet());
+    var dataMap = store.entities(NODE, entities.keySet());
+    var backRefMap = store.backRefs(NODE, entities.keySet());
     entities.entrySet().stream()
-        .map(entry -> node(entry.getKey(), entry.getValue(), bla.get(entry.getKey()), blu.get(entry.getKey())));
+        .map(entry -> node(entry.getKey(), entry.getValue(),
+            dataMap.get(entry.getKey()),
+            backRefMap.get(entry.getKey())));
+    return null;
+  }
+
+  private Object ways(Map<Long, List<OSMEntity>> entities) {
+    entities.putAll(minorUpdates.getOrDefault(WAY, emptyMap()));
+    var dataMap = store.entities(WAY, entities.keySet());
+    var backRefMap = store.backRefs(WAY, entities.keySet());
+
+
     return null;
   }
 
@@ -87,8 +98,7 @@ public class OSHDBUpdater {
       OSHNode osh = previous.getOSHEntity();
       osh.getVersions().forEach(merged::add);
     }
-    var major = versions.stream()
-        .map(version -> (OSMNode) version)
+    var major = versions.stream().map(version -> (OSMNode) version)
         .filter(merged::add)
         .count() > 0;
 
@@ -107,12 +117,7 @@ public class OSHDBUpdater {
     return new OSHData(NODE, id, gridId, osh.getData());
   }
 
-  private Object ways(Map<Long, List<OSMEntity>> entities) {
-    entities.putAll(minorUpdates.getOrDefault(WAY, emptyMap()));
-    var bla = store.entities(WAY, entities.keySet());
-    var blu = store.backRefs(WAY, entities.keySet());
-    return null;
-  }
+
 
   private OSHData way(long id, List<OSMEntity> versions, OSHData previous, BackRef backRefs) {
     var merged = new TreeSet<OSMWay>(VERSION_REVERSE_ORDER);

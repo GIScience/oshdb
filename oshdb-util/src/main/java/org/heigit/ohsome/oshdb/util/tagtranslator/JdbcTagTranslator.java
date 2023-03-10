@@ -1,6 +1,8 @@
 package org.heigit.ohsome.oshdb.util.tagtranslator;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static org.heigit.ohsome.oshdb.util.tagtranslator.ClosableSqlArray.createArray;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -78,8 +80,8 @@ public class JdbcTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags, TRANSLATE_OPTION option) {
-    if (option != TRANSLATE_OPTION.READONLY) {
+  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags, TranslationOption option) {
+    if (option != TranslationOption.READONLY) {
       throw new UnsupportedOperationException("mutating jdbc translator is not supported yet");
     }
     var keyTags = Maps.<String, Map<String, OSMTag>>newHashMapWithExpectedSize(tags.size());
@@ -116,8 +118,8 @@ public class JdbcTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles, TRANSLATE_OPTION option) {
-    if (option != TRANSLATE_OPTION.READONLY) {
+  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles, TranslationOption option) {
+    if (option != TranslationOption.READONLY) {
       throw new UnsupportedOperationException("mutating jdbc translator is not supported yet");
     }
     return loadRoles(roles);
@@ -144,12 +146,18 @@ public class JdbcTagTranslator implements TagTranslator {
   }
 
   @Override
+  public Map<OSHDBTagKey, OSMTagKey> lookupKey(Set<? extends OSHDBTagKey> oshdbTagKeys) {
+    var keys = oshdbTagKeys.stream().map(OSHDBTagKey::toInt).collect(toSet());
+    return cacheKeys.getAll(keys, this::lookupKeys).entrySet()
+        .stream()
+        .collect(toMap(entry -> new OSHDBTagKey(entry.getKey()), entry -> new OSMTagKey(entry.getValue())));
+  }
+
+  @Override
   public OSMTag lookupTag(OSHDBTag tag) {
     var keyTxt = cacheKeys.getAll(Set.of(tag.getKey()), this::lookupKeys).get(tag.getKey());
     return lookupTags(tag.getKey(), keyTxt, Map.of(tag.getValue(), tag)).get(tag);
   }
-
-
 
   @Override
   public Map<OSHDBTag, OSMTag> lookupTag(Set<? extends OSHDBTag> tags) {

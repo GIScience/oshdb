@@ -49,7 +49,7 @@ public class CachedTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TRANSLATE_OPTION option) {
+  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TranslationOption option) {
     var oshdb = source.getOSHDBTagOf(values, option);
     oshdb.forEach((key, value) -> lookupOSHDBTag.put(value, key));
     return oshdb;
@@ -62,13 +62,13 @@ public class CachedTagTranslator implements TagTranslator {
 
    @Override
   public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> values,
-      TRANSLATE_OPTION option) {
+      TranslationOption option) {
     return source.getOSHDBRoleOf(values, option);
   }
 
   @Override
-  public OSMTag lookupTag(OSHDBTag tag) {
-    return lookupOSHDBTag.get(tag, source::lookupTag);
+  public Map<OSHDBTagKey, OSMTagKey> lookupKey(Set<? extends OSHDBTagKey> keys) {
+    return source.lookupKey(keys);
   }
 
   @Override

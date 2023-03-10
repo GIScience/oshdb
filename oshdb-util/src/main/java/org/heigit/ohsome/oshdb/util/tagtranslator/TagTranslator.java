@@ -10,11 +10,10 @@ import java.util.Set;
 import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTagOrRoleNotFoundException;
 
 public interface TagTranslator {
 
-  enum TRANSLATE_OPTION {
+  enum TranslationOption {
     READONLY,
     ADD_MISSING
   }
@@ -59,10 +58,10 @@ public interface TagTranslator {
   }
 
   default Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags) {
-    return getOSHDBTagOf(tags, TRANSLATE_OPTION.READONLY);
+    return getOSHDBTagOf(tags, TranslationOption.READONLY);
   }
 
-  Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TRANSLATE_OPTION option);
+  Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TranslationOption option);
 
   /**
    * Get oshdb's internal representation of a role (string).
@@ -85,17 +84,34 @@ public interface TagTranslator {
   }
 
   default Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles) {
-    return getOSHDBRoleOf(roles, TRANSLATE_OPTION.READONLY);
+    return getOSHDBRoleOf(roles, TranslationOption.READONLY);
   }
 
-  Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> values, TRANSLATE_OPTION option);
+  Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> values, TranslationOption option);
+
+  /**
+   * Get a tag key string representation from oshdb's internal data format.
+   *
+   * @param key the key to look up
+   * @return the textual representation of this key
+   */
+  default OSMTagKey lookupKey(OSHDBTagKey key) {
+    return lookupKey(Set.of(key)).get(key);
+  }
+
+  /**
+   * Get a tag key string representation from oshdb's internal data format.
+   *
+   * @param keys the keys to look up
+   * @return the textual representation of this keys
+   */
+  Map<OSHDBTagKey, OSMTagKey> lookupKey(Set<? extends OSHDBTagKey> keys);
 
   /**
    * Get a tag's string representation from oshdb's internal data format.
    *
    * @param tag the tag (as an OSHDBTag object)
    * @return the textual representation of this tag
-   * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
   default OSMTag lookupTag(OSHDBTag tag) {
     return lookupTag(Set.of(tag)).get(tag);

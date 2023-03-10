@@ -20,6 +20,7 @@ public class MemoryTagTranslator implements TagTranslator {
   private final Cache<OSMTag, OSHDBTag> tags = Caffeine.newBuilder().build();
   private final Cache<OSMRole, OSHDBRole> roles = Caffeine.newBuilder().build();
 
+  private final Cache<OSHDBTagKey, OSMTagKey> lookupKeys = Caffeine.newBuilder().build();
   private final Cache<OSHDBTag, OSMTag> lookupTags = Caffeine.newBuilder().build();
   private final Cache<OSHDBRole, OSMRole> lookupRoles = Caffeine.newBuilder().build();
 
@@ -29,9 +30,9 @@ public class MemoryTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TRANSLATE_OPTION option) {
+  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TranslationOption option) {
     return tags.getAll(values, set -> {
-      if (option == TRANSLATE_OPTION.READONLY) {
+      if (option == TranslationOption.READONLY) {
         return emptyMap();
       }
       var map = Maps.<OSMTag, OSHDBTag>newHashMapWithExpectedSize(set.size());
@@ -39,6 +40,8 @@ public class MemoryTagTranslator implements TagTranslator {
         var oshdb = new OSHDBTag(
           strings.computeIfAbsent(osm.getKey(), x -> strings.size()),
           strings.computeIfAbsent(osm.getValue(), x -> strings.size()));
+        lookupKeys.put(new OSHDBTagKey(oshdb.getKey()), new OSMTagKey(osm.getKey()));
+        lookupTags.put(oshdb, osm);
         map.put(osm, oshdb);
       }
       return map;
@@ -47,9 +50,9 @@ public class MemoryTagTranslator implements TagTranslator {
 
   @Override
   public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> values,
-      TRANSLATE_OPTION option) {
+      TranslationOption option) {
     return roles.getAll(values, set -> {
-      if (option == TRANSLATE_OPTION.READONLY) {
+      if (option == TranslationOption.READONLY) {
         return emptyMap();
       }
       var map = Maps.<OSMRole, OSHDBRole>newHashMapWithExpectedSize(set.size());
@@ -60,6 +63,11 @@ public class MemoryTagTranslator implements TagTranslator {
       }
       return map;
     });
+  }
+
+  @Override
+  public Map<OSHDBTagKey, OSMTagKey> lookupKey(Set<? extends OSHDBTagKey> keys) {
+    return lookupKeys.getAllPresent(keys);
   }
 
   @Override

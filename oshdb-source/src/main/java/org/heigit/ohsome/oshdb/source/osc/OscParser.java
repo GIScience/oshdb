@@ -2,6 +2,7 @@ package org.heigit.ohsome.oshdb.source.osc;
 
 import static com.google.common.collect.Streams.stream;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static javax.xml.stream.XMLStreamConstants.CDATA;
 import static javax.xml.stream.XMLStreamConstants.CHARACTERS;
@@ -11,7 +12,9 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.PROCESSING_INSTRUCTION;
 import static javax.xml.stream.XMLStreamConstants.SPACE;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-import static org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator.TRANSLATE_OPTION.ADD_MISSING;
+import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.mapT2;
+import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.tupleOfEntry;
+import static org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator.TranslationOption.ADD_MISSING;
 import static reactor.core.publisher.Flux.fromIterable;
 
 import com.google.common.collect.Maps;
@@ -45,6 +48,7 @@ import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
 
 public class OscParser implements OSMSource, AutoCloseable {
 
@@ -57,12 +61,11 @@ public class OscParser implements OSMSource, AutoCloseable {
   }
 
   @Override
-  public Flux<OSMEntity> entities(TagTranslator tagTranslator) {
+  public Flux<Tuple2<OSMType, Flux<OSMEntity>>> entities(TagTranslator tagTranslator) {
     try (var parser = new Parser(inputStream)) {
       @SuppressWarnings("UnstableApiUsage")
-      var entities = stream(parser).collect(toList());
-      LOG.info("osc entities: {}, strings: {}, tags: {}, roles: {}",
-          entities.size(),
+      var entities = stream(parser).collect(groupingBy(OSMEntity::getType));
+      LOG.info("osc entities: {}, strings: {}, tags: {}, roles: {}", entities.size(),
           parser.cacheString.size(),
           parser.cacheTags.size(),
           parser.cacheRoles.size());
@@ -70,7 +73,9 @@ public class OscParser implements OSMSource, AutoCloseable {
       var tagsMapping = tagsMapping(tagTranslator, parser);
       var rolesMapping = rolesMapping(tagTranslator, parser);
 
-      return fromIterable(entities).map(osm -> map(osm, tagsMapping, rolesMapping));
+      return fromIterable(entities.entrySet())
+          .map(tupleOfEntry())
+          .map(mapT2(f -> fromIterable(f).map(osm -> map(osm, tagsMapping, rolesMapping))));
     } catch (Exception e) {
       throw new OSHDBException(e);
     }
