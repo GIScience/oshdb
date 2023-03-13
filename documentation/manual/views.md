@@ -3,8 +3,8 @@ Views
 
 Two different ways of querying OSM data are available, which determine how the OSM history data is actually analyzed in a given OSHDB query:
 
-* The **snapshot view** ([`OSMEntitySnapshotView`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMEntitySnapshotView.html)) returns the state of the OSM history data at specific given points in time.
-* The **contribution view** ([`OSMContributionView`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html)) returns all modifications (e.g., creations, modifications or deletions) to the OSM elements within a given time period.
+* The **snapshot view** ([`OSMEntitySnapshotView`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMEntitySnapshotView.html)) returns the state of the OSM history data at specific given points in time.
+* The **contribution view** ([`OSMContributionView`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html)) returns all modifications (e.g., creations, modifications or deletions) to the OSM elements within a given time period.
 
 The snapshot view is particularly useful for analysing how the amount of OSM data changed over time. The contribution view can be used to determine the number of OSM contributors editing the OSM data.
 
@@ -13,7 +13,7 @@ The snapshot view is particularly useful for analysing how the amount of OSM dat
 Using OSHDB Views
 -----------------
 
-Both views can be used in the OSHDB API in very similar ways and only differ in the type of data that is returned by the [`MapReducer`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html) object that is returned when calling the [`on`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html#on(org.heigit.ohsome.oshdb.api.db.OSHDBDatabase)) method of the respective view: The `OSMEntitySnapshotView` returns a MapReducer of [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) objects, while the `OSMContributionView` returns a MapReducer of [`OSMContribution`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html) objects.
+Both views can be used in the OSHDB API in very similar ways and only differ in the type of data that is returned by the [`MapReducer`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html) object that is returned when calling the [`on`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html#on(org.heigit.ohsome.oshdb.api.db.OSHDBDatabase)) method of the respective view: The `OSMEntitySnapshotView` returns a MapReducer of [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) objects, while the `OSMContributionView` returns a MapReducer of [`OSMContribution`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html) objects.
 
 ```java
 OSHDBDatabase oshdb = …;
@@ -26,28 +26,28 @@ A MapReducer is conceptually very similar to a [Stream](https://docs.oracle.com/
 
 ### Snapshot View
 
-The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) is quite simple: it returns the state of the OSM data at a given point in time, or at multiple given points in time. In the OSHDB API, these are called snapshots and are represented by [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) objects. They allow access to the following properties:
+The [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) is quite simple: it returns the state of the OSM data at a given point in time, or at multiple given points in time. In the OSHDB API, these are called snapshots and are represented by [`OSMEntitySnapshot`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html) objects. They allow access to the following properties:
 
-* the [timestamp](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getTimestamp()) of the snapshot
-* the [geometry](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getGeometry()) of the queried OSM feature
-* the [OSM entity](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getEntity()) of this snapshot
+* the [timestamp](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getTimestamp()) of the snapshot
+* the [geometry](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getGeometry()) of the queried OSM feature
+* the [OSM entity](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMEntitySnapshot.html#getEntity()) of this snapshot
 
 ### Contribution View
 
-The [`OSMContributionView`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html) returns all modifications to matching OSM entities. This is in general more computationally intensive than using the snapshot view, but allows to inspect the OSM data in more detail, especially if one is interested in how the OSM data is modified by the contributors to the OSM project.
+The [`OSMContributionView`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/OSMContributionView.html) returns all modifications to matching OSM entities. This is in general more computationally intensive than using the snapshot view, but allows to inspect the OSM data in more detail, especially if one is interested in how the OSM data is modified by the contributors to the OSM project.
 
 Specifically, the OSHDB API considers all modifications to [semantic OSM elements](https://wiki.openstreetmap.org/wiki/Semantic_elements) as a contribution: This includes both direct edits (e.g. tag changes) as well as changes which are based in changes of referenced OSM objects (e.g. certain geometry changes). When OSM entities are changed multiple times in a single [OSM changeset](https://wiki.openstreetmap.org/wiki/Changeset), these are squashed into one single contribution result.
 
-Through the returned [`OSMContribution`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html) objects, one has access to the following properties:
+Through the returned [`OSMContribution`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html) objects, one has access to the following properties:
 
-* the [timestamp](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getTimestamp()) of the contribution
-* the geometries [before](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getGeometryBefore()) and [after](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getGeometryAfter()) the modification. If the contribution object represents a creation of an entity, the before geometry doesn't exist and returns `null` if it is accessed. Similarly, this is also true for the geometry after a deletion of an OSM object.
-* the OSM entity [before](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getEntityBefore()) and [after](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getEntityBefore()) the modification
-* the [id of the OSM user](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getContributorUserId()) who performed this contribution
-* the [id of the OSM changeset](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getChangesetId()) in which this contribution was performed
-* the [type](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getContributionTypes()) of the contribution.
+* the [timestamp](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getTimestamp()) of the contribution
+* the geometries [before](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getGeometryBefore()) and [after](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getGeometryAfter()) the modification. If the contribution object represents a creation of an entity, the before geometry doesn't exist and returns `null` if it is accessed. Similarly, this is also true for the geometry after a deletion of an OSM object.
+* the OSM entity [before](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getEntityBefore()) and [after](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getEntityBefore()) the modification
+* the [id of the OSM user](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getContributorUserId()) who performed this contribution
+* the [id of the OSM changeset](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getChangesetId()) in which this contribution was performed
+* the [type](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/mappable/OSMContribution.html#getContributionTypes()) of the contribution.
 
-The [contribution type](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/util/celliterator/ContributionType.html) can be either a **creation**, a **deletion**, a **tag change**, or a **geometry change** of an OSM entity.
+The [contribution type](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/util/celliterator/ContributionType.html) can be either a **creation**, a **deletion**, a **tag change**, or a **geometry change** of an OSM entity.
 
 All of these contribution types refer to the filtered set of OSM data of the current MapReducer. This means that an OSM feature that has gained a specific tag in one of versions greater than one, will be reported as a “creation” by the contribution view of the OSHDB API if the query was programmed to filter for that particular tag. Analogously this is also the case if an object was moved from outside an area of interest into the query region, and also for the inverse cases which are returned as deletions. This makes sure that summing up all creations and subtracting all deletions matches the results one can obtain from a query using the snapshot view.
 
@@ -56,7 +56,7 @@ Note that there exist [cases](https://github.com/GIScience/oshdb/issues/87) wher
 GroupByEntity
 -------------
 
-The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/1.1.0/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#groupByEntity()) method of a MapReducer slightly changes the way the MapReducers receives and transforms values: Instead of iterating over each snapshot or contribution individually, in this mode all snapshots or all contributions of an individual OSM entity are collected into a list (sorted by timestamps) first. This makes it possible to investigate the full edit history of individual OSM objects at once, which is for example needed when one is looking for contributions that got reverted at a later point in time.
+The [`groupByEntity()`](https://docs.ohsome.org/java/oshdb/1.1.1/aggregated/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#groupByEntity()) method of a MapReducer slightly changes the way the MapReducers receives and transforms values: Instead of iterating over each snapshot or contribution individually, in this mode all snapshots or all contributions of an individual OSM entity are collected into a list (sorted by timestamps) first. This makes it possible to investigate the full edit history of individual OSM objects at once, which is for example needed when one is looking for contributions that got reverted at a later point in time.
 
 It is recommended to call this method immediately after creating the MapReducer from a view:
 
