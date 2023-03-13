@@ -21,7 +21,7 @@ Simply add the OSHDB as a dependency to your `pom.xml` file. For most use cases 
   <dependency>
     <groupId>org.heigit.ohsome</groupId>
     <artifactId>oshdb-api</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
   </dependency>
 </dependencies>
 ```
