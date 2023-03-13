@@ -17,6 +17,10 @@ public class CachedTagTranslator implements TagTranslator {
   private final Cache<OSHDBTag, OSMTag> lookupOSHDBTag;
   private final Cache<OSHDBRole, OSMRole> lookupOSHDBRole;
 
+  public CachedTagTranslator(TagTranslator source, long maxBytesValues) {
+    this(source, maxBytesValues, Integer.MAX_VALUE);
+  }
+
   public CachedTagTranslator(TagTranslator source, long maxBytesValues, int maxNumRoles) {
     this.source = source;
     this.lookupOSHDBTag = Caffeine.newBuilder()
