@@ -13,7 +13,7 @@ import static javax.xml.stream.XMLStreamConstants.PROCESSING_INSTRUCTION;
 import static javax.xml.stream.XMLStreamConstants.SPACE;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.mapT2;
-import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.tupleOfEntry;
+import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.entryToTuple;
 import static org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator.TranslationOption.ADD_MISSING;
 import static reactor.core.publisher.Flux.fromIterable;
 
@@ -74,7 +74,7 @@ public class OscParser implements OSMSource, AutoCloseable {
       var rolesMapping = rolesMapping(tagTranslator, parser);
 
       return fromIterable(entities.entrySet())
-          .map(tupleOfEntry())
+          .map(entryToTuple())
           .map(mapT2(f -> fromIterable(f).map(osm -> map(osm, tagsMapping, rolesMapping))));
     } catch (Exception e) {
       throw new OSHDBException(e);

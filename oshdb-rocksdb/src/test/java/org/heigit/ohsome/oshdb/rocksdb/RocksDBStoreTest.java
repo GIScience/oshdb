@@ -10,13 +10,17 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 import org.heigit.ohsome.oshdb.osm.OSMType;
+import org.heigit.ohsome.oshdb.store.BackRefType;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
 import org.heigit.ohsome.oshdb.util.CellId;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.util.SizeUnit;
+import org.assertj.core.api.Assertions;
+
 
 class RocksDBStoreTest {
 
@@ -26,10 +30,9 @@ class RocksDBStoreTest {
     return new RocksDBStore(STORE_TEST_PATH, 10 * SizeUnit.MB);
   }
 
-  @AfterEach
-  void cleanUp() throws Exception {
+  @AfterAll
+  static void cleanUp() throws Exception {
     MoreFiles.deleteRecursively(STORE_TEST_PATH, RecursiveDeleteOption.ALLOW_INSECURE);
-    System.out.println("clean up");
   }
 
   @Test
@@ -42,7 +45,11 @@ class RocksDBStoreTest {
           , new OSHData(OSMType.NODE, 30, 3, "Test Node 30".getBytes())
       );
       store.entities(entities);
-      var actual = store.entity(OSMType.NODE, 20);
+      Thread.sleep(1000);
+
+      var actuals = store.entities(OSMType.NODE, Set.of(20L));
+      System.out.println("actual = " + actuals);
+      var actual = actuals.get(20L);
       assertNotNull(actual);
       assertEquals(20L, actual.getId());
       assertArrayEquals("Test Node 20".getBytes(), actual.getData());
@@ -52,6 +59,7 @@ class RocksDBStoreTest {
       assertEquals(2, grid.size());
 
       store.entities(Set.of(new OSHData(OSMType.NODE, 22, 22, "Test Node 22 updated".getBytes())));
+      Thread.sleep(1000);
       actual = store.entity(OSMType.NODE, 22);
       assertArrayEquals("Test Node 22 updated".getBytes(), actual.getData());
       assertEquals(22L, actual.getGridId());
@@ -67,6 +75,28 @@ class RocksDBStoreTest {
       assertEquals(30L, actual.getId());
       assertArrayEquals("Test Node 30".getBytes(), actual.getData());
       assertEquals(3L, actual.getGridId());
+    }
+  }
+
+  @Test
+  void backRefs() throws Exception {
+    try (var store = openStore()) {
+      store.backRefsMerge(BackRefType.NODE_WAY, 1234L, Set.of(1L, 2L, 3L, 4L));
+      var backRefs = store.backRefs(OSMType.NODE, Set.of(1L, 2L, 3L, 4L));
+      assertEquals(4, backRefs.size());
+      Assertions.assertThat(backRefs.get(1L).ways())
+          .hasSameElementsAs(Set.of(1234L));
+      store.backRefsMerge(BackRefType.NODE_WAY, 2222L, Set.of(1L, 4L));
+      backRefs = store.backRefs(OSMType.NODE, Set.of(1L));
+      assertEquals(1, backRefs.size());
+      Assertions.assertThat(backRefs.get(1L).ways())
+          .hasSameElementsAs(Set.of(1234L, 2222L));
+    }
+    try (var store = openStore()) {
+      var backRefs = store.backRefs(OSMType.NODE, Set.of(4L));
+      assertEquals(1, backRefs.size());
+      Assertions.assertThat(backRefs.get(4L).ways())
+          .hasSameElementsAs(Set.of(1234L, 2222L));
     }
   }
 }

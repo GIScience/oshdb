@@ -72,23 +72,24 @@ public class EntityStore implements AutoCloseable {
   }
 
   public Map<Long, OSHData> entities(Collection<Long> ids) throws RocksDBException {
-    var opt = new ReadOptions();
-    var cfsList = new ColumnFamilyHandle[ids.size()];
-    Arrays.fill(cfsList, entityGridCFHandle());
-    var keys = idsToKeys(ids, ids.size());
-    var gridIds = db.multiGetAsList(opt, Arrays.asList(cfsList), keys);
+    try (var opt = new ReadOptions()) {
+      var cfsList = new ColumnFamilyHandle[ids.size()];
+      Arrays.fill(cfsList, entityGridCFHandle());
+      var keys = idsToKeys(ids, ids.size());
+      var gridIds = db.multiGetAsList(opt, Arrays.asList(cfsList), keys);
 
-    @SuppressWarnings("UnstableApiUsage")
-    var gridEntityKeys = zip(gridIds.stream(), keys.stream(), this::gridEntityKey)
-        .filter(key -> key.length != 0)
-        .collect(Collectors.toList());
+      @SuppressWarnings("UnstableApiUsage")
+      var gridEntityKeys = zip(gridIds.stream(), keys.stream(), this::gridEntityKey)
+          .filter(key -> key.length != 0)
+          .collect(Collectors.toList());
 
-    var data = db.multiGetAsList(opt, gridEntityKeys);
-    @SuppressWarnings("UnstableApiUsage")
-    var entities = zip(gridEntityKeys.stream(), data.stream(), this::gridEntityToOSHData)
-        .filter(Objects::nonNull)
-        .collect(toMap(OSHData::getId, identity()));
-    return entities;
+      var data = db.multiGetAsList(opt, gridEntityKeys);
+      @SuppressWarnings("UnstableApiUsage")
+      var entities = zip(gridEntityKeys.stream(), data.stream(), this::gridEntityToOSHData)
+          .filter(Objects::nonNull)
+          .collect(toMap(OSHData::getId, identity()));
+      return entities;
+    }
   }
 
 
@@ -100,7 +101,9 @@ public class EntityStore implements AutoCloseable {
     var keys = idsToKeys(Iterables.transform(entities, OSHData::getId), entities.size());
     var gridKeys = db.multiGetAsList(opt, Arrays.asList(cfsList), keys);
 
-    try (var wb = new WriteBatch()) {
+    try (var wo = new WriteOptions().setDisableWAL(true);
+         var wb = new WriteBatch()) {
+
       var idx = 0;
       for (var entity : entities) {
         var gridKey = idToKey(entity.getGridId());
@@ -114,7 +117,7 @@ public class EntityStore implements AutoCloseable {
         wb.put(gridEntityDataCFHandle(), gridEntityKey(gridKey, key), entity.getData());
         idx++;
       }
-      db.write(new WriteOptions(), wb);
+      db.write(wo, wb);
     }
   }
 

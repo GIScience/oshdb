@@ -24,5 +24,5 @@ public interface OSHDBStore extends AutoCloseable {
 
   Map<Long, BackRef> backRefs(OSMType type, Set<Long> ids);
 
-  void backRefs(Set<BackRef> backRefs);
+  void backRefsMerge(BackRefType type, long backRef, Set<Long> ids);
 }
