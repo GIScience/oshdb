@@ -11,8 +11,8 @@ public class OSHData implements Serializable {
    private final OSMType type;
    private final long id;
 
-   private long gridId;
-   private byte[] data;
+   private final long gridId;
+   private final byte[] data;
 
    private transient OSHEntity osh;
 
@@ -39,6 +39,7 @@ public class OSHData implements Serializable {
     return data;
   }
 
+  @SuppressWarnings("unchecked")
   public <T extends OSHEntity> T getOSHEntity() {
     if (osh == null) {
       osh = oshEntity();
@@ -47,11 +48,21 @@ public class OSHData implements Serializable {
   }
 
   private OSHEntity oshEntity(){
-    switch (type) {
-      case NODE: return OSHNodeImpl.instance(data, 0, 0);
-      case WAY: return OSHWayImpl.instance(data,0, 0);
-      case RELATION: return OSHRelationImpl.instance(data, 0, 0);
-      default: throw new IllegalStateException();
-    }
+    return switch (type) {
+      case NODE -> OSHNodeImpl.instance(data, 0, 0);
+      case WAY -> OSHWayImpl.instance(data, 0, 0);
+      case RELATION -> OSHRelationImpl.instance(data, 0, 0);
+    };
+  }
+
+  @Override
+  public String toString() {
+    return "OSHData{" +
+        "type=" + type +
+        ", id=" + id +
+        ", gridId=" + gridId +
+        ", data=" + data.length +
+        ", osh=" + osh +
+        '}';
   }
 }
