@@ -2,8 +2,8 @@ package org.heigit.ohsome.oshdb.source.osc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.util.Collections;
 import java.util.TreeMap;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.tagtranslator.CachedTagTranslator;
@@ -77,11 +77,10 @@ class OscParserTest {
   void entities() throws Exception {
     var tagTranslator = new CachedTagTranslator(new MemoryTagTranslator(), 1024);
 
-    try ( var input = new ByteArrayInputStream(osc.getBytes());
-          var osmSource = new OscParser(input)) {
-      var entities = osmSource.entities(tagTranslator);
+    try ( var input = new ByteArrayInputStream(osc.getBytes())){
+      var entities = OscParser.entities(input, tagTranslator);
       var list = entities.flatMap(Tuple2::getT2)
-          .collectList().block();
+          .collectList().blockOptional().orElseGet(Collections::emptyList);
       assertEquals(7, list.size());
 
       var tagHighwayResidantial = tagTranslator.getOSHDBTagOf(new OSMTag("highway","residential"));
@@ -90,12 +89,10 @@ class OscParserTest {
       var roleStreet = tagTranslator.getOSHDBRoleOf("street");
       System.out.println("roleStreet = " + roleStreet);
 
-      list.stream()
-          .forEach(osm -> System.out.printf("%s %s%n", osm, tagTranslator.lookupTag(osm.getTags())));
+      list.forEach(osm -> System.out.printf("%s %s%n", osm, tagTranslator.lookupTag(osm.getTags())));
     }
 
-    var sortedTags = new TreeMap<OSHDBTag, OSMTag>();
-    sortedTags.putAll(tagTranslator.getLookupOSHDBTag().asMap());
+    var sortedTags = new TreeMap<>(tagTranslator.getLookupOSHDBTag().asMap());
     sortedTags.forEach((osm, oshdb) -> System.out.printf("%s -> %s%n", osm, oshdb));
 
 

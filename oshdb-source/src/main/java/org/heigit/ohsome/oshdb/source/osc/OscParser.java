@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.source.osc;
 import static com.google.common.collect.Streams.stream;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 import static javax.xml.stream.XMLStreamConstants.CDATA;
 import static javax.xml.stream.XMLStreamConstants.CHARACTERS;
 import static javax.xml.stream.XMLStreamConstants.COMMENT;
@@ -12,8 +11,8 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.PROCESSING_INSTRUCTION;
 import static javax.xml.stream.XMLStreamConstants.SPACE;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.mapT2;
 import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.entryToTuple;
+import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.mapT2;
 import static org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator.TranslationOption.ADD_MISSING;
 import static reactor.core.publisher.Flux.fromIterable;
 
@@ -50,11 +49,15 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-public class OscParser implements OSMSource, AutoCloseable {
+public class OscParser implements OSMSource {
 
   private static final Logger LOG = LoggerFactory.getLogger(OscParser.class);
 
   private final InputStream inputStream;
+
+  public static Flux<Tuple2<OSMType, Flux<OSMEntity>>> entities(InputStream inputStream, TagTranslator tagTranslator) {
+     return new OscParser(inputStream).entities(tagTranslator);
+  }
 
   public OscParser(InputStream inputStream) {
     this.inputStream = inputStream;
@@ -98,27 +101,21 @@ public class OscParser implements OSMSource, AutoCloseable {
   }
 
   private OSMEntity map(OSMEntity osm, Map<OSHDBTag, OSHDBTag> tagsMapping, Map<Integer, Integer> rolesMapping) {
-    var tags = osm.getTags().stream().map(tagsMapping::get).sorted().collect(toList());
-    if (osm instanceof OSMNode) {
-      var node = (OSMNode) osm;
+    var tags = osm.getTags().stream().map(tagsMapping::get).sorted().toList();
+    if (osm instanceof OSMNode node) {
       return OSM.node(osm.getId(), version(osm.getVersion(), osm.isVisible()), osm.getEpochSecond(), osm.getChangesetId(),osm.getUserId(), tags, node.getLon(), node.getLat());
-    } else if (osm instanceof OSMWay) {
-      var way = (OSMWay) osm;
+    } else if (osm instanceof OSMWay way) {
       return OSM.way(osm.getId(), version(osm.getVersion(), osm.isVisible()), osm.getEpochSecond(), osm.getChangesetId(),osm.getUserId(), tags, way.getMembers());
-    } else {
-      var relation = (OSMRelation) osm;
+    } else if (osm instanceof OSMRelation relation) {
       var members = Arrays.stream(relation.getMembers()).map(mem -> new OSMMember(mem.getId(), mem.getType(), rolesMapping.get(mem.getRole().getId()))).toArray(OSMMember[]::new);
       return OSM.relation(osm.getId(), version(osm.getVersion(), osm.isVisible()), osm.getEpochSecond(), osm.getChangesetId(),osm.getUserId(), tags, members);
+    } else {
+      throw new IllegalStateException();
     }
   }
 
   private static int version(int version, boolean visible) {
     return visible ? version : -version;
-  }
-
-  @Override
-  public void close() throws Exception {
-    inputStream.close();
   }
 
   private static class Parser implements Iterator<OSMEntity>, AutoCloseable {
@@ -412,16 +409,9 @@ public class OscParser implements OSMSource, AutoCloseable {
         var event = reader.next();
 
         switch (event) {
-          case SPACE:
-          case COMMENT:
-          case PROCESSING_INSTRUCTION:
-          case CDATA:
-          case CHARACTERS:
+          case SPACE, COMMENT, PROCESSING_INSTRUCTION, CDATA, CHARACTERS:
             continue;
-
-          case START_ELEMENT:
-          case END_ELEMENT:
-          case END_DOCUMENT:
+          case START_ELEMENT, END_ELEMENT, END_DOCUMENT:
             return event;
           default:
             throw new XMLStreamException(format(
