@@ -8,28 +8,29 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 
 public class OSHData implements Serializable {
-   private final OSMType type;
-   private final long id;
 
-   private final long gridId;
-   private final byte[] data;
+  private final OSMType type;
+  private final long id;
 
-   private transient OSHEntity osh;
+  private final long gridId;
+  private final byte[] data;
+
+  private transient OSHEntity osh;
 
   public OSHData(OSMType type, long id, long gridId, byte[] data) {
-     this.type = type;
-     this.id = id;
-     this.gridId = gridId;
-     this.data = data;
+    this.type = type;
+    this.id = id;
+    this.gridId = gridId;
+    this.data = data;
   }
 
   public OSMType getType() {
-      return type;
-   }
+    return type;
+  }
 
-   public long getId() {
-      return id;
-   }
+  public long getId() {
+    return id;
+  }
 
   public long getGridId() {
     return gridId;
@@ -47,7 +48,7 @@ public class OSHData implements Serializable {
     return (T) osh;
   }
 
-  private OSHEntity oshEntity(){
+  private OSHEntity oshEntity() {
     return switch (type) {
       case NODE -> OSHNodeImpl.instance(data, 0, 0);
       case WAY -> OSHWayImpl.instance(data, 0, 0);
