@@ -4,11 +4,8 @@ import static java.lang.String.format;
 import static java.util.function.Function.identity;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import static org.heigit.ohsome.oshdb.util.TableNames.E_KEY;
-import static org.heigit.ohsome.oshdb.util.TableNames.E_KEYVALUE;
 import static org.heigit.ohsome.oshdb.util.TableNames.E_ROLE;
 import static org.heigit.ohsome.oshdb.util.tagtranslator.ClosableSqlArray.createArray;
 
@@ -33,44 +30,46 @@ import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 @SuppressWarnings("java:S1192")
 public class JdbcTagTranslator implements TagTranslator {
 
-  private static final String OSM_OSHDB_KEY = format("SELECT id, txt, values"
-      + " from %s k"
-      + " where k.txt = any (?)", E_KEY);
+  private static final String OSM_OSHDB_KEY = """
+      SELECT id, txt, values
+      FROM tag_key k
+      WHERE k.txt = any (?)""";
 
-  private static final String MAX_KEY = format("SELECT count(id) from %s", E_KEY);
+  private static final String MAX_KEY = "SELECT count(id) FROM tag_key";
 
-  private static final String OSM_OSHDB_TAG = format("SELECT keyid, valueid, kv.txt"
-      + " from %s k"
-      + " left join %s kv on k.id = kv.keyid"
-      + " where k.txt = ? and kv.txt = any (?)", E_KEY, E_KEYVALUE);
+  private static final String OSM_OSHDB_TAG = """
+      SELECT keyid, valueid, kv.txt
+      FROM tag_key k
+      LEFT JOIN tag_value kv on k.id = kv.keyid
+      WHERE k.txt = ? AND kv.txt = any (?)""";
 
-  private static final String OSHDB_OSM_KEY = format("SELECT txt, id"
-      + " from %s"
-      + " where id = any(?)", E_KEY);
+  private static final String OSHDB_OSM_KEY = """
+      SELECT txt, id
+      FROM tag_key
+      WHERE id = any(?)""";
 
-  private static final String OSHDB_OSM_TAG = format("SELECT txt, valueid"
-      + " from %s"
-      + " where keyid = ? and valueid = any (?)", E_KEYVALUE);
+  private static final String OSHDB_OSM_TAG = """
+      SELECT txt, valueid
+      FROM tag_value
+      WHERE keyid = ? and valueid = any (?)""";
 
-  private static final String ADD_OSHDB_KEY = format("INSERT INTO %s (id, txt, values)"
-      + " values(?, ?, ?)", E_KEY);
+  private static final String ADD_OSHDB_KEY = "INSERT INTO tag_key values(?,?,?)";
 
-  private static final String UPDATE_OSHDB_KEY = format("UPDATE %s SET values= ?"
-      + " where id = ?", E_KEY);
+  private static final String UPDATE_OSHDB_KEY = "UPDATE tag_key SET values= ? WHERE id = ?";
 
-  private static final String ADD_OSHDB_TAG = format("INSERT INTO %s (keyid, valueid, txt)"
-      + " values(?, ?, ?)", E_KEYVALUE);
+  private static final String ADD_OSHDB_TAG = "INSERT INTO tag_value values(?,?,?)";
 
-  private static final String OSM_OSHDB_ROLE = format("SELECT id, txt"
-      + " from %s"
-      + " where txt = any (?)", E_ROLE);
+  private static final String OSM_OSHDB_ROLE = """
+      SELECT id, txt
+      FROM role
+      WHERE txt = any (?)""";
 
-  private static final String OSHDB_OSM_ROLE = format("SELECT txt, id"
-      + " from %s"
-      + " where id = any (?)", E_ROLE);
+  private static final String OSHDB_OSM_ROLE = """
+      SELECT txt, id
+      FROM role
+      WHERE id = any (?)""";
 
-  private static final String ADD_OSHDB_ROLE = format("INSERT INTO %s (id, txt)"
-      + "values(?, ?) ", E_ROLE);
+  private static final String ADD_OSHDB_ROLE = "INSERT INTO role values(?,?) ";
 
 
   private final DataSource source;
@@ -81,7 +80,7 @@ public class JdbcTagTranslator implements TagTranslator {
    * Attention: This tag translator relies on a pooled datasource for thread-safety.
    *
    * @param source   the (pooled) datasource
-   * @param readonly marks this TagTranslater to not adding tags to the database.
+   * @param readonly marks this TagTranslator to not adding tags to the database.
    */
   public JdbcTagTranslator(DataSource source, boolean readonly) {
     this.source = source;
@@ -138,7 +137,7 @@ public class JdbcTagTranslator implements TagTranslator {
       var keys = loadKeys(keyTags);
 
       var existing = keyTags.entrySet().parallelStream()
-          .filter(entry -> keys.get(entry.getKey()).getValues() > 0)
+          .filter(entry -> keys.get(entry.getKey()).values() > 0)
           .flatMap(entry -> loadTags(entry.getKey(), entry.getValue()).entrySet().stream())
           .collect(toMap(Entry::getKey, Entry::getValue));
 
@@ -164,7 +163,7 @@ public class JdbcTagTranslator implements TagTranslator {
         try (var rst = pstmt.executeQuery()) {
           while (rst.next()) {
             var keyValues = new KeyValues(rst.getInt(1), rst.getString(2), rst.getInt(3));
-            keys.put(keyValues.getTxt(), keyValues);
+            keys.put(keyValues.txt(), keyValues);
           }
         }
       }
@@ -213,13 +212,13 @@ public class JdbcTagTranslator implements TagTranslator {
   private Map<OSMTag, OSHDBTag> addTags(KeyValues keyValues, Map<String, OSMTag> tags) {
     var map = Maps.<OSMTag, OSHDBTag>newHashMapWithExpectedSize(tags.size());
     try (var conn = source.getConnection();
-        var addKey = keyValues.getValues() == 0 ? conn.prepareStatement(ADD_OSHDB_KEY)
+        var addKey = keyValues.values() == 0 ? conn.prepareStatement(ADD_OSHDB_KEY)
             : conn.prepareStatement(UPDATE_OSHDB_KEY);
         var addTag = conn.prepareStatement(ADD_OSHDB_TAG)) {
 
-      var keyId = keyValues.getId();
-      var keyTxt = keyValues.getTxt();
-      var nextValueId = keyValues.getValues();
+      var keyId = keyValues.id();
+      var keyTxt = keyValues.txt();
+      var nextValueId = keyValues.values();
 
       var batchSize = 0;
       for (var entry : tags.entrySet()) {
@@ -238,7 +237,7 @@ public class JdbcTagTranslator implements TagTranslator {
         map.put(osm, oshdb);
       }
       addTag.executeBatch();
-      if (keyValues.getValues() == 0) {
+      if (keyValues.values() == 0) {
         addKey.setInt(1, keyId);
         addKey.setString(2, keyTxt);
         addKey.setInt(3, nextValueId);
@@ -279,7 +278,7 @@ public class JdbcTagTranslator implements TagTranslator {
     } catch (SQLException e) {
       throw new OSHDBException(e);
     }
-   return existing;
+    return existing;
   }
 
   private int nextRoleId(Connection conn) throws SQLException {
@@ -294,8 +293,7 @@ public class JdbcTagTranslator implements TagTranslator {
 
   private Map<OSMRole, OSHDBRole> loadRoles(Collection<OSMRole> roles) {
     try (var conn = source.getConnection();
-        var sqlArray =
-            createArray(conn, "text", roles.stream().map(OSMRole::toString).collect(toList()));
+        var sqlArray = createArray(conn, "text", roles.stream().map(OSMRole::toString).toList());
         var pstmt = conn.prepareStatement(OSM_OSHDB_ROLE)) {
       pstmt.setArray(1, sqlArray.get());
       try (var rst = pstmt.executeQuery()) {
@@ -388,7 +386,7 @@ public class JdbcTagTranslator implements TagTranslator {
   private Map<OSHDBRole, OSMRole> lookupRoles(Set<? extends OSHDBRole> roles) {
     try (var conn = source.getConnection();
         var sqlArray =
-            createArray(conn, "int", roles.stream().map(OSHDBRole::getId).collect(toList()));
+            createArray(conn, "int", roles.stream().map(OSHDBRole::getId).toList());
         var pstmt = conn.prepareStatement(OSHDB_OSM_ROLE)) {
       pstmt.setArray(1, sqlArray.get());
       try (var rst = pstmt.executeQuery()) {
@@ -405,37 +403,15 @@ public class JdbcTagTranslator implements TagTranslator {
     }
   }
 
-  private static class KeyValues {
-
-    private final int id;
-    private final String txt;
-    private final int values;
-
-    public KeyValues(int id, String txt, int values) {
-      this.id = id;
-      this.txt = txt;
-      this.values = values;
-    }
-
-    public int getId() {
-      return id;
-    }
-
-    public String getTxt() {
-      return txt;
-    }
-
-    public int getValues() {
-      return values;
-    }
+  private record KeyValues(int id, String txt, int values) {
 
     @Override
-    public String toString() {
-      return "KeyValues{" +
-          "id=" + id +
-          ", txt='" + txt + '\'' +
-          ", values=" + values +
-          '}';
+      public String toString() {
+        return "KeyValues{" +
+            "id=" + id +
+            ", txt='" + txt + '\'' +
+            ", values=" + values +
+            '}';
+      }
     }
-  }
 }

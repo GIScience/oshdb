@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.OSHDBTag;
+import org.heigit.ohsome.oshdb.util.KeyTables;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -39,7 +40,9 @@ class JdbcTagTranslatorTest extends AbstractTagTranslatorTest {
   @Test
   void testAddMissingTagsRoles() throws SQLException {
     var dataSource = JdbcConnectionPool.create("jdbc:h2:mem:", "sa", "");
-    createTables(dataSource);
+    try (var conn = dataSource.getConnection()) {
+      KeyTables.init(conn);
+    }
 
     var tagTranslator = new CachedTagTranslator(new JdbcTagTranslator(dataSource, false),1024);
     var tags = tagTranslator.getOSHDBTagOf(Set.of(TAG_HIGHWAY_RESIDENTIAL));
