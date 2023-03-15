@@ -3,16 +3,12 @@ package org.heigit.ohsome.oshdb.source.osc;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.net.URI.create;
-import static java.net.http.HttpResponse.BodyHandlers.ofInputStream;
-import static java.time.Duration.ofSeconds;
 import static reactor.core.publisher.Flux.using;
 
 import com.google.common.io.Closeables;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
-import java.net.http.HttpRequest;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.ZonedDateTime;
@@ -30,41 +26,34 @@ import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 public class ReplicationState implements ReplicationInfo, OSMSource {
+
   protected static final Logger Log = LoggerFactory.getLogger(ReplicationState.class);
-
-  private static final HttpClient httpClient = HttpClient.newBuilder()
-      .version(Version.HTTP_2)
-      .connectTimeout(ofSeconds(10))
-      .build();
-
-  private static final DecimalFormat sequenceformatter;
+  private static final DecimalFormat sequenceFormatter;
 
   static {
     var formatSymbols = new DecimalFormatSymbols(Locale.US);
     formatSymbols.setGroupingSeparator('/');
-    sequenceformatter = new DecimalFormat("000,000,000", formatSymbols);
+    sequenceFormatter = new DecimalFormat("000,000,000", formatSymbols);
   }
 
   public static ReplicationState getServerState(ReplicationEndpoint endpoint)
-      throws IOException, InterruptedException {
+      throws IOException {
     return getState(endpoint, "state.txt");
   }
 
   public static ReplicationState getState(ReplicationEndpoint endpoint, int sequenceNumber)
-      throws IOException, InterruptedException {
-    var statePath = format("%s.state.txt", sequenceformatter.format(sequenceNumber));
+      throws IOException {
+    var statePath = format("%s.state.txt", sequenceFormatter.format(sequenceNumber));
     return getState(endpoint, statePath);
   }
 
   private static ReplicationState getState(ReplicationEndpoint endpoint, String statePath)
-      throws IOException, InterruptedException {
-    var request = HttpRequest.newBuilder(create(endpoint.url() + statePath)).GET().build();
-    var response = httpClient.send(request, ofInputStream());
-    var props = new Properties();
-    try (var input = response.body()){
+      throws IOException {
+    try (var input = openConnection(create(endpoint.url() + statePath).toURL())) {
+      var props = new Properties();
       props.load(input);
+      return new ReplicationState(endpoint, props);
     }
-    return new ReplicationState(endpoint, props);
   }
 
   private final ReplicationEndpoint endpoint;
@@ -77,7 +66,8 @@ public class ReplicationState implements ReplicationInfo, OSMSource {
         parseInt(props.getProperty("sequenceNumber")));
   }
 
-  public ReplicationState(ReplicationEndpoint endpoint, ZonedDateTime timestamp, int sequenceNumber) {
+  public ReplicationState(ReplicationEndpoint endpoint, ZonedDateTime timestamp,
+      int sequenceNumber) {
     this.endpoint = endpoint;
     this.timestamp = timestamp;
     this.sequenceNumber = sequenceNumber;
@@ -87,11 +77,11 @@ public class ReplicationState implements ReplicationInfo, OSMSource {
     return endpoint;
   }
 
-  public ReplicationState serverState() throws IOException, InterruptedException {
+  public ReplicationState serverState() throws IOException {
     return endpoint.serverState();
   }
 
-  public ReplicationState state(int sequenceNumber) throws IOException, InterruptedException {
+  public ReplicationState state(int sequenceNumber) throws IOException {
     return endpoint.state(sequenceNumber);
   }
 
@@ -118,16 +108,20 @@ public class ReplicationState implements ReplicationInfo, OSMSource {
   public Flux<Tuple2<OSMType, Flux<OSMEntity>>> entities(TagTranslator tagTranslator) {
     Log.debug("read entities from {}", this);
     //noinspection UnstableApiUsage
-    return using(this::openStream, input -> OscParser.entities(input, tagTranslator), Closeables::closeQuietly);
+    return using(this::openStream, input -> OscParser.entities(input, tagTranslator),
+        Closeables::closeQuietly);
   }
 
-  private InputStream openStream() throws IOException, InterruptedException {
-    var request = HttpRequest.newBuilder(
-            create(endpoint.url() + format("%s.osc.gz", sequenceformatter.format(sequenceNumber))))
-        .GET().build();
-    var response = httpClient.send(request, ofInputStream());
-    return new GZIPInputStream(response.body());
+  private InputStream openStream() throws IOException {
+    return new GZIPInputStream(openConnection(create(
+        endpoint.url() + format("%s.osc.gz", sequenceFormatter.format(sequenceNumber))).toURL()));
+  }
 
+  private static InputStream openConnection(URL url) throws IOException {
+    var connection = url.openConnection();
+    connection.setReadTimeout(10 * 60 * 1000); // timeout 10 minutes
+    connection.setConnectTimeout(10 * 60 * 1000); // timeout 10 minutes
+    return connection.getInputStream();
   }
 
   @Override

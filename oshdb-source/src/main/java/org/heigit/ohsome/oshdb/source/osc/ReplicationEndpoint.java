@@ -42,17 +42,17 @@ public class ReplicationEndpoint {
   private final Duration frequency;
   private final Duration delay;
 
-  private ReplicationEndpoint(String url, Duration frequency, Duration delay) {
+  public ReplicationEndpoint(String url, Duration frequency, Duration delay) {
     this.url = url;
     this.frequency = frequency;
     this.delay = delay;
   }
 
-  public ReplicationState serverState() throws IOException, InterruptedException {
+  public ReplicationState serverState() throws IOException {
     return getServerState(this);
   }
 
-  public ReplicationState state(int sequenceNumber) throws IOException, InterruptedException {
+  public ReplicationState state(int sequenceNumber) throws IOException {
     return getState(this, sequenceNumber);
   }
 

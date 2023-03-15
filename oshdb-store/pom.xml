@@ -20,5 +20,10 @@
       <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb-source</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 </project>

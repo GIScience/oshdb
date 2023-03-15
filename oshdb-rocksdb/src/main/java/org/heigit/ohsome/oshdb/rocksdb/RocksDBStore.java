@@ -7,18 +7,22 @@ import static java.util.stream.Collectors.groupingBy;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.osm.OSMType;
+import org.heigit.ohsome.oshdb.source.ReplicationInfo;
 import org.heigit.ohsome.oshdb.store.BackRef;
 import org.heigit.ohsome.oshdb.store.BackRefType;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
+import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.rocksdb.Cache;
 import org.rocksdb.LRUCache;
 import org.rocksdb.RocksDB;
@@ -30,11 +34,15 @@ public class RocksDBStore implements OSHDBStore {
     RocksDB.loadLibrary();
   }
 
+  private final TagTranslator tagTranslator;
+  private final Path path;
   private final Cache cache;
   private final Map<OSMType, EntityStore> entityStore = new EnumMap<>(OSMType.class);
   private final Map<BackRefType, BackRefStore> backRefStore = new EnumMap<>(BackRefType.class);
 
-  public RocksDBStore(Path path, long cacheSize) throws IOException, RocksDBException {
+  public RocksDBStore(TagTranslator tagTranslator, Path path, long cacheSize) throws IOException, RocksDBException {
+    this.tagTranslator = tagTranslator;
+    this.path = path;
     Files.createDirectories(path);
     cache = new LRUCache(cacheSize);
     try {
@@ -47,6 +55,50 @@ public class RocksDBStore implements OSHDBStore {
     } catch(RocksDBException e) {
       close();
       throw e;
+    }
+  }
+
+  @Override
+  public TagTranslator getTagTranslator() {
+    return tagTranslator;
+  }
+
+  @Override
+  public void state(ReplicationInfo state) {
+    var props = new Properties();
+    props.put("baseUrl", state.getBaseUrl());
+    props.put("sequenceNumber", state.getSequenceNumber());
+    props.put("timestamp", state.getTimestamp());
+    try (var out = Files.newOutputStream(path.resolve("state.txt"))) {
+      props.store(out, "rocksdb store state");
+    } catch (IOException e) {
+      throw new OSHDBException(e);
+    }
+  }
+
+  @Override
+  public ReplicationInfo state() {
+    var props = new Properties();
+    try (var in = Files.newInputStream(path.resolve("state.txt"))) {
+      props.load(in);
+      return new ReplicationInfo() {
+        @Override
+        public String getBaseUrl() {
+          return props.getProperty("baseUrl", "");
+        }
+
+        @Override
+        public ZonedDateTime getTimestamp() {
+          return ZonedDateTime.parse(props.getProperty("timestamp"));
+        }
+
+        @Override
+        public int getSequenceNumber() {
+          return Integer.parseInt(props.getProperty("sequenceNumber"));
+        }
+      };
+    } catch (IOException e) {
+      throw new OSHDBException(e);
     }
   }
 
