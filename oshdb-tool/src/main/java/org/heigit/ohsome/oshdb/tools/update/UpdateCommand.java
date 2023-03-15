@@ -5,28 +5,21 @@ import static reactor.core.publisher.Flux.just;
 import static reactor.core.publisher.Flux.range;
 import static reactor.core.publisher.Mono.fromCallable;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.Callable;
-import org.heigit.ohsome.oshdb.rocksdb.RocksDBStore;
 import org.heigit.ohsome.oshdb.source.osc.ReplicationEndpoint;
 import org.heigit.ohsome.oshdb.source.osc.ReplicationState;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.update.OSHDBUpdater;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.tagtranslator.CachedTagTranslator;
 import org.reactivestreams.Publisher;
-import org.rocksdb.RocksDBException;
 import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Command(name = "update")
 public class UpdateCommand implements Callable<Integer> {
@@ -71,11 +64,7 @@ public class UpdateCommand implements Callable<Integer> {
 
 
   private OSHDBStore openStore() {
-    try {
-      return new RocksDBStore(path, 10 * SizeUnit.MB);
-    } catch (RocksDBException | IOException e) {
-      throw new OSHDBException(e);
-    }
+    throw new UnsupportedOperationException();
   }
 
   private Flux<ReplicationState> states(OSHDBStore store) {
@@ -93,16 +82,6 @@ public class UpdateCommand implements Callable<Integer> {
     } catch(Exception e) {
       return Flux.error(e);
     }
-  }
-
-  private Mono<ReplicationState> wait(ReplicationState state) {
-    var wait = Duration.between(Instant.now(), state.nextTimestamp());
-    log.info("wait {}m{}s {}", wait.toMinutesPart(), wait.toSecondsPart(), state);
-    return Flux.interval(wait, Duration.ofSeconds(2))
-        .concatMap(x -> fromCallable(state::serverState))
-        .doOnNext(newState -> log.info("check {}", state))
-        .filter(newState -> newState.getSequenceNumber() > state.getSequenceNumber())
-        .next();
   }
 
 }
