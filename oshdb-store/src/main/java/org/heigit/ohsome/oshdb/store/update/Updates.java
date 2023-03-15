@@ -40,7 +40,6 @@ import org.heigit.ohsome.oshdb.store.BackRef;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
 import org.heigit.ohsome.oshdb.util.CellId;
-import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Flux;
 
 public class Updates {
@@ -235,7 +234,6 @@ public class Updates {
     return getData(id, data, backRef, osh);
   }
 
-  @NotNull
   private OSHData getData(long id, OSHData data, BackRef backRef, OSHEntityImpl osh) {
     var cellId = gridIndex(osh);
     if (data != null) {
@@ -258,7 +256,7 @@ public class Updates {
     var merged = new TreeSet<T>(VERSION_REVERSE_ORDER);
     if (previous != null) {
       var osh = previous.getOSHEntity();
-      osh.getVersions().forEach(version -> merged.add((T) version));
+      osh.getVersions().forEach(version -> merged.add(clazz.cast(version)));
     }
     return merged;
   }
