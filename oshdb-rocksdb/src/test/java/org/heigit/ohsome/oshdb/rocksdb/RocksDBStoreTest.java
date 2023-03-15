@@ -7,19 +7,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.google.common.io.MoreFiles;
 import com.google.common.io.RecursiveDeleteOption;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
+import org.assertj.core.api.Assertions;
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.store.BackRefType;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
 import org.heigit.ohsome.oshdb.util.CellId;
+import org.heigit.ohsome.oshdb.util.tagtranslator.JdbcTagTranslator;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.util.SizeUnit;
-import org.assertj.core.api.Assertions;
 
 
 class RocksDBStoreTest {
@@ -27,11 +29,15 @@ class RocksDBStoreTest {
   private static final Path STORE_TEST_PATH = Path.of("tests/store/rocksdb");
 
   OSHDBStore openStore() throws RocksDBException, IOException {
-    return new RocksDBStore(STORE_TEST_PATH, 10 * SizeUnit.MB);
+    Files.createDirectories(STORE_TEST_PATH);
+    var dataSource = JdbcConnectionPool.create("jdbc:h2:" + STORE_TEST_PATH.resolve("keytables"),"sa","");
+    var tagTranslator = new JdbcTagTranslator(dataSource);
+    return new RocksDBStore(tagTranslator, STORE_TEST_PATH, 10 * SizeUnit.MB);
   }
 
   @AfterAll
   static void cleanUp() throws Exception {
+    //noinspection UnstableApiUsage
     MoreFiles.deleteRecursively(STORE_TEST_PATH, RecursiveDeleteOption.ALLOW_INSECURE);
   }
 
@@ -45,7 +51,6 @@ class RocksDBStoreTest {
           , new OSHData(OSMType.NODE, 30, 3, "Test Node 30".getBytes())
       );
       store.entities(entities);
-      Thread.sleep(1000);
 
       var actuals = store.entities(OSMType.NODE, Set.of(20L));
       System.out.println("actual = " + actuals);
@@ -59,7 +64,6 @@ class RocksDBStoreTest {
       assertEquals(2, grid.size());
 
       store.entities(Set.of(new OSHData(OSMType.NODE, 22, 22, "Test Node 22 updated".getBytes())));
-      Thread.sleep(1000);
       actual = store.entity(OSMType.NODE, 22);
       assertArrayEquals("Test Node 22 updated".getBytes(), actual.getData());
       assertEquals(22L, actual.getGridId());
