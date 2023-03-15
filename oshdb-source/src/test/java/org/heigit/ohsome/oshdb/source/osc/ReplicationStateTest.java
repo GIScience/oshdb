@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.tagtranslator.MemoryTagTranslator;
@@ -39,7 +40,8 @@ class ReplicationStateTest {
 
   @Test
   void localState() throws IOException {
-    var endpoint = new ReplicationEndpoint("file:///data/", ofSeconds(1), ZERO);
+    var localPath = Path.of("../data/replication").toAbsolutePath();
+    var endpoint = new ReplicationEndpoint(localPath.toUri().toString(), ofSeconds(1), ZERO);
     var state = endpoint.serverState();
     assertNotNull(state);
   }
