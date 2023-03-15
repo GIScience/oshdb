@@ -40,7 +40,7 @@ class ReplicationStateTest {
 
   @Test
   void localState() throws IOException {
-    var localPath = Path.of("../data/replication").toAbsolutePath();
+    var localPath = Path.of("../data/replication/").toAbsolutePath();
     var endpoint = new ReplicationEndpoint(localPath.toUri().toString(), ofSeconds(1), ZERO);
     var state = endpoint.serverState();
     assertNotNull(state);
