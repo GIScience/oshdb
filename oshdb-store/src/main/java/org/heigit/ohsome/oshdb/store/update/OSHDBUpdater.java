@@ -20,10 +20,15 @@ import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
 import org.heigit.ohsome.oshdb.util.CellId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.function.TupleUtils;
 import reactor.util.function.Tuple2;
 
 public class OSHDBUpdater {
+
+  private static final Logger log = LoggerFactory.getLogger(OSHDBUpdater.class);
 
   private final OSHDBStore store;
   private final List<GridUpdater> gridUpdaters;
@@ -37,7 +42,7 @@ public class OSHDBUpdater {
   }
 
   public Flux<OSHEntity> updateEntities(Flux<Tuple2<OSMType, Flux<OSMEntity>>> entities) {
-    throw new UnsupportedOperationException();
+    return entities.concatMap(TupleUtils.function(this::entities));
   }
 
   public Flux<OSHEntity> entities(OSMType type, Flux<OSMEntity> entities) {
@@ -88,7 +93,7 @@ public class OSHDBUpdater {
   }
 
   private void updateGrid(OSMType type, Set<CellId> cellIds) {
-    throw new UnsupportedOperationException();
+    log.debug("updateGrid {} cells:{}", type, cellIds.size());
   }
 
 }

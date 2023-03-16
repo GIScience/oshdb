@@ -40,10 +40,12 @@ import org.heigit.ohsome.oshdb.store.BackRef;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
 import org.heigit.ohsome.oshdb.util.CellId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 public class Updates {
-
+  private static final Logger log = LoggerFactory.getLogger(Updates.class);
   private static final Comparator<OSMEntity> VERSION_REVERSE_ORDER = comparingInt(
       OSMEntity::getVersion).reversed();
 
@@ -92,6 +94,7 @@ public class Updates {
     }
 
     var osh = OSHNodeImpl.build(new ArrayList<>(mergedVersions));
+    log.debug("node {}", osh);
     return getData(id, data, backRef, osh);
   }
 
@@ -249,7 +252,10 @@ public class Updates {
     forwardBackRefs(backRef);
     gridUpdates.add(cellId);
     updatedEntities(osh);
-    return new OSHData(osh.getType(), id, cellId.getLevelId(), osh.getData());
+
+    var updatedData = new OSHData(osh.getType(), id, cellId.getLevelId(), osh.getData());
+    store.entities(Set.of(updatedData));
+    return updatedData;
   }
 
   private <T extends OSMEntity> TreeSet<T> mergePrevious(OSHData previous, Class<T> clazz) {
@@ -263,8 +269,8 @@ public class Updates {
 
   private void forwardBackRefs(BackRef backRefs) {
     if (backRefs != null) {
-      backRefs.ways().forEach(backRef -> minorUpdates.get(WAY).add(backRef));
-      backRefs.relations().forEach(backRef -> minorUpdates.get(RELATION).add(backRef));
+      backRefs.ways().forEach(backRef -> minorUpdates.computeIfAbsent(WAY, x -> new HashSet<>()).add(backRef));
+      backRefs.relations().forEach(backRef -> minorUpdates.computeIfAbsent(RELATION, x -> new HashSet<>()).add(backRef));
     }
   }
 

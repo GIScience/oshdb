@@ -50,9 +50,9 @@ public class OSHData implements Serializable {
 
   private OSHEntity oshEntity() {
     return switch (type) {
-      case NODE -> OSHNodeImpl.instance(data, 0, 0);
-      case WAY -> OSHWayImpl.instance(data, 0, 0);
-      case RELATION -> OSHRelationImpl.instance(data, 0, 0);
+      case NODE -> OSHNodeImpl.instance(data, 0, data.length);
+      case WAY -> OSHWayImpl.instance(data, 0, data.length);
+      case RELATION -> OSHRelationImpl.instance(data, 0, data.length);
     };
   }
 
