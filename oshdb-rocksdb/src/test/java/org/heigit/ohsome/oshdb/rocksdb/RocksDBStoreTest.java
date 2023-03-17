@@ -16,7 +16,6 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.store.BackRefType;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
-import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.tagtranslator.JdbcTagTranslator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -60,16 +59,16 @@ class RocksDBStoreTest {
       assertArrayEquals("Test Node 20".getBytes(), actual.getData());
       assertEquals(2L, actual.getGridId());
 
-      var grid = store.grid(OSMType.NODE, CellId.fromLevelId(2));
+      var grid = store.grid(OSMType.NODE, 2L);
       assertEquals(2, grid.size());
 
       store.entities(Set.of(new OSHData(OSMType.NODE, 22, 22, "Test Node 22 updated".getBytes())));
       actual = store.entity(OSMType.NODE, 22);
       assertArrayEquals("Test Node 22 updated".getBytes(), actual.getData());
       assertEquals(22L, actual.getGridId());
-      grid = store.grid(OSMType.NODE, CellId.fromLevelId(2));
+      grid = store.grid(OSMType.NODE, 2L);
       assertEquals(1, grid.size());
-      grid = store.grid(OSMType.NODE, CellId.fromLevelId(22));
+      grid = store.grid(OSMType.NODE, 22L);
       assertEquals(1, grid.size());
     }
 
