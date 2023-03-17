@@ -23,7 +23,7 @@ class OSHDBUpdaterTest {
   void entities() {
     ReplicationInfo state = null;
     try (var store = new MemoryStore(state)) {
-      var updater = new OSHDBUpdater(store, List.of());
+      var updater = new OSHDBUpdater(store, (type, cellId, grid) -> {});
 
       var count = updater.updateEntities(just(Tuples.of(NODE, just(
               node(1L, 1, 1000, 100, 1, List.of(), 0, 0)))))
@@ -45,9 +45,8 @@ class OSHDBUpdaterTest {
       assertEquals(1, ways.size());
       var way = ways.get(1L);
       assertNotNull(way);
-      System.out.println(way.getOSHEntity().toString());
 
-      updater.updateEntities(just(Tuples.of(NODE, just(
+      count = updater.updateEntities(just(Tuples.of(NODE, just(
               node(1L, 2, 2000, 200, 2, List.of(), 10, 10)))))
           .count().block();
       assertEquals(2L, count); // major node, minor way

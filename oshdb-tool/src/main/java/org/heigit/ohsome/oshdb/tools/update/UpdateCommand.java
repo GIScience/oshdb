@@ -6,7 +6,6 @@ import static reactor.core.publisher.Flux.range;
 import static reactor.core.publisher.Mono.fromCallable;
 
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.concurrent.Callable;
 import org.heigit.ohsome.oshdb.source.osc.ReplicationEndpoint;
 import org.heigit.ohsome.oshdb.source.osc.ReplicationState;
@@ -56,7 +55,7 @@ public class UpdateCommand implements Callable<Integer> {
   }
 
   private Publisher<?> update(OSHDBStore store, CachedTagTranslator tagTranslator, ReplicationState state) {
-      var updater = new OSHDBUpdater(store, Collections.emptyList());
+      var updater = new OSHDBUpdater(store, (type, id, grid) -> {});
       updater.updateEntities(state.entities(tagTranslator));
       store.state(state);
       throw new UnsupportedOperationException();
@@ -83,5 +82,15 @@ public class UpdateCommand implements Callable<Integer> {
       return Flux.error(e);
     }
   }
+
+  //  private Mono<ReplicationState> wait(ReplicationState state) {
+//    var wait = Duration.between(Instant.now(), state.nextTimestamp());
+//    log.info("wait {}m{}s {}", wait.toMinutesPart(), wait.toSecondsPart(), state);
+//    return Flux.interval(wait, Duration.ofSeconds(2))
+//        .concatMap(x -> fromCallable(state::serverState))
+//        .doOnNext(newState -> log.info("check {}", state))
+//        .filter(newState -> newState.getSequenceNumber() > state.getSequenceNumber())
+//        .next();
+//  }
 
 }

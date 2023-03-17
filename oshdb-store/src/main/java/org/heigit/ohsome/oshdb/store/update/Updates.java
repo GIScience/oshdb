@@ -1,25 +1,29 @@
 package org.heigit.ohsome.oshdb.store.update;
 
-import static java.util.Arrays.stream;
-import static java.util.Comparator.comparingInt;
+import static java.util.Collections.emptyList;
 import static java.util.function.Predicate.not;
 import static org.heigit.ohsome.oshdb.osm.OSMType.NODE;
 import static org.heigit.ohsome.oshdb.osm.OSMType.RELATION;
 import static org.heigit.ohsome.oshdb.osm.OSMType.WAY;
-import static org.heigit.ohsome.oshdb.store.BackRefType.*;
+import static org.heigit.ohsome.oshdb.store.BackRefType.NODE_RELATION;
+import static org.heigit.ohsome.oshdb.store.BackRefType.NODE_WAY;
+import static org.heigit.ohsome.oshdb.store.BackRefType.RELATION_RELATION;
+import static org.heigit.ohsome.oshdb.store.BackRefType.WAY_RELATION;
+import static reactor.core.publisher.Mono.fromCallable;
 
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import org.heigit.ohsome.oshdb.OSHDB;
 import org.heigit.ohsome.oshdb.impl.osh.OSHEntityImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
@@ -30,6 +34,7 @@ import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osh.OSHNode;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.osh.OSHWay;
+import org.heigit.ohsome.oshdb.osm.OSM;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
@@ -43,11 +48,10 @@ import org.heigit.ohsome.oshdb.util.CellId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class Updates {
   private static final Logger log = LoggerFactory.getLogger(Updates.class);
-  private static final Comparator<OSMEntity> VERSION_REVERSE_ORDER = comparingInt(
-      OSMEntity::getVersion).reversed();
 
   private static final XYGridTree gridIndex = new XYGridTree(OSHDB.MAXZOOM);
   private static final CellId ZERO = CellId.fromLevelId(0);
@@ -69,115 +73,112 @@ public class Updates {
     return gridUpdates;
   }
 
-  public Flux<OSHData> nodes(Map<Long, Collection<OSMNode>> entities){
+  public Flux<OSHEntity> nodes(Map<Long, Collection<OSMNode>> entities){
     var dataMap = store.entities(NODE, entities.keySet());
     var backRefMap = store.backRefs(NODE, entities.keySet());
     return Flux.fromIterable(entities.entrySet())
-        .map(entry -> node(dataMap, backRefMap, entry));
+        .concatMap(entry -> Mono.fromCallable(() -> node(dataMap, backRefMap, entry)));
   }
 
-  private OSHData node(Map<Long, OSHData> dataMap, Map<Long, BackRef> backRefMap,
+  private OSHEntity node(Map<Long, OSHData> dataMap, Map<Long, BackRef> backRefMap,
       Entry<Long, Collection<OSMNode>> entry) {
     var id = entry.getKey();
     var versions = entry.getValue();
     return node(id, versions, dataMap.get(id), backRefMap.get(id));
   }
 
-  private OSHData node(long id, Collection<OSMNode> versions, OSHData data, BackRef backRef) {
-    var mergedVersions = mergePrevious(data, OSMNode.class);
-    var major = false;
-    for (var version : versions) {
-      major |= mergedVersions.add(version);
+  private OSHEntity node(long id, Collection<OSMNode> newVersions, OSHData data, BackRef backRef) {
+    var versions = new HashSet<OSMNode>();
+    if (data != null) {
+      OSHNode osh = data.getOSHEntity();
+      osh.getVersions().forEach(versions::add);
     }
-    if (!major) {
-      return data; // no updates
+    var isMajorUpdate = versions.addAll(newVersions);
+    if (!isMajorUpdate) {
+      return null; // no updates
     }
 
-    var osh = OSHNodeImpl.build(new ArrayList<>(mergedVersions));
-    log.debug("node {}", osh);
-    return getData(id, data, backRef, osh);
+    var osh = OSHNodeImpl.build(new ArrayList<>(versions));
+    updateStore(id, data, backRef, osh);
+    return osh;
   }
 
-  public Flux<OSHData> ways(Map<Long, Collection<OSMWay>> entities){
+  public Flux<OSHEntity> ways(Map<Long, Collection<OSMWay>> entities){
     var dataMap = store.entities(WAY, entities.keySet());
     var backRefMap = store.backRefs(WAY, entities.keySet());
     return Flux.fromIterable(entities.entrySet())
-        .map(entry -> way(dataMap, backRefMap, entry))
-        .filter(Objects::nonNull);
+        .concatMap(entry -> fromCallable(() -> way(dataMap, backRefMap, entry)));
   }
 
-  private OSHData way(Map<Long, OSHData> dataMap, Map<Long, BackRef> backRefMap,
+  private OSHEntity way(Map<Long, OSHData> dataMap, Map<Long, BackRef> backRefMap,
       Entry<Long, Collection<OSMWay>> entry) {
     var id = entry.getKey();
     var versions = entry.getValue();
     return way(id, versions, dataMap.get(id), backRefMap.get(id));
   }
 
-  private OSHData way(long id, Collection<OSMWay> versions, OSHData data, BackRef backRef) {
-    var mergedVersions = mergePrevious(data, OSMWay.class);
+  private OSHEntity way(long id, Collection<OSMWay> newVersions, OSHData data, BackRef backRef) {
+    var versions = new HashSet<OSMWay>();
     var members = new TreeMap<Long, OSHNode>();
     if (data != null) {
       OSHWay osh = data.getOSHEntity();
+      osh.getVersions().forEach(versions::add);
       osh.getNodes().forEach(node -> members.put(node.getId(), node));
     }
     var updatedNodes = updatedEntities.get(NODE);
     var updatedMembers = new TreeSet<Long>();
     members.keySet().stream().filter(updatedNodes::contains).forEach(updatedMembers::add);
 
-    var minor = !updatedMembers.isEmpty();
-    var major = false;
-    for (var version : versions) {
-      major |= mergedVersions.add(version);
-    }
-    if (!minor && !major) {
-      return data; // no updates
+    var isMajorUpdate = versions.addAll(newVersions);
+    var isMinorUpdate = !updatedMembers.isEmpty();
+    if (!isMinorUpdate && !isMajorUpdate) {
+      return null; // no updates
     }
 
-    var newMembers = new TreeSet<Long>();
-    versions.stream()
-        .flatMap(version -> stream(version.getMembers()))
-        .map(OSMMember::getId)
-        .filter(not(members::containsKey))
-        .forEach(newMembers::add);
-
+    var newMembers = newMembers(newVersions, OSMWay::getMembers, NODE, members);
     updatedMembers.addAll(newMembers);
-    store.entities(NODE, updatedMembers).values().stream()
-        .map(member -> (OSHNode) member.getOSHEntity())
-        .filter(Objects::nonNull)
-        .forEach(node -> members.put(node.getId(), node));
+    updateMembers(NODE, updatedMembers, members);
     store.backRefsMerge(NODE_WAY, id, newMembers);
 
-    var osh = OSHWayImpl.build(new ArrayList<>(mergedVersions), members.values());
-    return getData(id, data, backRef, osh);
+    var osh = OSHWayImpl.build(new ArrayList<>(versions), members.values());
+    updateStore(id, data, backRef, osh);
+    return osh;
   }
 
-  public Flux<OSHData> relations(Map<Long, Collection<OSMRelation>> entities){
+  public Flux<OSHEntity> relations(Map<Long, Collection<OSMRelation>> entities){
     var dataMap = store.entities(RELATION, entities.keySet());
     var backRefMap = store.backRefs(RELATION, entities.keySet());
     return Flux.fromIterable(entities.entrySet())
-        .map(entry -> relation(dataMap, backRefMap, entry));
+        .concatMap(entry -> fromCallable(() -> relation(dataMap, backRefMap, entry)));
   }
 
-  private OSHData relation(Map<Long, OSHData> dataMap, Map<Long, BackRef> backRefMap,
+  private OSHEntity relation(Map<Long, OSHData> dataMap, Map<Long, BackRef> backRefMap,
       Entry<Long, Collection<OSMRelation>> entry) {
     var id = entry.getKey();
     var versions = entry.getValue();
     return relation(id, versions, dataMap.get(id), backRefMap.get(id));
   }
 
-  private OSHData relation(long id, Collection<OSMRelation> versions, OSHData data, BackRef backRef) {
-    var mergedVersions = mergePrevious(data, OSMRelation.class);
+  private static final OSHRelation DUMMY = OSHRelationImpl.build(
+    new ArrayList<>(List.of(OSM.relation(0,0,0,0,0, new int[0], new OSMMember[0]))),
+      emptyList(), emptyList());
+
+  private OSHEntity relation(long id, Collection<OSMRelation> newVersions, OSHData data, BackRef backRef) {
+    var versions = new HashSet<OSMRelation>();
     var nodeMembers = new TreeMap<Long, OSHNode>();
     var wayMembers = new TreeMap<Long, OSHWay>();
-    var relationMembers = new HashSet<Long>();
+    var relationMembers = new TreeMap<Long, OSHRelation>();
+
     if (data != null) {
       OSHRelation osh = data.getOSHEntity();
+      osh.getVersions().forEach(versions::add);
       osh.getNodes().forEach(node -> nodeMembers.put(node.getId(), node));
       osh.getWays().forEach(way -> wayMembers.put(way.getId(), way));
+
       Streams.stream(osh.getVersions())
           .flatMap(version -> Arrays.stream(version.getMembers()))
           .filter(member -> member.getType() == RELATION)
-          .forEach(member -> relationMembers.add(member.getId()));
+          .forEach(member -> relationMembers.put(member.getId(), DUMMY));
     }
     var updatedNodes = updatedEntities.get(NODE);
     var updatedNodeMembers = new TreeSet<Long>();
@@ -187,57 +188,51 @@ public class Updates {
     var updatedWayMembers = new TreeSet<Long>();
     wayMembers.keySet().stream().filter(updatedWays::contains).forEach(updatedWayMembers::add);
 
-    var minor = !updatedNodeMembers.isEmpty() || !updatedWays.isEmpty();
-    var major = false;
-    for (var version : versions) {
-      major |= mergedVersions.add(version);
-    }
-    if (!minor && !major) {
-      return data; // no updates
+    var isMajorUpdate = versions.addAll(newVersions);
+    var isMinorUpdate = !updatedNodeMembers.isEmpty() || !updatedWays.isEmpty();
+    if (!isMinorUpdate && !isMajorUpdate) {
+      return null; // no updates
     }
 
-    var newNodeMembers = new TreeSet<Long>();
-    versions.stream()
-        .flatMap(version -> stream(version.getMembers()))
-        .filter(member -> member.getType() == NODE)
-        .map(OSMMember::getId)
-        .filter(not(nodeMembers::containsKey))
-        .forEach(newNodeMembers::add);
-    updatedNodeMembers.addAll(newNodeMembers);
-    store.entities(NODE, updatedNodeMembers).values().stream()
-        .map(member -> (OSHNode) member.getOSHEntity())
-        .filter(Objects::nonNull)
-        .forEach(node -> nodeMembers.put(node.getId(), node));
+    var newNodeMembers = newMembers(newVersions, OSMRelation::getMembers, NODE, nodeMembers);
     store.backRefsMerge(NODE_RELATION, id, newNodeMembers);
+    updatedNodeMembers.addAll(newNodeMembers);
+    updateMembers(NODE,updatedNodeMembers, nodeMembers);
 
-    var newWayMembers = new TreeSet<Long>();
-    versions.stream()
-        .flatMap(version -> stream(version.getMembers()))
-        .filter(member -> member.getType() == WAY)
-        .map(OSMMember::getId)
-        .filter(not(wayMembers::containsKey))
-        .forEach(newWayMembers::add);
-    updatedWayMembers.addAll(newWayMembers);
-    store.entities(WAY, updatedWayMembers).values().stream()
-        .map(member -> (OSHWay) member.getOSHEntity())
-        .filter(Objects::nonNull)
-        .forEach(way -> wayMembers.put(way.getId(), way));
+    var newWayMembers = newMembers(newVersions, OSMRelation::getMembers, WAY, wayMembers);
     store.backRefsMerge(WAY_RELATION, id, newWayMembers);
+    updatedWayMembers.addAll(newWayMembers);
+    updateMembers(WAY, updatedWayMembers, wayMembers);
 
-    var newRelationMembers = new TreeSet<Long>();
-    versions.stream()
-        .flatMap(version -> stream(version.getMembers()))
-        .filter(member -> member.getType() == RELATION)
-        .map(OSMMember::getId)
-        .filter(not(relationMembers::contains))
-        .forEach(newRelationMembers::add);
+    var newRelationMembers = newMembers(newVersions, OSMRelation::getMembers, RELATION, relationMembers);
     store.backRefsMerge(RELATION_RELATION, id, newRelationMembers);
 
-    var osh = OSHRelationImpl.build(new ArrayList<>(mergedVersions), nodeMembers.values(), wayMembers.values());
-    return getData(id, data, backRef, osh);
+    var osh = OSHRelationImpl.build(new ArrayList<>(versions), nodeMembers.values(), wayMembers.values());
+    updateStore(id, data, backRef, osh);
+    return osh;
   }
 
-  private OSHData getData(long id, OSHData data, BackRef backRef, OSHEntityImpl osh) {
+  @SuppressWarnings("unchecked")
+  private <T extends OSHEntity> void updateMembers(OSMType type, Set<Long> membersToUpdate, Map<Long, T> members) {
+    store.entities(type, membersToUpdate).values().stream()
+        .map(member -> (T) member.getOSHEntity())
+        .filter(Objects::nonNull)
+        .forEach(way -> members.put(way.getId(), way));
+  }
+
+  private <T extends OSMEntity> Set<Long> newMembers(Collection<T> versions,Function<T, OSMMember[]> fnt, OSMType type,  Map<Long, ?> members) {
+    var newMembers = new TreeSet<Long>();
+    versions.stream()
+        .map(fnt)
+        .flatMap(Arrays::stream)
+        .filter(member -> member.getType() == type)
+        .map(OSMMember::getId)
+        .filter(not(members::containsKey))
+        .forEach(newMembers::add);
+    return newMembers;
+  }
+
+  private void updateStore(long id, OSHData data, BackRef backRef, OSHEntityImpl osh) {
     var cellId = gridIndex(osh);
     if (data != null) {
       var prevCellId = CellId.fromLevelId(data.getGridId());
@@ -255,16 +250,6 @@ public class Updates {
 
     var updatedData = new OSHData(osh.getType(), id, cellId.getLevelId(), osh.getData());
     store.entities(Set.of(updatedData));
-    return updatedData;
-  }
-
-  private <T extends OSMEntity> TreeSet<T> mergePrevious(OSHData previous, Class<T> clazz) {
-    var merged = new TreeSet<T>(VERSION_REVERSE_ORDER);
-    if (previous != null) {
-      var osh = previous.getOSHEntity();
-      osh.getVersions().forEach(version -> merged.add(clazz.cast(version)));
-    }
-    return merged;
   }
 
   private void forwardBackRefs(BackRef backRefs) {

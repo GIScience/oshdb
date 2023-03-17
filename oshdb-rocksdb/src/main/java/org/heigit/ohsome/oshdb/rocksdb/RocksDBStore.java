@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,6 @@ import org.heigit.ohsome.oshdb.store.BackRef;
 import org.heigit.ohsome.oshdb.store.BackRefType;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
-import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 import org.rocksdb.Cache;
@@ -123,9 +123,32 @@ public class RocksDBStore implements OSHDBStore {
   }
 
   @Override
-  public List<OSHData> grid(OSMType type, CellId gridId) {
+  public List<OSHData> grid(OSMType type, Long gridId) {
     try {
-      return entityStore.get(type).grid(gridId.getLevelId());
+      return entityStore.get(type).grid(gridId);
+    } catch (RocksDBException e) {
+      throw new OSHDBException(e);
+    }
+  }
+
+  @Override
+  public void optimize(OSMType type) {
+   // not yet implemented
+  }
+
+  @Override
+  public Collection<Long> dirtyGrids(OSMType type) {
+    try {
+      return entityStore.get(type).dirtyGrids();
+    } catch (RocksDBException e) {
+      throw new OSHDBException(e);
+    }
+  }
+
+  @Override
+  public void resetDirtyGrids(OSMType type) {
+    try {
+      entityStore.get(type).resetDirtyGrids();
     } catch (RocksDBException e) {
       throw new OSHDBException(e);
     }

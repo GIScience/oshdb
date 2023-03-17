@@ -9,6 +9,7 @@ import static org.heigit.ohsome.oshdb.store.BackRefType.NODE_WAY;
 import static org.heigit.ohsome.oshdb.store.BackRefType.RELATION_RELATION;
 import static org.heigit.ohsome.oshdb.store.BackRefType.WAY_RELATION;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -23,7 +24,6 @@ import org.heigit.ohsome.oshdb.store.BackRef;
 import org.heigit.ohsome.oshdb.store.BackRefType;
 import org.heigit.ohsome.oshdb.store.OSHDBStore;
 import org.heigit.ohsome.oshdb.store.OSHData;
-import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.tagtranslator.MemoryTagTranslator;
 import org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator;
 
@@ -31,6 +31,7 @@ public class MemoryStore implements OSHDBStore {
 
   private final MemoryTagTranslator tagTranslator = new MemoryTagTranslator();
   private final Map<OSMType, Map<Long, OSHData>> entityStore = new EnumMap<>(OSMType.class);
+  private final Map<OSMType, Set<Long>> dirtyGrids = new EnumMap<>(OSMType.class);
   private final Map<BackRefType, Map<Long, Set<Long>>> backRefStore = new EnumMap<>(BackRefType.class);
 
   private ReplicationInfo state;
@@ -67,16 +68,32 @@ public class MemoryStore implements OSHDBStore {
     entities.forEach(data -> entityStore
         .computeIfAbsent(data.getType(), x -> new TreeMap<>())
         .put(data.getId(), data));
+    entities.forEach(data -> dirtyGrids.computeIfAbsent(data.getType(), x -> new TreeSet<>())
+        .add(data.getGridId()));
   }
 
   @Override
-  public List<OSHData> grid(OSMType type, CellId cellId) {
-    var gridId = cellId.getLevelId();
+  public List<OSHData> grid(OSMType type, Long gridId) {
     return entityStore.getOrDefault(type, emptyMap())
         .values()
         .stream()
         .filter(data -> data.getGridId() == gridId)
         .toList();
+  }
+
+  @Override
+  public void optimize(OSMType type) {
+    // no/op
+  }
+
+  @Override
+  public Collection<Long> dirtyGrids(OSMType type) {
+    return dirtyGrids.getOrDefault(type, emptySet());
+  }
+
+  @Override
+  public void resetDirtyGrids(OSMType type) {
+    dirtyGrids.getOrDefault(type, emptySet()).clear();
   }
 
   @Override

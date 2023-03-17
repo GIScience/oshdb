@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.rocksdb;
 
 import static com.google.common.collect.Streams.zip;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.heigit.ohsome.oshdb.rocksdb.RocksDBUtil.cfOptions;
 import static org.heigit.ohsome.oshdb.rocksdb.RocksDBUtil.idToKey;
@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.store.OSHData;
 import org.rocksdb.BloomFilter;
@@ -38,8 +37,15 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.Slice;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EntityStore implements AutoCloseable {
+  private static final Logger log = LoggerFactory.getLogger(EntityStore.class);
+
+  private static final byte[] GRID_ENTITY_COLUMN_FAMILY = DEFAULT_COLUMN_FAMILY;
+  private static final byte[] IDX_ENTITY_GRID_COLUMN_FAMILY = "idx_entity_grid".getBytes(UTF_8);
+  private static final byte[] DIRTY_GRIDS_COLUMN_FAMILY = "dirty_grids".getBytes(UTF_8);
 
   private static final byte[] EMPTY = new byte[0];
   private static final byte[] KEY_ZERO = idToKey(0);
@@ -57,9 +63,10 @@ public class EntityStore implements AutoCloseable {
     setCommonDBOption(dbOptions);
 
     cfOptions = Map.of(
-        DEFAULT_COLUMN_FAMILY, cfOptions(cache),
-        "idx_entity_grid".getBytes(), cfOptions(cache, tableConfig ->
-            tableConfig.setFilterPolicy(new BloomFilter(10))));
+        GRID_ENTITY_COLUMN_FAMILY, cfOptions(cache),
+        IDX_ENTITY_GRID_COLUMN_FAMILY, cfOptions(cache, tableConfig ->
+            tableConfig.setFilterPolicy(new BloomFilter(10))),
+        DIRTY_GRIDS_COLUMN_FAMILY, cfOptions(cache));
 
     var cfDescriptors = cfOptions.entrySet().stream()
         .map(option -> new ColumnFamilyDescriptor(option.getKey(), option.getValue()))
@@ -79,16 +86,12 @@ public class EntityStore implements AutoCloseable {
       var cfsList = new ColumnFamilyHandle[ids.size()];
       Arrays.fill(cfsList, entityGridCFHandle());
       var keys = idsToKeys(ids, ids.size());
-      System.out.println("keys = " + keys.stream().map(Arrays::toString).collect(joining(",")));
       var gridIds = db.multiGetAsList(opt, Arrays.asList(cfsList), keys);
-
-      System.out.println("gridIds = " + gridIds.stream().map(it -> Optional.ofNullable(it).map(Arrays::toString).orElse("null")).collect(joining(",")));
 
       @SuppressWarnings("UnstableApiUsage")
       var gridEntityKeys = zip(gridIds.stream(), keys.stream(), this::gridEntityKey)
           .filter(key -> key.length != 0)
           .toList();
-      System.out.println("gridEntityKeys = " + gridEntityKeys.stream().map(it -> Optional.ofNullable(it).map(Arrays::toString).orElse("null")).collect(joining(",")));
 
       if (gridEntityKeys.isEmpty()) {
         return emptyMap();
@@ -97,12 +100,11 @@ public class EntityStore implements AutoCloseable {
       cfsList = new ColumnFamilyHandle[gridEntityKeys.size()];
       Arrays.fill(cfsList, gridEntityDataCFHandle());
       var data = db.multiGetAsList(opt, Arrays.asList(cfsList), gridEntityKeys);
-      System.out.println("data = " + data.stream().map(it -> Optional.ofNullable(it).map(Arrays::toString).orElse("null")).collect(joining(",")));
+
       @SuppressWarnings("UnstableApiUsage")
       var entities = zip(gridEntityKeys.stream(), data.stream(), this::gridEntityToOSHData)
           .filter(Objects::nonNull)
           .collect(toMap(OSHData::getId, identity()));
-      System.out.println("entities = " + entities);
       return entities;
     }
   }
@@ -110,7 +112,6 @@ public class EntityStore implements AutoCloseable {
 
 
   public void update(List<OSHData> entities) throws RocksDBException {
-    System.out.println("update = " + entities);
     var opt = new ReadOptions();
     var cfsList = new ColumnFamilyHandle[entities.size()];
     Arrays.fill(cfsList, entityGridCFHandle());
@@ -127,12 +128,12 @@ public class EntityStore implements AutoCloseable {
         var prevGridKey = gridKeys.get(idx);
 
         if (prevGridKey != null && !Arrays.equals(prevGridKey, gridKey)) {
+          wb.put(dirtyGridCFHandle(), prevGridKey, EMPTY);
           wb.delete(gridEntityDataCFHandle(), gridEntityKey(prevGridKey, key));
         }
-        System.out.println("put gridKey = " + Arrays.toString(gridKey));
+        wb.put(dirtyGridCFHandle(), gridKey, EMPTY);
         wb.put(entityGridCFHandle(), key, gridKey);
         var gridEntityKey = gridEntityKey(gridKey, key);
-        System.out.println("gridEntitykey = " + Arrays.toString(gridEntityKey));
         wb.put(gridEntityDataCFHandle(), gridEntityKey, entity.getData());
         idx++;
       }
@@ -152,11 +153,32 @@ public class EntityStore implements AutoCloseable {
         var key = itr.key();
         var data = itr.value();
         var entityId = ByteBuffer.wrap(key, 8, 8).getLong();
-        list.add(new OSHData(type, entityId, gridId, data));
+        var oshData = new OSHData(type, entityId, gridId, data);
+        list.add(oshData);
       }
       itr.status();
       return list;
     }
+  }
+
+  public Collection<Long> dirtyGrids() throws RocksDBException {
+    var cellIds = new ArrayList<Long>();
+    try (var itr = db.newIterator(dirtyGridCFHandle())) {
+      itr.seekToFirst();
+      for (; itr.isValid(); itr.next()) {
+        var gridId = ByteBuffer.wrap(itr.key()).getLong();
+        cellIds.add(gridId);
+      }
+      itr.status();
+      return cellIds;
+    }
+  }
+
+  public void resetDirtyGrids() throws RocksDBException {
+    log.debug("reset dirty grids {}", type);
+    db.dropColumnFamily(dirtyGridCFHandle());
+    var cfHandle = db.createColumnFamily(new ColumnFamilyDescriptor(DIRTY_GRIDS_COLUMN_FAMILY, cfOptions.get(DIRTY_GRIDS_COLUMN_FAMILY)));
+    dirtyGridCFHandle(cfHandle);
   }
 
   private ColumnFamilyHandle gridEntityDataCFHandle() {
@@ -167,9 +189,11 @@ public class EntityStore implements AutoCloseable {
     return cfHandles.get(1);
   }
 
+  private ColumnFamilyHandle dirtyGridCFHandle() { return cfHandles.get(2); }
+  private void dirtyGridCFHandle(ColumnFamilyHandle cfHandle) { cfHandles.set(2, cfHandle); }
+
   private byte[] gridEntityKey(byte[] gridId, byte[] entityId) {
     if (gridId == null) {
-      System.out.println("gridEntityKey null-" + Arrays.toString(entityId) +" = EMPTY");
       return EMPTY;
     }
     return ByteBuffer.allocate(Long.BYTES * 2).put(gridId).put(entityId).array();
@@ -197,4 +221,6 @@ public class EntityStore implements AutoCloseable {
   public String toString() {
     return "EntityStore " + type;
   }
+
+
 }
