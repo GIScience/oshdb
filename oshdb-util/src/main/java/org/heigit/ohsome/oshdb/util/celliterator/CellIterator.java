@@ -621,8 +621,8 @@ public class CellIterator implements Serializable {
 
     private IterateAllEntry getNext() {
       while (pos < osmEntityAtTimestamps.size()) {
-        OSHDBTimestamp timestamp = modTs.get(pos);
-        OSMEntity osmEntity = osmEntityAtTimestamps.get(pos);
+        final OSHDBTimestamp timestamp = modTs.get(pos);
+        final OSMEntity osmEntity = osmEntityAtTimestamps.get(pos);
         pos++;
 
         // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of
