@@ -83,7 +83,7 @@ public class UpdateCommand implements Callable<Integer> {
     }
   }
 
-  //  private Mono<ReplicationState> wait(ReplicationState state) {
+//  private Mono<ReplicationState> wait(ReplicationState state) {
 //    var wait = Duration.between(Instant.now(), state.nextTimestamp());
 //    log.info("wait {}m{}s {}", wait.toMinutesPart(), wait.toSecondsPart(), state);
 //    return Flux.interval(wait, Duration.ofSeconds(2))
