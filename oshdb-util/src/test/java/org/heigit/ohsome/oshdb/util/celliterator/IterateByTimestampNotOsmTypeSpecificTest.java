@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.impl.osh.OSHNodeImpl;
 import org.heigit.ohsome.oshdb.impl.osh.OSHRelationImpl;
@@ -35,7 +34,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on special situations
+ * Tests the {@link CellIterator#iterateByTimestamps(OSHEntitySource)} method on special situations
  * which are related to OSHDB grid cells.
  */
 class IterateByTimestampNotOsmTypeSpecificTest {
@@ -108,7 +107,7 @@ class IterateByTimestampNotOsmTypeSpecificTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -138,7 +137,7 @@ class IterateByTimestampNotOsmTypeSpecificTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -169,7 +168,7 @@ class IterateByTimestampNotOsmTypeSpecificTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertFalse(result.isEmpty());
   }

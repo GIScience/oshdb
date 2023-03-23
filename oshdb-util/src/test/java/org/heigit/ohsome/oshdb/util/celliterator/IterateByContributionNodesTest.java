@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
 import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
@@ -26,7 +25,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on nodes.
+ * Tests the {@link CellIterator#iterateByContribution(OSHEntitySource)} method on nodes.
  */
 class IterateByContributionNodesTest {
   private final GridOSHNodes oshdbDataGridCell;
@@ -58,7 +57,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -98,7 +97,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -134,7 +133,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(5, result.size());
@@ -181,7 +180,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(6, result.size());
@@ -231,7 +230,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -251,7 +250,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -271,7 +270,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -291,7 +290,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(3, result.size());
   }
@@ -311,7 +310,7 @@ class IterateByContributionNodesTest {
         osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(4, result.size());
@@ -347,7 +346,7 @@ class IterateByContributionNodesTest {
         osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("disused:shop")),
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -379,7 +378,7 @@ class IterateByContributionNodesTest {
         osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(4, result.size());
@@ -413,7 +412,7 @@ class IterateByContributionNodesTest {
             osmXmlTestData.keys().getOrDefault("amenity", -1)),
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -441,7 +440,7 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(2, result.size());
   }
@@ -471,7 +470,7 @@ class IterateByContributionNodesTest {
         osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     // result size =2 because if tag filtered for disappears it's a deletion
     assertEquals(2, result.size()); // one version with tag shop
@@ -498,8 +497,10 @@ class IterateByContributionNodesTest {
         oshEntity -> oshEntity.getId() >= 10 && oshEntity.getId() < 20,
         osmEntity -> true,
         false
-    )).iterateByContribution(GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6))
-            .getId(1.0, 1.0)/* approx. 0, 0, 5.6, 5.6*/)).toList();
+    )).iterateByContribution(OSHEntitySource.fromGridOSHEntity(
+        GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6))
+            .getId(1.0, 1.0)/* approx. 0, 0, 5.6, 5.6*/)
+    )).toList();
 
     assertEquals(2, result.size());
     assertEquals(13, result.get(0).osmEntity().getId());

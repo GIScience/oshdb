@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
@@ -22,7 +21,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on special situations
+ * Tests the {@link CellIterator#iterateByContribution(OSHEntitySource)} method on special situations
  * which are related to OSHDB grid cells.
  */
 class IterateByContributionNotOsmTypeSpecificTest {
@@ -67,7 +66,7 @@ class IterateByContributionNotOsmTypeSpecificTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(resultPoly.isEmpty());
   }
@@ -97,7 +96,7 @@ class IterateByContributionNotOsmTypeSpecificTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(resultPoly.isEmpty());
   }
@@ -128,7 +127,7 @@ class IterateByContributionNotOsmTypeSpecificTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertFalse(resultPoly.isEmpty());
   }

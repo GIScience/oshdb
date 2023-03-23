@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.helpers.GridOSHFactory;
@@ -26,7 +25,7 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on OSM relations.
+ * Tests the {@link CellIterator#iterateByTimestamps(OSHEntitySource)} method on OSM relations.
  */
 class IterateByTimestampsRelationsTest {
   private final GridOSHRelations oshdbDataGridCell;
@@ -59,7 +58,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(12, result.size());
@@ -89,7 +88,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(9, result.size());
@@ -113,7 +112,7 @@ class IterateByTimestampsRelationsTest {
           osmEntity -> true,
           false
       )).iterateByTimestamps(
-          oshdbDataGridCell
+          OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
       ).collect(Collectors.toList());
     });
   }
@@ -133,7 +132,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(14, result.size());
@@ -156,7 +155,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(10, result.size());
@@ -188,7 +187,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(10, result.size());
@@ -219,7 +218,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(10, result.size());
@@ -244,7 +243,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(10, result.size());
@@ -273,7 +272,7 @@ class IterateByTimestampsRelationsTest {
           osmEntity -> true,
           false
       )).iterateByTimestamps(
-          oshdbDataGridCell
+          OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
       ).collect(Collectors.toList());
     });
   }
@@ -293,7 +292,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(10, result.size());
@@ -329,7 +328,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(13, result.size());
@@ -351,7 +350,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(10, result.size());
@@ -376,7 +375,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(10, result.size());
@@ -402,7 +401,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(12, result.size());
@@ -428,7 +427,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(12, result.size());
@@ -455,7 +454,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(12, result.size());
 
@@ -494,7 +493,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(10, result.size());
   }
@@ -523,7 +522,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(0, result.size());
   }
@@ -553,7 +552,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(10, result.size());
   }
@@ -583,7 +582,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(resultPoly.isEmpty());
   }
@@ -605,7 +604,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertNotEquals(result.get(3).geometry().get(), result.get(0).geometry().get());
@@ -635,7 +634,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -656,7 +655,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(3, result.size());
   }
@@ -676,7 +675,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(resultPoly.isEmpty());
   }
@@ -699,7 +698,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     // geom of requested area vs full geom after modification
@@ -738,7 +737,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -759,7 +758,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -780,7 +779,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(5, result.size());
@@ -801,7 +800,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(0, result.size());
   }
@@ -831,7 +830,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -861,7 +860,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(5, result.size());
@@ -891,7 +890,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(0, result.size());
@@ -921,7 +920,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> !(osmEntity.getVersion() == 2),
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -951,7 +950,7 @@ class IterateByTimestampsRelationsTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(12, result.size());

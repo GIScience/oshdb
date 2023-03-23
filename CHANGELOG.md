@@ -7,6 +7,10 @@ Changelog
 
 * `OSMEntitySnapshot` now also returns the `lastContributionTimestamp` for each snapshot ([#495])
 
+### other changes
+
+* `CellIterator` is now decoupled from implementation of the "Grid" ([#495])
+
 [#495]: https://github.com/GIScience/oshdb/pull/495
 
 

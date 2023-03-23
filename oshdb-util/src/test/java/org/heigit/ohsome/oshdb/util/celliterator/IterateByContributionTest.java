@@ -18,7 +18,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method.
+ * Tests the {@link CellIterator#iterateByContribution(OSHEntitySource)} method.
  */
 class IterateByContributionTest {
   private static JdbcConnectionPool source;
@@ -72,7 +72,7 @@ class IterateByContributionTest {
             osmEntity -> true,
             false
         )).iterateByContribution(
-            oshCellRawData
+            OSHEntitySource.fromGridOSHEntity(oshCellRawData)
         ).toList();
         countTotal += result.size();
         for (IterateAllEntry entry : result) {

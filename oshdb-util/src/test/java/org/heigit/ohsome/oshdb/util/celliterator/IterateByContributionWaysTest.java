@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHWays;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.helpers.GridOSHFactory;
@@ -23,7 +22,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on ways.
+ * Tests the {@link CellIterator#iterateByContribution(OSHEntitySource)} method on ways.
  */
 class IterateByContributionWaysTest {
   private GridOSHWays oshdbDataGridCell;
@@ -55,7 +54,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -104,7 +103,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(4, result.size());
@@ -155,7 +154,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -188,7 +187,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -239,7 +238,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(6, result.size());
@@ -283,7 +282,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(6, result.size());
     assertEquals(
@@ -330,7 +329,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(2, result.size());
     assertEquals(
@@ -370,7 +369,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(2, result.size());
     assertEquals(
@@ -411,7 +410,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     // should be 2: entity has created at start time, modified in between and at end time (excluded)
     assertEquals(2, result.size());
@@ -433,7 +432,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(2, result.size());
@@ -464,7 +463,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(2, result.size());
@@ -492,7 +491,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -523,7 +522,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -549,7 +548,7 @@ class IterateByContributionWaysTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());

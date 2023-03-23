@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
 import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateByTimestampEntry;
@@ -23,7 +22,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Tests the {@link CellIterator#iterateByTimestamps(GridOSHEntity)} method on OSM nodes.
+ * Tests the {@link CellIterator#iterateByTimestamps(OSHEntitySource)} method on OSM nodes.
  */
 class IterateByTimestampsNodesTest {
   private final GridOSHNodes oshdbDataGridCell;
@@ -57,7 +56,7 @@ class IterateByTimestampsNodesTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(11, result.size());
@@ -83,7 +82,7 @@ class IterateByTimestampsNodesTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(12, result.size());
     assertNotEquals(result.get(1).osmEntity().getTags(), result.get(0).osmEntity().getTags());
@@ -115,7 +114,7 @@ class IterateByTimestampsNodesTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(5, result.size());
   }
@@ -141,7 +140,7 @@ class IterateByTimestampsNodesTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(11, result.size());
@@ -184,7 +183,7 @@ class IterateByTimestampsNodesTest {
         osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(7, result.size());
   }
@@ -205,7 +204,7 @@ class IterateByTimestampsNodesTest {
             osmXmlTestData.keys().getOrDefault("amenity", -1)),
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -234,7 +233,7 @@ class IterateByTimestampsNodesTest {
         osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().get("shop")),
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(1, result.size());
   }
@@ -261,10 +260,10 @@ class IterateByTimestampsNodesTest {
         oshEntity -> oshEntity.getId() >= 10 && oshEntity.getId() < 20,
         osmEntity -> true,
         false
-    )).iterateByTimestamps(
+    )).iterateByTimestamps(OSHEntitySource.fromGridOSHEntity(
         GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6))
             .getId(1.0, 1.0)/* approx. 0, 0, 5.6, 5.6*/)
-    ).toList();
+    )).toList();
 
     assertEquals(3, result.size());
     assertEquals(13, result.get(0).osmEntity().getId());
@@ -288,7 +287,7 @@ class IterateByTimestampsNodesTest {
         osmEntity -> true,
         false
     )).iterateByTimestamps(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(5, result.size());
     assertEquals("2007-06-01T00:00:00", result.get(0).timestamp().toString());

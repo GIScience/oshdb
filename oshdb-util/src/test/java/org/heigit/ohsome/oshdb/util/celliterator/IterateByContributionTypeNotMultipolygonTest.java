@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator.IterateAllEntry;
 import org.heigit.ohsome.oshdb.util.celliterator.helpers.GridOSHFactory;
@@ -26,7 +25,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method on relations except
+ * Tests the {@link CellIterator#iterateByContribution(OSHEntitySource)} method on relations except
  * multipolygon relations.
  */
 class IterateByContributionTypeNotMultipolygonTest {
@@ -59,7 +58,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -99,7 +98,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -134,7 +133,7 @@ class IterateByContributionTypeNotMultipolygonTest {
           osmEntity -> true,
           false
       )).iterateByContribution(
-          oshdbDataGridCell
+          OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
       ).toList();
     });
   }
@@ -153,7 +152,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -187,7 +186,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(8, result.size());
@@ -227,7 +226,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -267,7 +266,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -306,7 +305,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -341,7 +340,7 @@ class IterateByContributionTypeNotMultipolygonTest {
           osmEntity -> true,
           false
       )).iterateByContribution(
-          oshdbDataGridCell
+          OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
       ).toList();
     });
   }
@@ -360,7 +359,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(5, result.size());
@@ -417,7 +416,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(4, result.size());
@@ -444,7 +443,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -472,7 +471,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(2, result.size());
@@ -506,7 +505,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(3, result.size());
@@ -536,7 +535,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(2, result.size());
@@ -571,7 +570,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(3, result.size());
     assertEquals(
@@ -621,7 +620,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(3, result.size());
   }
@@ -649,7 +648,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(3, result.size());
   }
@@ -677,7 +676,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -698,7 +697,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(
@@ -736,7 +735,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -755,7 +754,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -776,7 +775,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -804,7 +803,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     Geometry geom1 = result.get(0).geometry().get();
     assertTrue(geom1 instanceof GeometryCollection);
@@ -826,7 +825,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
 
     assertEquals(4, result.size());
@@ -851,7 +850,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertTrue(result.isEmpty());
   }
@@ -879,7 +878,7 @@ class IterateByContributionTypeNotMultipolygonTest {
         osmEntity -> true,
         false
     )).iterateByContribution(
-        oshdbDataGridCell
+        OSHEntitySource.fromGridOSHEntity(oshdbDataGridCell)
     ).toList();
     assertEquals(1, result.size());
     assertEquals(

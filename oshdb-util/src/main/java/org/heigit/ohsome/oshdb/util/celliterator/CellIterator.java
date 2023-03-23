@@ -229,10 +229,10 @@ public class CellIterator implements Serializable {
   ) {}
 
   /**
-   * Helper method to easily iterate over all entities in a cell that match a given condition/filter
+   * Helper method to easily iterate over all entities that match a given condition/filter
    * as they existed at the given timestamps.
    *
-   * @param cell the data cell
+   * @param source a provider of a stream of OSHEntity objects and a corresponding bounding box
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries at each
    *         timestamp. If an object has not been modified between timestamps, the output may
@@ -240,17 +240,17 @@ public class CellIterator implements Serializable {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public Stream<IterateByTimestampEntry> iterateByTimestamps(GridOSHEntity cell) {
-    var cellBoundingBox = XYGrid.getBoundingBox(new CellId(cell.getLevel(), cell.getId()), true);
+  public Stream<IterateByTimestampEntry> iterateByTimestamps(OSHEntitySource source) {
+    var cellBoundingBox = source.getBoundingBox();
     final boolean allFullyInside = fullyInside(cellBoundingBox);
     if (!allFullyInside && isBoundByPolygon && bboxOutsidePolygon.test(cellBoundingBox)) {
       return Stream.empty();
     }
-    return iterateByTimestamps(Streams.stream(cell.getEntities()), allFullyInside);
+    return iterateByTimestamps(source.getData(), allFullyInside);
   }
 
   /**
-   * Helper method to easily iterate over all entities in a cell that match a given condition/filter
+   * Helper method to easily iterate over all entities that match a given condition/filter
    * as they existed at the given timestamps.
    *
    * @param oshData the entities to iterate through
@@ -494,25 +494,25 @@ public class CellIterator implements Serializable {
   ) {}
 
   /**
-   * Helper method to easily iterate over all entity modifications in a cell that match a given
+   * Helper method to easily iterate over all entity modifications that match a given
    * condition/filter.
    *
-   * @param cell the data cell
+   * @param source a provider of a stream of OSHEntity objects and a corresponding bounding box
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
-  public Stream<IterateAllEntry> iterateByContribution(GridOSHEntity cell) {
-    var cellBoundingBox = XYGrid.getBoundingBox(new CellId(cell.getLevel(), cell.getId()), true);
+  public Stream<IterateAllEntry> iterateByContribution(OSHEntitySource source) {
+    var cellBoundingBox = source.getBoundingBox();
     final boolean allFullyInside = fullyInside(cellBoundingBox);
     if (!allFullyInside && isBoundByPolygon && bboxOutsidePolygon.test(cellBoundingBox)) {
       return Stream.empty();
     }
-    return iterateByContribution(Streams.stream(cell.getEntities()), allFullyInside);
+    return iterateByContribution(source.getData(), allFullyInside);
   }
 
   /**
-   * Helper method to easily iterate over all entity modifications in a cell that match a given
+   * Helper method to easily iterate over all entity modifications that match a given
    * condition/filter.
    *
    * @param oshData the entities to iterate through
