@@ -21,8 +21,6 @@ import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
-import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -30,7 +28,6 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
@@ -59,8 +56,8 @@ import org.slf4j.LoggerFactory;
  * Allows to iterate through the contents of OSH grid cells.
  *
  * <p>There are two modes of iterating through a cell: 1) iterate at specific timestamps
- * (entity snapshots) {@link #iterateByTimestamps(GridOSHEntity)} or 2) iterate through
- * all (minor) versions of each entity {@link #iterateByContribution(GridOSHEntity)}.
+ * (entity snapshots) {@link #iterateByTimestamps(OSHEntitySource)} or 2) iterate through
+ * all (minor) versions of each entity {@link #iterateByContribution(OSHEntitySource)}.
  */
 public class CellIterator implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
@@ -208,7 +205,7 @@ public class CellIterator implements Serializable {
   }
 
   /**
-   * Holds the result of a single item returned by {@link #iterateByTimestamps(GridOSHEntity)}.
+   * Holds the result of a single item returned by {@link #iterateByTimestamps(OSHEntitySource)}.
    *
    * @param timestamp timestamp of the snapshot
    * @param lastModificationTimestamp last modification timestamp before the snapshot's timestamp
@@ -262,7 +259,7 @@ public class CellIterator implements Serializable {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public Stream<IterateByTimestampEntry> iterateByTimestamps(Stream<? extends OSHEntity> oshData,
+  private Stream<IterateByTimestampEntry> iterateByTimestamps(Stream<? extends OSHEntity> oshData,
       boolean allFullyInside) {
     return oshData.flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity)
@@ -462,7 +459,7 @@ public class CellIterator implements Serializable {
   }
 
   /**
-   * Holds the result of a single item returned by {@link #iterateByContribution(GridOSHEntity)}.
+   * Holds the result of a single item returned by {@link #iterateByContribution(OSHEntitySource)}.
    *
    * @param timestamp the timestamp when the OSM object was modified
    * @param osmEntity the version of the OSM object after the modification
@@ -521,7 +518,7 @@ public class CellIterator implements Serializable {
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
-  public Stream<IterateAllEntry> iterateByContribution(Stream<? extends OSHEntity> oshData,
+  private Stream<IterateAllEntry> iterateByContribution(Stream<? extends OSHEntity> oshData,
       boolean allFullyInside) {
     if (includeOldStyleMultipolygons) {
       //todo: remove this by finishing the functionality below
