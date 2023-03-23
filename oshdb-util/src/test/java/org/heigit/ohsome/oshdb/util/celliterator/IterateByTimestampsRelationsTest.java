@@ -60,16 +60,16 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(12, result.size());
 
-    assertEquals(300, result.get(0).osmEntity.getChangesetId());
-    Geometry geom = result.get(0).geometry.get();
+    assertEquals(300, result.get(0).osmEntity().getChangesetId());
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof MultiPolygon);
-    Geometry geom3 = result.get(1).geometry.get();
+    Geometry geom3 = result.get(1).geometry().get();
     assertTrue(geom3 instanceof MultiPolygon);
-    Geometry geom4 = result.get(2).geometry.get();
+    Geometry geom4 = result.get(2).geometry().get();
     assertTrue(geom4 instanceof MultiPolygon);
   }
 
@@ -90,10 +90,10 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(9, result.size());
-    assertEquals(303, result.get(0).osmEntity.getChangesetId());
+    assertEquals(303, result.get(0).osmEntity().getChangesetId());
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -134,10 +134,10 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(14, result.size());
-    assertEquals(307, result.get(0).osmEntity.getChangesetId());
+    assertEquals(307, result.get(0).osmEntity().getChangesetId());
   }
 
   @Test
@@ -157,19 +157,19 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(10, result.size());
-    assertEquals(310, result.get(0).osmEntity.getChangesetId());
+    assertEquals(310, result.get(0).osmEntity().getChangesetId());
 
-    Geometry geom = result.get(0).geometry.get();
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Polygon);
-    Geometry geom3 = result.get(1).geometry.get();
+    Geometry geom3 = result.get(1).geometry().get();
     assertTrue(geom3 instanceof Polygon);
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
-    assertNotEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
-    assertEquals(result.get(3).geometry.get(), result.get(2).geometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(0).geometry().get());
+    assertNotEquals(result.get(2).geometry().get(), result.get(1).geometry().get());
+    assertEquals(result.get(3).geometry().get(), result.get(2).geometry().get());
   }
 
   @Test
@@ -189,18 +189,18 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(10, result.size());
-    assertEquals(312, result.get(0).osmEntity.getChangesetId());
+    assertEquals(312, result.get(0).osmEntity().getChangesetId());
 
-    Geometry geom = result.get(0).geometry.get();
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Polygon);
-    Geometry geom3 = result.get(1).geometry.get();
+    Geometry geom3 = result.get(1).geometry().get();
     assertTrue(geom3 instanceof Polygon);
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
-    assertNotEquals(result.get(6).geometry.get(), result.get(1).geometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(0).geometry().get());
+    assertNotEquals(result.get(6).geometry().get(), result.get(1).geometry().get());
   }
 
   @Test
@@ -220,13 +220,13 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(10, result.size());
-    assertEquals(313, result.get(0).osmEntity.getChangesetId());
+    assertEquals(313, result.get(0).osmEntity().getChangesetId());
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
-    assertEquals(result.get(6).geometry.get(), result.get(5).geometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(0).geometry().get());
+    assertEquals(result.get(6).geometry().get(), result.get(5).geometry().get());
   }
 
   @Test
@@ -245,14 +245,14 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(10, result.size());
 
-    assertEquals(314, result.get(0).osmEntity.getChangesetId());
-    Geometry geom = result.get(0).geometry.get();
+    assertEquals(314, result.get(0).osmEntity().getChangesetId());
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof GeometryCollection);
-    Geometry geom2 = result.get(9).geometry.get();
+    Geometry geom2 = result.get(9).geometry().get();
     assertTrue(geom2 instanceof GeometryCollection);
   }
 
@@ -294,24 +294,24 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(10, result.size());
-    assertEquals(316, result.get(0).osmEntity.getChangesetId());
+    assertEquals(316, result.get(0).osmEntity().getChangesetId());
 
-    Geometry geom = result.get(0).geometry.get();
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Polygon);
-    Geometry geom2 = result.get(1).geometry.get();
+    Geometry geom2 = result.get(1).geometry().get();
     assertTrue(geom2 instanceof Polygon);
-    Geometry geom3 = result.get(2).geometry.get();
+    Geometry geom3 = result.get(2).geometry().get();
     assertTrue(geom3 instanceof Polygon);
-    Geometry geom4 = result.get(3).geometry.get();
+    Geometry geom4 = result.get(3).geometry().get();
     assertTrue(geom4 instanceof Polygon);
-    Geometry geom5 = result.get(9).geometry.get();
+    Geometry geom5 = result.get(9).geometry().get();
     assertTrue(geom5 instanceof Polygon);
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(0).geometry.get());
-    assertEquals(result.get(2).geometry.get(), result.get(1).geometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(0).geometry().get());
+    assertEquals(result.get(2).geometry().get(), result.get(1).geometry().get());
   }
 
   @Test
@@ -330,10 +330,10 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(13, result.size());
-    assertEquals(317, result.get(0).osmEntity.getChangesetId());
+    assertEquals(317, result.get(0).osmEntity().getChangesetId());
   }
 
   @Test
@@ -352,12 +352,12 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(10, result.size());
-    assertEquals(318, result.get(0).osmEntity.getChangesetId());
+    assertEquals(318, result.get(0).osmEntity().getChangesetId());
 
-    assertTrue(result.get(6).geometry.get().isEmpty());
+    assertTrue(result.get(6).geometry().get().isEmpty());
   }
 
   @Test
@@ -377,14 +377,14 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(10, result.size());
-    Geometry geom = result.get(0).geometry.get();
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Polygon);
-    Geometry geom2 = result.get(7).geometry.get();
+    Geometry geom2 = result.get(7).geometry().get();
     assertTrue(geom2 instanceof GeometryCollection);
-    assertEquals(319, result.get(0).osmEntity.getChangesetId());
+    assertEquals(319, result.get(0).osmEntity().getChangesetId());
   }
 
   @Test
@@ -403,14 +403,14 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(12, result.size());
-    Geometry geom = result.get(0).geometry.get();
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Polygon);
-    Geometry geom2 = result.get(2).geometry.get();
+    Geometry geom2 = result.get(2).geometry().get();
     assertTrue(geom2 instanceof Polygon);
-    assertEquals(320, result.get(0).osmEntity.getChangesetId());
+    assertEquals(320, result.get(0).osmEntity().getChangesetId());
   }
 
   @Test
@@ -429,15 +429,15 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(12, result.size());
-    Geometry geom = result.get(0).geometry.get();
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof MultiPolygon);
-    Geometry geom2 = result.get(9).geometry.get();
+    Geometry geom2 = result.get(9).geometry().get();
     assertTrue(geom2 instanceof Polygon);
-    assertEquals(321, result.get(0).osmEntity.getChangesetId());
-    assertNotEquals(result.get(9).geometry.get(), result.get(0).geometry.get());
+    assertEquals(321, result.get(0).osmEntity().getChangesetId());
+    assertNotEquals(result.get(9).geometry().get(), result.get(0).geometry().get());
   }
 
   @Test
@@ -456,17 +456,17 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(12, result.size());
 
-    Geometry geom = result.get(0).geometry.get();
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Polygon);
-    Geometry geom1 = result.get(1).geometry.get();
+    Geometry geom1 = result.get(1).geometry().get();
     assertTrue(geom1 instanceof GeometryCollection);
-    Geometry geom2 = result.get(9).geometry.get();
+    Geometry geom2 = result.get(9).geometry().get();
     assertTrue(geom2 instanceof Polygon);
-    assertEquals(323, result.get(0).osmEntity.getChangesetId());
-    assertNotEquals(result.get(9).geometry.get(), result.get(0).geometry.get());
+    assertEquals(323, result.get(0).osmEntity().getChangesetId());
+    assertNotEquals(result.get(9).geometry().get(), result.get(0).geometry().get());
   }
 
   @Test
@@ -495,7 +495,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(10, result.size());
   }
 
@@ -524,7 +524,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(0, result.size());
   }
 
@@ -554,7 +554,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(10, result.size());
   }
 
@@ -584,7 +584,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(resultPoly.isEmpty());
   }
 
@@ -606,9 +606,9 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
-    assertNotEquals(result.get(3).geometry.get(), result.get(0).geometry.get());
+    assertNotEquals(result.get(3).geometry().get(), result.get(0).geometry().get());
   }
 
   @Test
@@ -636,7 +636,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
   }
@@ -657,7 +657,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(3, result.size());
   }
 
@@ -677,7 +677,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(resultPoly.isEmpty());
   }
 
@@ -700,16 +700,16 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     // geom of requested area vs full geom after modification
-    assertNotEquals(result.get(0).geometry.get().getArea(),
-        result.get(0).unclippedGeometry.get().getArea());
+    assertNotEquals(result.get(0).geometry().get().getArea(),
+        result.get(0).unclippedGeometry().get().getArea());
     // full geom changed
-    assertNotEquals(result.get(2).unclippedGeometry.get().getArea(),
-        result.get(0).unclippedGeometry.get().getArea());
-    assertNotEquals(result.get(2).unclippedGeometry.get().getArea(),
-        result.get(4).unclippedGeometry.get().getArea());
+    assertNotEquals(result.get(2).unclippedGeometry().get().getArea(),
+        result.get(0).unclippedGeometry().get().getArea());
+    assertNotEquals(result.get(2).unclippedGeometry().get().getArea(),
+        result.get(4).unclippedGeometry().get().getArea());
   }
 
   @Test
@@ -739,7 +739,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(result.isEmpty());
   }
 
@@ -760,7 +760,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
   }
@@ -781,7 +781,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(5, result.size());
   }
@@ -802,7 +802,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(0, result.size());
   }
 
@@ -832,7 +832,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
   }
@@ -862,7 +862,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(5, result.size());
   }
@@ -892,7 +892,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(0, result.size());
   }
@@ -922,7 +922,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
   }
@@ -952,7 +952,7 @@ class IterateByTimestampsRelationsTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(12, result.size());
   }

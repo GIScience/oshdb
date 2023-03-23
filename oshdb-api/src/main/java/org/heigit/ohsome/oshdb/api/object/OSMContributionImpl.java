@@ -75,52 +75,52 @@ public class OSMContributionImpl implements OSMContribution {
 
   @Override
   public OSHDBTimestamp getTimestamp() {
-    return data.timestamp;
+    return data.timestamp();
   }
 
   @Override
   public Geometry getGeometryBefore() {
-    return data.previousGeometry.get();
+    return data.previousGeometry().get();
   }
 
   @Override
   public Geometry getGeometryUnclippedBefore() {
-    return data.unclippedPreviousGeometry.get();
+    return data.unclippedPreviousGeometry().get();
   }
 
   @Override
   public Geometry getGeometryAfter() {
-    return data.geometry.get();
+    return data.geometry().get();
   }
 
   @Override
   public Geometry getGeometryUnclippedAfter() {
-    return data.unclippedGeometry.get();
+    return data.unclippedGeometry().get();
   }
 
   @Override
   public OSMEntity getEntityBefore() {
-    return data.previousOsmEntity;
+    return data.previousOsmEntity();
   }
 
   @Override
   public OSMEntity getEntityAfter() {
-    return data.osmEntity;
+    return data.osmEntity();
   }
 
   @Override
   public OSHEntity getOSHEntity() {
-    return data.oshEntity;
+    return data.oshEntity();
   }
 
   @Override
   public boolean is(ContributionType contributionType) {
-    return data.activities.contains(contributionType);
+    return data.activities().contains(contributionType);
   }
 
   @Override
   public EnumSet<ContributionType> getContributionTypes() {
-    return data.activities.get();
+    return data.activities().get();
   }
 
 
@@ -175,7 +175,7 @@ public class OSMContributionImpl implements OSMContribution {
 
   @Override
   public long getChangesetId() {
-    return data.changeset;
+    return data.changeset();
   }
 
   @Override

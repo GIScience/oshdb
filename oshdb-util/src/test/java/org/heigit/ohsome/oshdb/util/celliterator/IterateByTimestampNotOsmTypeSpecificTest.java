@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.util.celliterator;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -108,7 +109,7 @@ class IterateByTimestampNotOsmTypeSpecificTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(result.isEmpty());
   }
 
@@ -138,7 +139,7 @@ class IterateByTimestampNotOsmTypeSpecificTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(result.isEmpty());
   }
 
@@ -169,7 +170,7 @@ class IterateByTimestampNotOsmTypeSpecificTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
-    assertTrue(!result.isEmpty());
+    ).toList();
+    assertFalse(result.isEmpty());
   }
 }

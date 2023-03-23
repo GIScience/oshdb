@@ -80,15 +80,13 @@ public class OSHDBGeometryBuilder {
           "cannot produce geometry of entity for timestamp before this entity's version's timestamp"
       );
     }
-    if (entity instanceof OSMNode) {
-      OSMNode node = (OSMNode) entity;
+    if (entity instanceof OSMNode node) {
       if (node.isVisible()) {
         return geometryFactory.createPoint(new Coordinate(node.getLongitude(), node.getLatitude()));
       } else {
         return geometryFactory.createPoint((Coordinate) null);
       }
-    } else if (entity instanceof OSMWay) {
-      OSMWay way = (OSMWay) entity;
+    } else if (entity instanceof OSMWay way) {
       if (!way.isVisible()) {
         LOG.info("way/{} is deleted - falling back to empty (line) geometry", way.getId());
         return geometryFactory.createLineString((CoordinateSequence) null);

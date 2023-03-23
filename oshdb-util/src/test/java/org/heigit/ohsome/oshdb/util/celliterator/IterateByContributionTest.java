@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ObjectInputStream;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
@@ -74,10 +73,10 @@ class IterateByContributionTest {
             false
         )).iterateByContribution(
             oshCellRawData
-        ).collect(Collectors.toList());
+        ).toList();
         countTotal += result.size();
         for (IterateAllEntry entry : result) {
-          if (entry.activities.contains(ContributionType.CREATION)) {
+          if (entry.activities().contains(ContributionType.CREATION)) {
             countCreated++;
           } else {
             countOther++;

@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHRelations;
 import org.heigit.ohsome.oshdb.osh.OSHRelation;
@@ -69,7 +68,7 @@ class IterateByContributionNotOsmTypeSpecificTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(resultPoly.isEmpty());
   }
 
@@ -99,7 +98,7 @@ class IterateByContributionNotOsmTypeSpecificTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(resultPoly.isEmpty());
   }
 
@@ -130,7 +129,7 @@ class IterateByContributionNotOsmTypeSpecificTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertFalse(resultPoly.isEmpty());
   }
 

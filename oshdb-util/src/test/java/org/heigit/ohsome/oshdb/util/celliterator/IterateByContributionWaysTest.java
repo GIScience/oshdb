@@ -2,12 +2,12 @@ package org.heigit.ohsome.oshdb.util.celliterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHWays;
@@ -56,37 +56,37 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
-    assertEquals(31, result.get(0).changeset);
+    assertEquals(31, result.get(0).changeset());
 
-    assertEquals(4, result.get(0).geometry.get().getNumPoints());
-    assertEquals(8, result.get(1).geometry.get().getNumPoints());
-    assertEquals(9, result.get(2).geometry.get().getNumPoints());
+    assertEquals(4, result.get(0).geometry().get().getNumPoints());
+    assertEquals(8, result.get(1).geometry().get().getNumPoints());
+    assertEquals(9, result.get(2).geometry().get().getNumPoints());
 
-    assertEquals(null, result.get(0).previousGeometry.get());
-    Geometry geom = result.get(0).geometry.get();
+    assertNull(result.get(0).previousGeometry().get());
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof LineString);
-    Geometry geom2 = result.get(1).geometry.get();
+    Geometry geom2 = result.get(1).geometry().get();
     assertTrue(geom2 instanceof LineString);
-    Geometry geom3 = result.get(2).geometry.get();
+    Geometry geom3 = result.get(2).geometry().get();
     assertTrue(geom3 instanceof LineString);
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
-    assertNotEquals(result.get(2).geometry.get(), result.get(2).previousGeometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(1).previousGeometry().get());
+    assertNotEquals(result.get(2).geometry().get(), result.get(2).previousGeometry().get());
   }
 
   @Test
@@ -105,39 +105,39 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
 
-    assertEquals(34, result.get(0).changeset);
+    assertEquals(34, result.get(0).changeset());
 
-    assertEquals(2, result.get(0).geometry.get().getNumPoints());
-    assertEquals(2, result.get(1).geometry.get().getNumPoints());
-    assertEquals(3, result.get(3).geometry.get().getNumPoints());
+    assertEquals(2, result.get(0).geometry().get().getNumPoints());
+    assertEquals(2, result.get(1).geometry().get().getNumPoints());
+    assertEquals(3, result.get(3).geometry().get().getNumPoints());
 
-    assertEquals(null, result.get(0).previousGeometry.get());
-    Geometry geom = result.get(0).geometry.get();
+    assertNull(result.get(0).previousGeometry().get());
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof LineString);
-    Geometry geom3 = result.get(1).geometry.get();
+    Geometry geom3 = result.get(1).geometry().get();
     assertTrue(geom3 instanceof LineString);
-    Geometry geom4 = result.get(3).geometry.get();
+    Geometry geom4 = result.get(3).geometry().get();
     assertTrue(geom4 instanceof LineString);
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
-    assertNotEquals(result.get(2).geometry.get(), result.get(2).previousGeometry.get());
-    assertNotEquals(result.get(3).geometry.get(), result.get(3).previousGeometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(1).previousGeometry().get());
+    assertNotEquals(result.get(2).geometry().get(), result.get(2).previousGeometry().get());
+    assertNotEquals(result.get(3).geometry().get(), result.get(3).previousGeometry().get());
   }
 
   @Test
@@ -156,22 +156,22 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
-    assertEquals(36, result.get(0).changeset);
+    assertEquals(36, result.get(0).changeset());
   }
 
   @Test
@@ -189,37 +189,37 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE, ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
-    assertEquals(39, result.get(0).changeset);
+    assertEquals(39, result.get(0).changeset());
 
-    assertEquals(3, result.get(0).geometry.get().getNumPoints());
-    assertEquals(5, result.get(1).geometry.get().getNumPoints());
-    assertEquals(5, result.get(2).geometry.get().getNumPoints());
+    assertEquals(3, result.get(0).geometry().get().getNumPoints());
+    assertEquals(5, result.get(1).geometry().get().getNumPoints());
+    assertEquals(5, result.get(2).geometry().get().getNumPoints());
 
-    assertEquals(null, result.get(0).previousGeometry.get());
-    Geometry geom = result.get(0).geometry.get();
+    assertNull(result.get(0).previousGeometry().get());
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof LineString);
-    Geometry geom2 = result.get(1).geometry.get();
+    Geometry geom2 = result.get(1).geometry().get();
     assertTrue(geom2 instanceof LineString);
-    Geometry geom3 = result.get(2).geometry.get();
+    Geometry geom3 = result.get(2).geometry().get();
     assertTrue(geom3 instanceof LineString);
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
-    assertEquals(result.get(2).geometry.get(), result.get(2).previousGeometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(1).previousGeometry().get());
+    assertEquals(result.get(2).geometry().get(), result.get(2).previousGeometry().get());
   }
 
   @Test
@@ -240,32 +240,32 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(6, result.size());
-    assertEquals(2, result.get(0).geometry.get().getNumPoints());
-    assertEquals(3, result.get(1).geometry.get().getNumPoints());
-    assertEquals(2, result.get(2).geometry.get().getNumPoints());
-    assertEquals(3, result.get(3).geometry.get().getNumPoints());
-    assertEquals(3, result.get(4).geometry.get().getNumPoints());
+    assertEquals(2, result.get(0).geometry().get().getNumPoints());
+    assertEquals(3, result.get(1).geometry().get().getNumPoints());
+    assertEquals(2, result.get(2).geometry().get().getNumPoints());
+    assertEquals(3, result.get(3).geometry().get().getNumPoints());
+    assertEquals(3, result.get(4).geometry().get().getNumPoints());
 
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(3).activities.get()
+        result.get(3).activities().get()
     );
-    assertEquals(42, result.get(0).changeset);
+    assertEquals(42, result.get(0).changeset());
   }
 
 
@@ -284,36 +284,36 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(6, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE, ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(3).activities.get()
+        result.get(3).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(4).activities.get()
+        result.get(4).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(5).activities.get()
+        result.get(5).activities().get()
     );
 
-    assertEquals(44, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
-    assertEquals(result.get(5).osmEntity.getTags(), result.get(3).osmEntity.getTags());
+    assertEquals(44, result.get(0).changeset());
+    assertNotEquals(result.get(1).osmEntity().getTags(), result.get(0).osmEntity().getTags());
+    assertEquals(result.get(5).osmEntity().getTags(), result.get(3).osmEntity().getTags());
   }
 
   @Test
@@ -331,29 +331,29 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(2, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE, ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
 
-    assertEquals(48, result.get(0).changeset);
+    assertEquals(48, result.get(0).changeset());
 
-    assertEquals(5, result.get(0).geometry.get().getNumPoints());
-    assertEquals(5, result.get(1).geometry.get().getNumPoints());
+    assertEquals(5, result.get(0).geometry().get().getNumPoints());
+    assertEquals(5, result.get(1).geometry().get().getNumPoints());
 
-    assertEquals(null, result.get(0).previousGeometry.get());
-    Geometry geom = result.get(0).geometry.get();
+    assertNull(result.get(0).previousGeometry().get());
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Polygon);
-    Geometry geom2 = result.get(1).geometry.get();
+    Geometry geom2 = result.get(1).geometry().get();
     assertTrue(geom2 instanceof LineString);
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(1).previousGeometry().get());
   }
 
   @Test
@@ -371,29 +371,29 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(2, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
 
-    assertEquals(50, result.get(0).changeset);
+    assertEquals(50, result.get(0).changeset());
 
-    assertEquals(5, result.get(0).geometry.get().getNumPoints());
-    assertEquals(4, result.get(1).geometry.get().getNumPoints());
+    assertEquals(5, result.get(0).geometry().get().getNumPoints());
+    assertEquals(4, result.get(1).geometry().get().getNumPoints());
 
-    assertEquals(null, result.get(0).previousGeometry.get());
-    Geometry geom = result.get(0).geometry.get();
+    assertNull(result.get(0).previousGeometry().get());
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Polygon);
-    Geometry geom2 = result.get(1).geometry.get();
+    Geometry geom2 = result.get(1).geometry().get();
     assertTrue(geom2 instanceof LineString);
 
-    assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(1).previousGeometry().get());
   }
 
   @Test
@@ -412,16 +412,16 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     // should be 2: entity has created at start time, modified in between and at end time (excluded)
     assertEquals(2, result.size());
-    assertEquals(61, result.get(0).changeset);
+    assertEquals(61, result.get(0).changeset());
   }
 
   @Test
   void testTwoNodesChangedAtSameTimeDifferentChangesets() {
     // way with two nodes, nodes changed lat lon, both at same time, different changesets
-    // which changeset is shown in result.get(1).changeset? -> from node 20, not 21
+    // which changeset is shown in result.get(1).changeset()? -> from node 20, not 21
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -434,19 +434,19 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(2, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     // randomly 332 or 334
-    //assertEquals(332, result.get(1).changeset);
+    //assertEquals(332, result.get(1).changeset());
   }
 
   @Test
@@ -465,15 +465,15 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(2, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
-    assertTrue(result.get(1).activities.get().isEmpty());
-    assertEquals(3, result.get(1).geometry.get().getNumPoints());
+    assertTrue(result.get(1).activities().get().isEmpty());
+    assertEquals(3, result.get(1).geometry().get().getNumPoints());
   }
 
   @Test
@@ -493,19 +493,19 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
-    assertTrue(result.get(1).activities.get().isEmpty());
+    assertTrue(result.get(1).activities().get().isEmpty());
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
-    assertEquals(3, result.get(1).geometry.get().getNumPoints());
+    assertEquals(3, result.get(1).geometry().get().getNumPoints());
   }
 
   @Test
@@ -524,15 +524,15 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
-    assertTrue(result.get(1).activities.get().isEmpty());
-    assertTrue(result.get(2).activities.get().isEmpty());
+    assertTrue(result.get(1).activities().get().isEmpty());
+    assertTrue(result.get(2).activities().get().isEmpty());
   }
 
   @Test
@@ -550,20 +550,20 @@ class IterateByContributionWaysTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
   }
 }

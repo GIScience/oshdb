@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
@@ -59,13 +58,13 @@ class IterateByTimestampsNodesTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(11, result.size());
-    assertNotEquals(result.get(1).geometry.get().getCoordinates(),
-        result.get(0).geometry.get().getCoordinates());
-    assertNotEquals(result.get(2).geometry.get().getCoordinates(),
-        result.get(1).geometry.get().getCoordinates());
+    assertNotEquals(result.get(1).geometry().get().getCoordinates(),
+        result.get(0).geometry().get().getCoordinates());
+    assertNotEquals(result.get(2).geometry().get().getCoordinates(),
+        result.get(1).geometry().get().getCoordinates());
   }
 
   @Test
@@ -85,19 +84,19 @@ class IterateByTimestampsNodesTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(12, result.size());
-    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
-    assertEquals(result.get(2).osmEntity.getTags(), result.get(1).osmEntity.getTags());
-    assertEquals(result.get(3).osmEntity.getTags(), result.get(2).osmEntity.getTags());
-    assertEquals(result.get(4).osmEntity.getTags(), result.get(3).osmEntity.getTags());
-    assertEquals(result.get(5).osmEntity.getTags(), result.get(4).osmEntity.getTags());
-    assertEquals(result.get(6).osmEntity.getTags(), result.get(5).osmEntity.getTags());
-    assertNotEquals(result.get(7).osmEntity.getTags(), result.get(6).osmEntity.getTags());
-    assertEquals(result.get(8).osmEntity.getTags(), result.get(7).osmEntity.getTags());
-    assertEquals(result.get(9).osmEntity.getTags(), result.get(8).osmEntity.getTags());
-    assertEquals(result.get(10).osmEntity.getTags(), result.get(9).osmEntity.getTags());
-    assertEquals(result.get(11).osmEntity.getTags(), result.get(10).osmEntity.getTags());
+    assertNotEquals(result.get(1).osmEntity().getTags(), result.get(0).osmEntity().getTags());
+    assertEquals(result.get(2).osmEntity().getTags(), result.get(1).osmEntity().getTags());
+    assertEquals(result.get(3).osmEntity().getTags(), result.get(2).osmEntity().getTags());
+    assertEquals(result.get(4).osmEntity().getTags(), result.get(3).osmEntity().getTags());
+    assertEquals(result.get(5).osmEntity().getTags(), result.get(4).osmEntity().getTags());
+    assertEquals(result.get(6).osmEntity().getTags(), result.get(5).osmEntity().getTags());
+    assertNotEquals(result.get(7).osmEntity().getTags(), result.get(6).osmEntity().getTags());
+    assertEquals(result.get(8).osmEntity().getTags(), result.get(7).osmEntity().getTags());
+    assertEquals(result.get(9).osmEntity().getTags(), result.get(8).osmEntity().getTags());
+    assertEquals(result.get(10).osmEntity().getTags(), result.get(9).osmEntity().getTags());
+    assertEquals(result.get(11).osmEntity().getTags(), result.get(10).osmEntity().getTags());
   }
 
   @Test
@@ -117,7 +116,7 @@ class IterateByTimestampsNodesTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(5, result.size());
   }
 
@@ -143,31 +142,31 @@ class IterateByTimestampsNodesTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(11, result.size());
-    assertNotEquals(result.get(1).geometry.get().getCoordinates(),
-        result.get(0).geometry.get().getCoordinates());
-    assertArrayEquals(result.get(2).geometry.get().getCoordinates(),
-        result.get(1).geometry.get().getCoordinates());
-    assertNotEquals(result.get(3).geometry.get().getCoordinates(),
-        result.get(2).geometry.get().getCoordinates());
-    assertArrayEquals(result.get(5).geometry.get().getCoordinates(),
-        result.get(3).geometry.get().getCoordinates());
-    assertNotEquals(result.get(6).geometry.get().getCoordinates(),
-        result.get(3).geometry.get().getCoordinates());
-    assertArrayEquals(result.get(9).geometry.get().getCoordinates(),
-        result.get(6).geometry.get().getCoordinates());
-    assertNotEquals(result.get(1).osmEntity.getTags(),
-        result.get(0).osmEntity.getTags());
-    assertEquals(result.get(2).osmEntity.getTags(),
-        result.get(1).osmEntity.getTags());
-    assertNotEquals(result.get(3).osmEntity.getTags(),
-        result.get(2).osmEntity.getTags());
-    assertEquals(result.get(5).osmEntity.getTags(),
-        result.get(4).osmEntity.getTags());
-    assertNotEquals(result.get(9).osmEntity.getTags(),
-        result.get(6).osmEntity.getTags());
+    assertNotEquals(result.get(1).geometry().get().getCoordinates(),
+        result.get(0).geometry().get().getCoordinates());
+    assertArrayEquals(result.get(2).geometry().get().getCoordinates(),
+        result.get(1).geometry().get().getCoordinates());
+    assertNotEquals(result.get(3).geometry().get().getCoordinates(),
+        result.get(2).geometry().get().getCoordinates());
+    assertArrayEquals(result.get(5).geometry().get().getCoordinates(),
+        result.get(3).geometry().get().getCoordinates());
+    assertNotEquals(result.get(6).geometry().get().getCoordinates(),
+        result.get(3).geometry().get().getCoordinates());
+    assertArrayEquals(result.get(9).geometry().get().getCoordinates(),
+        result.get(6).geometry().get().getCoordinates());
+    assertNotEquals(result.get(1).osmEntity().getTags(),
+        result.get(0).osmEntity().getTags());
+    assertEquals(result.get(2).osmEntity().getTags(),
+        result.get(1).osmEntity().getTags());
+    assertNotEquals(result.get(3).osmEntity().getTags(),
+        result.get(2).osmEntity().getTags());
+    assertEquals(result.get(5).osmEntity().getTags(),
+        result.get(4).osmEntity().getTags());
+    assertNotEquals(result.get(9).osmEntity().getTags(),
+        result.get(6).osmEntity().getTags());
   }
 
   @Test
@@ -186,7 +185,7 @@ class IterateByTimestampsNodesTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(7, result.size());
   }
 
@@ -202,11 +201,12 @@ class IterateByTimestampsNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
+        osmEntity -> osmEntity.getTags().hasTagKey(
+            osmXmlTestData.keys().getOrDefault("amenity", -1)),
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(result.isEmpty());
   }
 
@@ -235,7 +235,7 @@ class IterateByTimestampsNodesTest {
         false
     )).iterateByTimestamps(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(1, result.size());
   }
 
@@ -264,11 +264,11 @@ class IterateByTimestampsNodesTest {
     )).iterateByTimestamps(
         GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6))
             .getId(1.0, 1.0)/* approx. 0, 0, 5.6, 5.6*/)
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
-    assertEquals(13, result.get(0).osmEntity.getId());
-    assertEquals(13, result.get(1).osmEntity.getId());
-    assertEquals(14, result.get(2).osmEntity.getId());
+    assertEquals(13, result.get(0).osmEntity().getId());
+    assertEquals(13, result.get(1).osmEntity().getId());
+    assertEquals(14, result.get(2).osmEntity().getId());
   }
 }

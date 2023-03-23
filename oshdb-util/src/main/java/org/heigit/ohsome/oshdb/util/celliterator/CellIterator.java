@@ -209,36 +209,22 @@ public class CellIterator implements Serializable {
 
   /**
    * Holds the result of a single item returned by {@link #iterateByTimestamps(GridOSHEntity)}.
+   *
+   * @param timestamp timestamp of the snapshot
+   * @param osmEntity the exact version of the OSM object
+   * @param oshEntity the whole version history of the OSM object
+   * @param geometry an object which holds the geometry of the OSM object, or a method to build it
+   *             on request, clipped to the query area of interest
+   * @param unclippedGeometry holds the full unclipped geometry of the OSM object
+   *                     or a function to build it
    */
-  public static class IterateByTimestampEntry {
-    public final OSHDBTimestamp timestamp;
-    public final OSMEntity osmEntity;
-    public final OSHEntity oshEntity;
-    public final LazyEvaluatedObject<Geometry> geometry;
-    public final LazyEvaluatedObject<Geometry> unclippedGeometry;
-
-    /**
-     * Properties associated with each entity snapshot.
-     *
-     * @param timestamp timestamp of the snapshot
-     * @param osmEntity the exact version of the OSM object
-     * @param oshEntity the whole version history of the OSM object
-     * @param geom an object which holds the geometry of the OSM object, or a method to build it
-     *             on request, clipped to the query area of interest
-     * @param unclippedGeom holds the full unclipped geometry of the OSM object
-     *                     or a function to build it
-     */
-    public IterateByTimestampEntry(
-        OSHDBTimestamp timestamp, @Nonnull OSMEntity osmEntity, @Nonnull OSHEntity oshEntity,
-        LazyEvaluatedObject<Geometry> geom, LazyEvaluatedObject<Geometry> unclippedGeom
-    ) {
-      this.timestamp = timestamp;
-      this.osmEntity = osmEntity;
-      this.oshEntity = oshEntity;
-      this.geometry = geom;
-      this.unclippedGeometry = unclippedGeom;
-    }
-  }
+  public record IterateByTimestampEntry(
+      OSHDBTimestamp timestamp,
+      @Nonnull OSMEntity osmEntity,
+      @Nonnull OSHEntity oshEntity,
+      LazyEvaluatedObject<Geometry> geometry,
+      LazyEvaluatedObject<Geometry> unclippedGeometry
+  ) {}
 
   /**
    * Helper method to easily iterate over all entities in a cell that match a given condition/filter
@@ -399,13 +385,13 @@ public class CellIterator implements Serializable {
           if (fullyInside || !geom.get().isEmpty()) {
             LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
                 () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
-            results.add(
-                new IterateByTimestampEntry(timestamp, osmEntity, oshEntity, geom, fullGeom)
+            results.add(new IterateByTimestampEntry(
+                timestamp, osmEntity, oshEntity, geom, fullGeom)
             );
             // add skipped timestamps (where nothing has changed from the last timestamp) to result
             for (OSHDBTimestamp additionalT : queryTs.get(timestamp)) {
-              results.add(
-                  new IterateByTimestampEntry(additionalT, osmEntity, oshEntity, geom, fullGeom)
+              results.add(new IterateByTimestampEntry(
+                  additionalT, osmEntity, oshEntity, geom, fullGeom)
               );
             }
           }
@@ -471,60 +457,35 @@ public class CellIterator implements Serializable {
 
   /**
    * Holds the result of a single item returned by {@link #iterateByContribution(GridOSHEntity)}.
+   *
+   * @param timestamp the timestamp when the OSM object was modified
+   * @param osmEntity the version of the OSM object after the modification
+   * @param previousOsmEntity the version of the OSM object before the modification
+   * @param oshEntity the full version history of the OSM object
+   * @param geometry the geometry of the OSM object (or a function to build it) of the state
+   *                 of the OSM object after the modification, clipped to the query
+   *                 area of interest
+   * @param previousGeometry the geometry of the OSM object (or a function to build it) of
+   *                         the state of the OSM object before the modification, clipped to the
+   *                         the query area of interest
+   * @param unclippedGeometry same as {@link #geometry}, but not clipped to the query area
+   * @param unclippedPreviousGeometry same as {@link #previousGeometry}, but not clipped to
+   *                                  the query area
+   * @param activities a set of contribution types this modification can be classified with
+   * @param changeset the changeset id this data modification is a part of
    */
-  public static class IterateAllEntry {
-    public final OSHDBTimestamp timestamp;
-    @Nonnull
-    public final OSMEntity osmEntity;
-    public final OSMEntity previousOsmEntity;
-    public final OSHEntity oshEntity;
-    public final LazyEvaluatedObject<Geometry> geometry;
-    public final LazyEvaluatedObject<Geometry> previousGeometry;
-    public final LazyEvaluatedObject<Geometry> unclippedGeometry;
-    public final LazyEvaluatedObject<Geometry> unclippedPreviousGeometry;
-    public final LazyEvaluatedContributionTypes activities;
-    public final long changeset;
-
-    /**
-     * Properties associated with each contribution object.
-     *
-     * @param timestamp the timestamp when the OSM object was modified
-     * @param osmEntity the version of the OSM object after the modification
-     * @param previousOsmEntity the version of the OSM object before the modification
-     * @param oshEntity the full version history of the OSM object
-     * @param geometry the geometry of the OSM object (or a function to build it) of the state
-     *                 of the OSM object after the modification, clipped to the query
-     *                 area of interest
-     * @param previousGeometry the geometry of the OSM object (or a function to build it) of
-     *                         the state of the OSM object before the modification, clipped to the
-     *                         the query area of interest
-     * @param unclippedGeometry same as {@link #geometry}, but not clipped to the query area
-     * @param previousUnclippedGeometry same as {@link #previousGeometry}, but not clipped to
-     *                                  the query area
-     * @param activities a set of contribution types this modification can be classified with
-     * @param changeset the changeset id this data modification is a part of
-     */
-    public IterateAllEntry(
-        OSHDBTimestamp timestamp,
-        @Nonnull OSMEntity osmEntity, OSMEntity previousOsmEntity, @Nonnull OSHEntity oshEntity,
-        LazyEvaluatedObject<Geometry> geometry, LazyEvaluatedObject<Geometry> previousGeometry,
-        LazyEvaluatedObject<Geometry> unclippedGeometry,
-        LazyEvaluatedObject<Geometry> previousUnclippedGeometry,
-        LazyEvaluatedContributionTypes activities,
-        long changeset
-    ) {
-      this.timestamp = timestamp;
-      this.osmEntity = osmEntity;
-      this.previousOsmEntity = previousOsmEntity;
-      this.oshEntity = oshEntity;
-      this.geometry = geometry;
-      this.previousGeometry = previousGeometry;
-      this.unclippedGeometry = unclippedGeometry;
-      this.unclippedPreviousGeometry = previousUnclippedGeometry;
-      this.activities = activities;
-      this.changeset = changeset;
-    }
-  }
+  public record IterateAllEntry(
+      OSHDBTimestamp timestamp,
+      @Nonnull OSMEntity osmEntity,
+      OSMEntity previousOsmEntity,
+      OSHEntity oshEntity,
+      LazyEvaluatedObject<Geometry> geometry,
+      LazyEvaluatedObject<Geometry> previousGeometry,
+      LazyEvaluatedObject<Geometry> unclippedGeometry,
+      LazyEvaluatedObject<Geometry> unclippedPreviousGeometry,
+      LazyEvaluatedContributionTypes activities,
+      long changeset
+  ) {}
 
   /**
    * Helper method to easily iterate over all entity modifications in a cell that match a given

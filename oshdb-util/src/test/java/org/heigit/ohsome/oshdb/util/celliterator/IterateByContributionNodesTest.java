@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.grid.GridOSHNodes;
@@ -60,28 +59,28 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
-    assertEquals(1, result.get(0).changeset);
-    assertNull(result.get(0).previousGeometry.get());
-    Geometry geom = result.get(0).geometry.get();
+    assertEquals(1, result.get(0).changeset());
+    assertNull(result.get(0).previousGeometry().get());
+    Geometry geom = result.get(0).geometry().get();
     assertTrue(geom instanceof Point);
-    assertEquals(result.get(0).geometry.get(), result.get(1).previousGeometry.get());
-    assertNotEquals(result.get(1).geometry.get(), result.get(1).previousGeometry.get());
-    assertEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
+    assertEquals(result.get(0).geometry().get(), result.get(1).previousGeometry().get());
+    assertNotEquals(result.get(1).geometry().get(), result.get(1).previousGeometry().get());
+    assertEquals(result.get(1).osmEntity().getTags(), result.get(0).osmEntity().getTags());
   }
 
   @Test
@@ -100,24 +99,24 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
-    assertEquals(3, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
-    assertNotEquals(result.get(2).osmEntity.getTags(), result.get(1).osmEntity.getTags());
+    assertEquals(3, result.get(0).changeset());
+    assertNotEquals(result.get(1).osmEntity().getTags(), result.get(0).osmEntity().getTags());
+    assertNotEquals(result.get(2).osmEntity().getTags(), result.get(1).osmEntity().getTags());
   }
 
   @Test
@@ -136,30 +135,30 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(5, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(3).activities.get()
+        result.get(3).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(4).activities.get()
+        result.get(4).activities().get()
     );
-    assertEquals(6, result.get(0).changeset);
+    assertEquals(6, result.get(0).changeset());
   }
 
   @Test
@@ -183,38 +182,38 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(6, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE, ContributionType.GEOMETRY_CHANGE),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(3).activities.get()
+        result.get(3).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.GEOMETRY_CHANGE),
-        result.get(4).activities.get()
+        result.get(4).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.TAG_CHANGE),
-        result.get(5).activities.get()
+        result.get(5).activities().get()
     );
-    assertEquals(11, result.get(0).changeset);
-    assertNotEquals(result.get(1).osmEntity.getTags(), result.get(0).osmEntity.getTags());
-    assertNotEquals(result.get(3).osmEntity.getTags(), result.get(1).osmEntity.getTags());
-    assertEquals(result.get(4).osmEntity.getTags(), result.get(3).osmEntity.getTags());
-    assertNotEquals(result.get(5).osmEntity.getTags(), result.get(4).osmEntity.getTags());
+    assertEquals(11, result.get(0).changeset());
+    assertNotEquals(result.get(1).osmEntity().getTags(), result.get(0).osmEntity().getTags());
+    assertNotEquals(result.get(3).osmEntity().getTags(), result.get(1).osmEntity().getTags());
+    assertEquals(result.get(4).osmEntity().getTags(), result.get(3).osmEntity().getTags());
+    assertNotEquals(result.get(5).osmEntity().getTags(), result.get(4).osmEntity().getTags());
   }
 
   @Test
@@ -233,7 +232,7 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(result.isEmpty());
   }
 
@@ -253,7 +252,7 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(result.isEmpty());
   }
 
@@ -273,7 +272,7 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(result.isEmpty());
   }
 
@@ -293,7 +292,7 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(3, result.size());
   }
 
@@ -313,24 +312,24 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(3).activities.get()
+        result.get(3).activities().get()
     );
   }
 
@@ -349,20 +348,20 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(3, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
   }
 
@@ -381,27 +380,27 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
 
     assertEquals(4, result.size());
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(0).activities.get()
+        result.get(0).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.DELETION),
-        result.get(1).activities.get()
+        result.get(1).activities().get()
     );
     assertEquals(
         EnumSet.of(ContributionType.CREATION),
-        result.get(2).activities.get()
+        result.get(2).activities().get()
     );
   }
 
   @Test
   void testTagChangeTagFilterWithoutSuccess() {
     // check if results are correct if we filter for a special tag
-    // tag not in data
+    // case: tag not in data
     List<IterateAllEntry> result = (new CellIterator(
         new OSHDBTimestamps(
             "2000-01-01T00:00:00Z",
@@ -410,11 +409,12 @@ class IterateByContributionNodesTest {
         OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
         areaDecider,
         oshEntity -> oshEntity.getId() == 5,
-        osmEntity -> osmEntity.getTags().hasTagKey(osmXmlTestData.keys().getOrDefault("amenity", -1)),
+        osmEntity -> osmEntity.getTags().hasTagKey(
+            osmXmlTestData.keys().getOrDefault("amenity", -1)),
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertTrue(result.isEmpty());
   }
 
@@ -442,7 +442,7 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     assertEquals(2, result.size());
   }
 
@@ -472,7 +472,7 @@ class IterateByContributionNodesTest {
         false
     )).iterateByContribution(
         oshdbDataGridCell
-    ).collect(Collectors.toList());
+    ).toList();
     // result size =2 because if tag filtered for disappears it's a deletion
     assertEquals(2, result.size()); // one version with tag shop
   }
@@ -499,10 +499,10 @@ class IterateByContributionNodesTest {
         osmEntity -> true,
         false
     )).iterateByContribution(GridOSHFactory.getGridOSHNodes(osmXmlTestData, 6, (new XYGrid(6))
-            .getId(1.0, 1.0)/* approx. 0, 0, 5.6, 5.6*/)).collect(Collectors.toList());
+            .getId(1.0, 1.0)/* approx. 0, 0, 5.6, 5.6*/)).toList();
 
     assertEquals(2, result.size());
-    assertEquals(13, result.get(0).osmEntity.getId());
-    assertEquals(14, result.get(1).osmEntity.getId());
+    assertEquals(13, result.get(0).osmEntity().getId());
+    assertEquals(14, result.get(1).osmEntity().getId());
   }
 }
