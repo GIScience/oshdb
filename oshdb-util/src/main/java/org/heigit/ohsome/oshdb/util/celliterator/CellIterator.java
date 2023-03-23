@@ -258,14 +258,14 @@ public class CellIterator implements Serializable {
     if (!allFullyInside && isBoundByPolygon && bboxOutsidePolygon.test(cellBoundingBox)) {
       return Stream.empty();
     }
-    return iterateByTimestamps(cell.getEntities(), allFullyInside);
+    return iterateByTimestamps(Streams.stream(cell.getEntities()), allFullyInside);
   }
 
   /**
    * Helper method to easily iterate over all entities in a cell that match a given condition/filter
    * as they existed at the given timestamps.
    *
-   * @param cellData the entities to iterate through
+   * @param oshData the entities to iterate through
    * @param allFullyInside indicator that exact geometry inclusion checks can be skipped
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries at each
@@ -274,9 +274,9 @@ public class CellIterator implements Serializable {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public Stream<IterateByTimestampEntry> iterateByTimestamps(Iterable<? extends OSHEntity> cellData,
+  public Stream<IterateByTimestampEntry> iterateByTimestamps(Stream<? extends OSHEntity> oshData,
       boolean allFullyInside) {
-    return Streams.stream(cellData).flatMap(oshEntity -> {
+    return oshData.flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
               !oshEntity.getBoundable().intersects(boundingBox)
@@ -541,26 +541,26 @@ public class CellIterator implements Serializable {
     if (!allFullyInside && isBoundByPolygon && bboxOutsidePolygon.test(cellBoundingBox)) {
       return Stream.empty();
     }
-    return iterateByContribution(cell.getEntities(), allFullyInside);
+    return iterateByContribution(Streams.stream(cell.getEntities()), allFullyInside);
   }
 
   /**
    * Helper method to easily iterate over all entity modifications in a cell that match a given
    * condition/filter.
    *
-   * @param cellData the entities to iterate through
+   * @param oshData the entities to iterate through
    * @param allFullyInside indicator that exact geometry inclusion checks can be skipped
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
-  public Stream<IterateAllEntry> iterateByContribution(Iterable<? extends OSHEntity> cellData,
+  public Stream<IterateAllEntry> iterateByContribution(Stream<? extends OSHEntity> oshData,
       boolean allFullyInside) {
     if (includeOldStyleMultipolygons) {
       //todo: remove this by finishing the functionality below
       throw new UnsupportedOperationException("this is not yet properly implemented (probably)");
     }
-    return Streams.stream(cellData)
+    return oshData
         .filter(oshEntity -> allFullyInside || oshEntity.getBoundable().intersects(boundingBox))
         .filter(oshEntityPreFilter)
         .filter(oshEntity -> allFullyInside || !isBoundByPolygon
