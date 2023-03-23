@@ -317,17 +317,16 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
-        if (osmEntity instanceof OSMWay && ((OSMWay) osmEntity).getMembers().length == 0
-            || osmEntity instanceof OSMRelation
-                && ((OSMRelation) osmEntity).getMembers().length == 0) {
+        if (osmEntity instanceof OSMWay osmWay && osmWay.getMembers().length == 0
+            || osmEntity instanceof OSMRelation osmRelation
+                && osmRelation.getMembers().length == 0) {
           // skip way/relation with zero nodes/members
           continue;
         }
 
         boolean isOldStyleMultipolygon = false;
-        if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
-            && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
-          final OSMRelation rel = (OSMRelation) osmEntity;
+        if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation rel
+            && tagInterpreter.isOldStyleMultipolygon(rel)) {
           for (int i = 0; i < rel.getMembers().length; i++) {
             final OSMMember relMember = rel.getMembers()[i];
             if (relMember.getType() == OSMType.WAY
