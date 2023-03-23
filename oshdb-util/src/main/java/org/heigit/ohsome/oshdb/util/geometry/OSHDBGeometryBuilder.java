@@ -263,13 +263,13 @@ public class OSHDBGeometryBuilder {
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
-        .collect(Collectors.toList());
+        .toList();
     List<LinearRing> innerRings = innerRingsNodes.stream()
         .filter(ring -> ring.size() >= LinearRing.MINIMUM_VALID_SIZE)
         .map(ring -> geometryFactory.createLinearRing(
             ring.stream().map(node -> new Coordinate(node.getLongitude(), node.getLatitude()))
                 .toArray(Coordinate[]::new)))
-        .collect(Collectors.toList());
+        .toList();
 
     // construct multipolygon from rings
     // todo: handle nested outers with holes (e.g. inner-in-outer-in-inner-in-outer) - worth the
@@ -294,11 +294,11 @@ public class OSHDBGeometryBuilder {
         } catch (TopologyException e) {
           // try again with buffer(0) on outer ring
           Geometry buffered = geometryFactory.createPolygon(outer).buffer(0);
-          if (buffered instanceof Polygon) {
+          if (buffered instanceof Polygon polygon) {
             return constructMultipolygonPart(
                 geometryFactory,
                 innersTree,
-                (Polygon) buffered
+                polygon
             );
           } else {
             return null;
@@ -452,7 +452,7 @@ public class OSHDBGeometryBuilder {
                 return geometryFactory.createPolygon();
               }
             })
-            .collect(Collectors.toList());
+            .toList();
         // determine which of the rings is "coveredBy" how many of the others
         var nestingNumbers = Collections.nCopies(splitRingsGeoms.size(), 0)
             .toArray(new Integer [] {});
@@ -500,7 +500,8 @@ public class OSHDBGeometryBuilder {
         if (nodeIds.containsKey(nodeId)) {
           // split off ring between previous and current ring position
           int nodePos = nodeIds.get(nodeId);
-          final var additionalRing = new LinkedList<>(ringNodes.subList(nodePos, currentNodePos + 1));
+          final var additionalRing =
+              new LinkedList<>(ringNodes.subList(nodePos, currentNodePos + 1));
           final var remainingRing = new LinkedList<OSMNode>();
           remainingRing.addAll(ringNodes.subList(0, nodePos));
           remainingRing.addAll(ringNodes.subList(currentNodePos, ringNodes.size()));
@@ -623,7 +624,7 @@ public class OSHDBGeometryBuilder {
     @SuppressWarnings("unchecked") // JTS returns raw types, but they are actually LinearRings
         List<LinearRing> innerCandidates = inners.query(outer.getEnvelopeInternal());
     return geometryFactory.createPolygon(
-        (LinearRing) outer.getExteriorRing(),
+        outer.getExteriorRing(),
         innerCandidates.stream().filter(outerPolygon::contains).toArray(LinearRing[]::new)
     );
   }
@@ -759,8 +760,7 @@ public class OSHDBGeometryBuilder {
 
     @Override
     public boolean equals(Object other) {
-      if (other instanceof Segment) {
-        Segment otherSegment = (Segment) other;
+      if (other instanceof Segment otherSegment) {
         return otherSegment.id1 == this.id1 && otherSegment.id2 == this.id2
             || otherSegment.id1 == this.id2 && otherSegment.id2 == this.id1;
       } else {
