@@ -211,6 +211,7 @@ public class CellIterator implements Serializable {
    * Holds the result of a single item returned by {@link #iterateByTimestamps(GridOSHEntity)}.
    *
    * @param timestamp timestamp of the snapshot
+   * @param lastModificationTimestamp last modification timestamp before the snapshot's timestamp
    * @param osmEntity the exact version of the OSM object
    * @param oshEntity the whole version history of the OSM object
    * @param geometry an object which holds the geometry of the OSM object, or a method to build it
@@ -220,6 +221,7 @@ public class CellIterator implements Serializable {
    */
   public record IterateByTimestampEntry(
       OSHDBTimestamp timestamp,
+      OSHDBTimestamp lastModificationTimestamp,
       @Nonnull OSMEntity osmEntity,
       @Nonnull OSHEntity oshEntity,
       LazyEvaluatedObject<Geometry> geometry,
@@ -281,15 +283,18 @@ public class CellIterator implements Serializable {
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
+      SortedMap<OSHDBTimestamp, OSHDBTimestamp> lastModificationTimestamps = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
         List<OSHDBTimestamp> modTs =
             OSHEntityTimeUtils.getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
+        OSHDBTimestamp lastModificationTimestamp = null;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
           while (j < modTs.size()
               && modTs.get(j).getEpochSecond() <= requestedT.getEpochSecond()) {
             needToRequest = true;
+            lastModificationTimestamp = modTs.get(j);
             j++;
           }
           if (needToRequest) {
@@ -297,6 +302,7 @@ public class CellIterator implements Serializable {
           } else if (queryTs.size() > 0) {
             queryTs.get(queryTs.lastKey()).add(requestedT);
           }
+          lastModificationTimestamps.put(requestedT, lastModificationTimestamp);
         }
       } else {
         // todo: make this work with old style multipolygons!!?!
@@ -381,16 +387,17 @@ public class CellIterator implements Serializable {
             });
           }
 
+          var lastModificationTimestamp = lastModificationTimestamps.get(timestamp);
           if (fullyInside || !geom.get().isEmpty()) {
             LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
                 () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
             results.add(new IterateByTimestampEntry(
-                timestamp, osmEntity, oshEntity, geom, fullGeom)
+                timestamp, lastModificationTimestamp, osmEntity, oshEntity, geom, fullGeom)
             );
             // add skipped timestamps (where nothing has changed from the last timestamp) to result
             for (OSHDBTimestamp additionalT : queryTs.get(timestamp)) {
               results.add(new IterateByTimestampEntry(
-                  additionalT, osmEntity, oshEntity, geom, fullGeom)
+                  additionalT, lastModificationTimestamp, osmEntity, oshEntity, geom, fullGeom)
               );
             }
           }

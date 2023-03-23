@@ -271,4 +271,35 @@ class IterateByTimestampsNodesTest {
     assertEquals(13, result.get(1).osmEntity().getId());
     assertEquals(14, result.get(2).osmEntity().getId());
   }
+
+  @Test
+  void testLastContributionTimestamp() {
+    // node 3: creation and 4 visible changes, but no geometry and no tag changes
+
+    List<IterateByTimestampEntry> result = (new CellIterator(
+        new OSHDBTimestamps(
+            "2000-06-01T00:00:00Z",
+            "2018-06-01T00:00:00Z",
+            "P1Y"
+        ).get(),
+        OSHDBBoundingBox.bboxWgs84Coordinates(-180.0, -90.0, 180.0, 90.0),
+        areaDecider,
+        oshEntity -> oshEntity.getId() == 3,
+        osmEntity -> true,
+        false
+    )).iterateByTimestamps(
+        oshdbDataGridCell
+    ).toList();
+    assertEquals(5, result.size());
+    assertEquals("2007-06-01T00:00:00", result.get(0).timestamp().toString());
+    assertEquals("2007-01-01T00:00:00", result.get(0).lastModificationTimestamp().toString());
+    assertEquals("2014-06-01T00:00:00", result.get(1).timestamp().toString());
+    assertEquals("2014-01-01T00:00:00", result.get(1).lastModificationTimestamp().toString());
+    assertEquals("2016-06-01T00:00:00", result.get(2).timestamp().toString());
+    assertEquals("2016-01-01T00:00:00", result.get(2).lastModificationTimestamp().toString());
+    assertEquals("2017-06-01T00:00:00", result.get(3).timestamp().toString());
+    assertEquals("2016-01-01T00:00:00", result.get(3).lastModificationTimestamp().toString());
+    assertEquals("2018-06-01T00:00:00", result.get(4).timestamp().toString());
+    assertEquals("2016-01-01T00:00:00", result.get(4).lastModificationTimestamp().toString());
+  }
 }

@@ -38,6 +38,7 @@ public class OSMEntitySnapshotImpl implements OSMEntitySnapshot {
   ) {
     this.data = new IterateByTimestampEntry(
         other.getTimestamp(),
+        other.getLastContributionTimestamp(),
         other.getEntity(),
         other.getOSHEntity(),
         reclippedGeometry,
@@ -48,6 +49,11 @@ public class OSMEntitySnapshotImpl implements OSMEntitySnapshot {
   @Override
   public OSHDBTimestamp getTimestamp() {
     return data.timestamp();
+  }
+
+  @Override
+  public OSHDBTimestamp getLastContributionTimestamp() {
+    return data.lastModificationTimestamp();
   }
 
   @Override
