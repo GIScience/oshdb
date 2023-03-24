@@ -82,11 +82,6 @@ public class MemoryStore implements OSHDBStore {
   }
 
   @Override
-  public void optimize(OSMType type) {
-    // no/op
-  }
-
-  @Override
   public Collection<Long> dirtyGrids(OSMType type) {
     return dirtyGrids.getOrDefault(type, emptySet());
   }

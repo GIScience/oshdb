@@ -44,13 +44,16 @@ public class OSHDBUpdater {
 
   private final OSHDBStore store;
   private final GridUpdater gridUpdater;
+  private final boolean optimize;
+
 
   private final Map<OSMType, Set<Long>> minorUpdates = new EnumMap<>(OSMType.class);
   private final Map<OSMType, Set<Long>> updatedEntities = new EnumMap<>(OSMType.class);
 
-  public OSHDBUpdater(OSHDBStore store, GridUpdater gridUpdater) {
+  public OSHDBUpdater(OSHDBStore store, GridUpdater gridUpdater, boolean optimize) {
     this.store = store;
     this.gridUpdater = gridUpdater;
+    this.optimize = optimize;
   }
 
   public Flux<OSHEntity> updateEntities(Flux<Tuple2<OSMType, Flux<OSMEntity>>> entities) {
@@ -121,8 +124,10 @@ public class OSHDBUpdater {
   }
 
   private void updateGrid(OSMType type) {
-    store.optimize(type);
     var cellIds = store.dirtyGrids(type);
+
+    //TODO optimize grid!!!
+
     log.debug("updateGrid {} cells:{}", type, cellIds.size());
     for (var id : cellIds) {
       var cellId = CellId.fromLevelId(id);

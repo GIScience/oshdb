@@ -42,8 +42,6 @@ public interface OSHDBStore extends AutoCloseable {
 
   void backRefsMerge(BackRefType type, long backRef, Set<Long> ids);
 
-  void optimize(OSMType type);
-
   Collection<Long> dirtyGrids(OSMType type);
 
   void resetDirtyGrids(OSMType type);

@@ -49,13 +49,12 @@ public class UpdateCommand implements Callable<Integer> {
 
       );
 
-
       return 0;
     }
   }
 
   private Publisher<?> update(OSHDBStore store, CachedTagTranslator tagTranslator, ReplicationState state) {
-      var updater = new OSHDBUpdater(store, (type, id, grid) -> {});
+      var updater = new OSHDBUpdater(store, (type, id, grid) -> {}, true);
       updater.updateEntities(state.entities(tagTranslator));
       store.state(state);
       throw new UnsupportedOperationException();

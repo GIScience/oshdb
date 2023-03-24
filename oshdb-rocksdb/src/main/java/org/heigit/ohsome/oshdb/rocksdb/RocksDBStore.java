@@ -132,11 +132,6 @@ public class RocksDBStore implements OSHDBStore {
   }
 
   @Override
-  public void optimize(OSMType type) {
-   // not yet implemented
-  }
-
-  @Override
   public Collection<Long> dirtyGrids(OSMType type) {
     try {
       return entityStore.get(type).dirtyGrids();

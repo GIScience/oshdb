@@ -23,7 +23,7 @@ class OSHDBUpdaterTest {
   void entities() {
     ReplicationInfo state = null;
     try (var store = new MemoryStore(state)) {
-      var updater = new OSHDBUpdater(store, (type, cellId, grid) -> {});
+      var updater = new OSHDBUpdater(store, (type, cellId, grid) -> {}, false);
 
       var count = updater.updateEntities(just(Tuples.of(NODE, just(
               node(1L, 1, 1000, 100, 1, List.of(), 0, 0)))))
