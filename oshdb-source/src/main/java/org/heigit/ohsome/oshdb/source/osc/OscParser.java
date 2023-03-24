@@ -2,7 +2,7 @@ package org.heigit.ohsome.oshdb.source.osc;
 
 import static com.google.common.collect.Streams.stream;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.joining;
 import static javax.xml.stream.XMLStreamConstants.CDATA;
 import static javax.xml.stream.XMLStreamConstants.CHARACTERS;
 import static javax.xml.stream.XMLStreamConstants.COMMENT;
@@ -11,21 +11,17 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.PROCESSING_INSTRUCTION;
 import static javax.xml.stream.XMLStreamConstants.SPACE;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.entryToTuple;
-import static org.heigit.ohsome.oshdb.util.flux.FluxUtil.mapT2;
-import static org.heigit.ohsome.oshdb.util.tagtranslator.TagTranslator.TranslationOption.ADD_MISSING;
-import static reactor.core.publisher.Flux.fromIterable;
+import static org.heigit.ohsome.oshdb.source.SourceUtil.version;
 
-import com.google.common.collect.Maps;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import javax.management.modelmbean.XMLParseException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -40,6 +36,7 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.source.OSMSource;
+import org.heigit.ohsome.oshdb.source.SourceUtil;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBException;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMRole;
 import org.heigit.ohsome.oshdb.util.tagtranslator.OSMTag;
@@ -55,8 +52,9 @@ public class OscParser implements OSMSource {
 
   private final InputStream inputStream;
 
-  public static Flux<Tuple2<OSMType, Flux<OSMEntity>>> entities(InputStream inputStream, TagTranslator tagTranslator) {
-     return new OscParser(inputStream).entities(tagTranslator);
+  public static Flux<Tuple2<OSMType, Flux<OSMEntity>>> entities(InputStream inputStream,
+      TagTranslator tagTranslator) {
+    return new OscParser(inputStream).entities(tagTranslator);
   }
 
   public OscParser(InputStream inputStream) {
@@ -67,56 +65,22 @@ public class OscParser implements OSMSource {
   public Flux<Tuple2<OSMType, Flux<OSMEntity>>> entities(TagTranslator tagTranslator) {
     try (var parser = new Parser(inputStream)) {
       @SuppressWarnings("UnstableApiUsage")
-      var entities = stream(parser).collect(groupingBy(OSMEntity::getType));
-      LOG.info("osc entities: {}, strings: {}, tags: {}, roles: {}", entities.size(),
-          parser.cacheString.size(),
-          parser.cacheTags.size(),
-          parser.cacheRoles.size());
-
-      var tagsMapping = tagsMapping(tagTranslator, parser);
-      var rolesMapping = rolesMapping(tagTranslator, parser);
-
-      return fromIterable(entities.entrySet())
-          .map(entryToTuple())
-          .map(mapT2(f -> fromIterable(f).map(osm -> map(osm, tagsMapping, rolesMapping))));
+      var entities = stream(parser).collect(Collectors.groupingBy(OSMEntity::getType));
+      if (LOG.isInfoEnabled()) {
+        LOG.info("osc entities: {}, strings: {}, tags: {}, roles: {}",
+            entities.entrySet().stream()
+                .map(entry -> format("%s=%d", entry.getKey(), entry.getValue().size()))
+                .collect(joining("; ")),
+            parser.cacheString.size(),
+            parser.cacheTags.size(),
+            parser.cacheRoles.size());
+      }
+      return SourceUtil.entities(entities, parser.cacheTags, parser.cacheRoles, tagTranslator);
     } catch (Exception e) {
       throw new OSHDBException(e);
     }
   }
 
-  private Map<OSHDBTag, OSHDBTag> tagsMapping(TagTranslator tagTranslator, Parser parser) {
-    var tags = parser.cacheTags;
-    var tagsTranslated = tagTranslator.getOSHDBTagOf(tags.values(), ADD_MISSING);
-    var tagsMapping = Maps.<OSHDBTag, OSHDBTag>newHashMapWithExpectedSize(tags.size());
-    tags.forEach((oshdb, osm) -> tagsMapping.put(oshdb, tagsTranslated.get(osm)));
-    return tagsMapping;
-  }
-
-  private Map<Integer, Integer> rolesMapping(TagTranslator tagTranslator, Parser parser) {
-    var roles = parser.cacheRoles;
-    var rolesTranslated = tagTranslator.getOSHDBRoleOf(roles.values(), ADD_MISSING);
-    var rolesMapping = Maps.<Integer, Integer>newHashMapWithExpectedSize(roles.size());
-    roles.forEach((oshdb, osm) -> rolesMapping.put(oshdb, rolesTranslated.get(osm).getId()));
-    return rolesMapping;
-  }
-
-  private OSMEntity map(OSMEntity osm, Map<OSHDBTag, OSHDBTag> tagsMapping, Map<Integer, Integer> rolesMapping) {
-    var tags = osm.getTags().stream().map(tagsMapping::get).sorted().toList();
-    if (osm instanceof OSMNode node) {
-      return OSM.node(osm.getId(), version(osm.getVersion(), osm.isVisible()), osm.getEpochSecond(), osm.getChangesetId(),osm.getUserId(), tags, node.getLon(), node.getLat());
-    } else if (osm instanceof OSMWay way) {
-      return OSM.way(osm.getId(), version(osm.getVersion(), osm.isVisible()), osm.getEpochSecond(), osm.getChangesetId(),osm.getUserId(), tags, way.getMembers());
-    } else if (osm instanceof OSMRelation relation) {
-      var members = Arrays.stream(relation.getMembers()).map(mem -> new OSMMember(mem.getId(), mem.getType(), rolesMapping.get(mem.getRole().getId()))).toArray(OSMMember[]::new);
-      return OSM.relation(osm.getId(), version(osm.getVersion(), osm.isVisible()), osm.getEpochSecond(), osm.getChangesetId(),osm.getUserId(), tags, members);
-    } else {
-      throw new IllegalStateException();
-    }
-  }
-
-  private static int version(int version, boolean visible) {
-    return visible ? version : -version;
-  }
 
   private static class Parser implements Iterator<OSMEntity>, AutoCloseable {
 
@@ -336,7 +300,8 @@ public class OscParser implements OSMSource {
         throw new XMLParseException(format("invalid coordinates! lon:%f lat:%f", lon, lat));
       }
 
-      LOG.debug("node/{} {} {} {} {} {} {} {} {} {}", id, version, visible, timestamp, changeset, user, uid, tags, lon, lat);
+      LOG.debug("node/{} {} {} {} {} {} {} {} {} {}", id, version, visible, timestamp, changeset,
+          user, uid, tags, lon, lat);
       return OSM.node(id, version(version, visible), timestamp, changeset, uid, tags(tags),
           lonLatConversion(lon), lonLatConversion(lat));
     }
@@ -347,13 +312,16 @@ public class OscParser implements OSMSource {
 
     private OSMWay nextWay() throws XMLStreamException, XMLParseException {
       parseEntity();
-      LOG.debug("way/{} {} {} {} {} {} {} {} {}", id, version, visible, timestamp, changeset, user, uid, tags, members.size());
-      return OSM.way(id, version(version, visible), timestamp, changeset, uid, tags(tags), members(members));
+      LOG.debug("way/{} {} {} {} {} {} {} {} {}", id, version, visible, timestamp, changeset, user,
+          uid, tags, members.size());
+      return OSM.way(id, version(version, visible), timestamp, changeset, uid, tags(tags),
+          members(members));
     }
 
     private OSMRelation nextRelation() throws XMLStreamException, XMLParseException {
       parseEntity();
-      LOG.debug("relation/{} {} {} {} {} {} {} {} mems:{}", id, version, visible, timestamp, changeset, user, uid, tags, members.size());
+      LOG.debug("relation/{} {} {} {} {} {} {} {} mems:{}", id, version, visible, timestamp,
+          changeset, user, uid, tags, members.size());
       return OSM.relation(id, version(version, visible), timestamp, changeset, uid, tags(tags),
           members(members));
     }
@@ -406,20 +374,26 @@ public class OscParser implements OSMSource {
 
     private int nextEvent(XMLStreamReader reader) throws XMLStreamException {
       while (true) {
-        var event = reader.next();
-
-        switch (event) {
-          case SPACE, COMMENT, PROCESSING_INSTRUCTION, CDATA, CHARACTERS:
-            continue;
-          case START_ELEMENT, END_ELEMENT, END_DOCUMENT:
-            return event;
-          default:
-            throw new XMLStreamException(format(
-                "Received event %d, instead of START_ELEMENT or END_ELEMENT or END_DOCUMENT.",
-                event));
+        var event = readNextEvent(reader);
+        if (!event.skip) {
+          return event.event;
         }
       }
     }
+
+    private Event readNextEvent(XMLStreamReader reader) throws XMLStreamException {
+      var event = reader.next();
+      return switch (event) {
+        case SPACE, COMMENT, PROCESSING_INSTRUCTION, CDATA, CHARACTERS -> new Event(event, true);
+        case START_ELEMENT, END_ELEMENT, END_DOCUMENT -> new Event(event, false);
+        default ->
+          throw new XMLStreamException(format(
+              "Received event %d, instead of START_ELEMENT or END_ELEMENT or END_DOCUMENT.",
+              event));
+      };
+    }
+
+    private record Event(int event, boolean skip) {}
 
     @Override
     public void close() throws Exception {
@@ -457,7 +431,7 @@ public class OscParser implements OSMSource {
 
     @Override
     public String toString() {
-      return String.format("%s/%s[%s]", type, id, role);
+      return format("%s/%s[%s]", type, id, role);
     }
   }
 }

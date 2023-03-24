@@ -16,7 +16,6 @@ public class KeyTables {
   /**
    * Initial Keytables tables.
    * @param conn connection to keytables database
-   * @throws SQLException
    */
   public static void init(Connection conn) throws SQLException {
     try (var stmt = conn.createStatement()) {
@@ -26,8 +25,8 @@ public class KeyTables {
       stmt.execute("create table if not exists metadata (key varchar primary key, value varchar)");
 
       // view for backward compatibility
-      stmt.execute(format("create view %s as select id, txt, values from tag_key", E_KEY));
-      stmt.execute(format("create view %s as select keyid, valueId, txt from tag_value", E_KEYVALUE));
+      stmt.execute(format("create or replace view  %s as select id, txt, values from tag_key", E_KEY));
+      stmt.execute(format("create or replace view %s as select keyid, valueId, txt from tag_value", E_KEYVALUE));
     }
   }
 }

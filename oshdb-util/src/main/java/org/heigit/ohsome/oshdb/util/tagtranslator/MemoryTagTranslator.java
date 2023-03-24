@@ -30,7 +30,7 @@ public class MemoryTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TranslationOption option) {
+  public synchronized Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TranslationOption option) {
     return tags.getAll(values, set -> {
       if (option == TranslationOption.READONLY) {
         return emptyMap();
