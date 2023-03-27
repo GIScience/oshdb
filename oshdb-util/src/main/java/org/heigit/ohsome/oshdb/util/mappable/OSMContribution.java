@@ -83,24 +83,18 @@ public interface OSMContribution extends OSHDBMapReducible, Comparable<OSMContri
   OSHEntity getOSHEntity();
 
   /**
-   * Checks if this contribution is of the given contribution type.
+   * Checks if this contribution is of the given contribution type,
    *
    * <p>
-   * It can be one or more of:
-   * </p>
-   * <ul>
-   *   <li>CREATION</li>
-   *   <li>DELETION</li>
-   *   <li>TAG_CHANGE</li>
-   *   <li>GEOMETRY_CHANGE</li>
-   * </ul>
+   * i.e. checks if the given contribution type is in the
+   * {@code EnumSet<ContributionType>} returned by
+   * {@link #mgetContributionTypes() getContributionTypes}. This method is
+   * preferred to {@code getContributionTypes().contains(ContributionType)}
+   * because the class uses lazy evaluation and the computation of a
+   * {@link ContributionType.GEOMETRY_CHANGE} can be computation intensive.
    *
-   * <p>
-   * If this is a entity creation or deletion, the other flags are not set (even though one might
-   * argue that a just created object clearly has a different geometry than before, for example).
-   * </p>
-   *
-   * @return a set of modification type this contribution made on the underlying data
+   * @param contributionType the ContributionType to check
+   * @return true if this contribution does the respective change, false otherwise
    */
   boolean is(ContributionType contributionType);
 
