@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -264,7 +263,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           this.timeout
       ).stream()
           .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+          .toList();
       Collections.shuffle(cellsWithData);
       Stream<X> resultForType = cellsWithData.parallelStream()
           .filter(ignored -> this.isActive())

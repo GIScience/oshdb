@@ -106,7 +106,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
   private List<String> cacheNames(String prefix) {
     return this.typeFilter.stream().map(TableNames::forOSMType).filter(Optional::isPresent)
-        .map(Optional::get).map(tn -> tn.toString(prefix)).collect(Collectors.toList());
+        .map(Optional::get).map(tn -> tn.toString(prefix)).toList();
   }
 
   @Override

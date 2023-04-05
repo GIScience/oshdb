@@ -21,8 +21,8 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * Tests the {@link CellIterator#iterateByContribution(OSHEntitySource)} method on special situations
- * which are related to OSHDB grid cells.
+ * Tests the {@link CellIterator#iterateByContribution(OSHEntitySource)} method on special
+ * situations which are related to OSHDB grid cells.
  */
 class IterateByContributionNotOsmTypeSpecificTest {
 
