@@ -10,6 +10,7 @@ Changelog
 ### other changes
 
 * `CellIterator` is now decoupled from implementation of the "Grid" ([#495])
+* enhance geometry builder
 
 [#495]: https://github.com/GIScience/oshdb/pull/495
 
