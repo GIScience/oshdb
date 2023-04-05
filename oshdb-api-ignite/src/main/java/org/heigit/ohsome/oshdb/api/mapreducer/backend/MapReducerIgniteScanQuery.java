@@ -39,6 +39,7 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
+import org.heigit.ohsome.oshdb.util.celliterator.OSHEntitySource;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
@@ -342,13 +343,14 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
                       }
                       // iterate over the history of all OSM objects in the current cell
                       Object data = cacheEntry.getValue();
-                      GridOSHEntity oshEntityCell;
-                      if (data instanceof BinaryObject) {
-                        oshEntityCell = ((BinaryObject) data).deserialize();
+                      GridOSHEntity cell;
+                      if (data instanceof BinaryObject binaryData) {
+                        cell = binaryData.deserialize();
                       } else {
-                        oshEntityCell = (GridOSHEntity) data;
+                        cell = (GridOSHEntity) data;
                       }
-                      return cellProcessor.apply(oshEntityCell, this.cellIterator);
+                      return cellProcessor.apply(
+                          OSHEntitySource.fromGridOSHEntity(cell), this.cellIterator);
                     }
                 )
             ) {
@@ -503,7 +505,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
         null
     );
     S ret;
-    if (!oshdb.timeoutInMilliseconds().isPresent()) {
+    if (oshdb.timeoutInMilliseconds().isEmpty()) {
       ret = result.get();
     } else {
       try {
@@ -534,13 +536,14 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
         ).setPageSize(SCAN_QUERY_PAGE_SIZE), cacheEntry -> {
           // iterate over the history of all OSM objects in the current cell
           Object data = cacheEntry.getValue();
-          GridOSHEntity oshEntityCell;
-          if (data instanceof BinaryObject) {
-            oshEntityCell = ((BinaryObject) data).deserialize();
+          GridOSHEntity cell;
+          if (data instanceof BinaryObject binaryData) {
+            cell = binaryData.deserialize();
           } else {
-            oshEntityCell = (GridOSHEntity) data;
+            cell = (GridOSHEntity) data;
           }
-          return cellProcessor.apply(oshEntityCell, cellIterator).collect(Collectors.toList());
+          return cellProcessor.apply(OSHEntitySource.fromGridOSHEntity(cell), cellIterator)
+              .toList();
         }
     );
     // todo: ignite scan query doesn't support timeouts -> implement ourself?

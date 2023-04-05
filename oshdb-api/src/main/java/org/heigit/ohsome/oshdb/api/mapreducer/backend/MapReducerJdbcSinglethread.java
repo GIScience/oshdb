@@ -12,6 +12,7 @@ import org.heigit.ohsome.oshdb.api.mapreducer.backend.Kernels.CellProcessor;
 import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
+import org.heigit.ohsome.oshdb.util.celliterator.OSHEntitySource;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
@@ -73,8 +74,9 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
         pstmt.setLong(3, cellIdRange.getEnd().getId());
         try (var oshCellsRawData = pstmt.executeQuery()) {
           while (oshCellsRawData.next()) {
-            GridOSHEntity oshCellRawData = readOshCellRawData(oshCellsRawData);
-            result = combiner.apply(result, cellProcessor.apply(oshCellRawData, cellIterator));
+            GridOSHEntity cell = readOshCellRawData(oshCellsRawData);
+            result = combiner.apply(result, cellProcessor.apply(
+                OSHEntitySource.fromGridOSHEntity(cell), cellIterator));
           }
         }
       }
@@ -95,7 +97,8 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
     return Streams.stream(this.getCellIdRanges())
         .flatMap(this::getOshCellsStream)
-        .flatMap(oshCellRawData -> cellProcessor.apply(oshCellRawData, cellIterator));
+        .flatMap(cell -> cellProcessor.apply(
+            OSHEntitySource.fromGridOSHEntity(cell), cellIterator));
   }
 
   // === map-reduce operations ===

@@ -40,6 +40,7 @@ import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
+import org.heigit.ohsome.oshdb.util.celliterator.OSHEntitySource;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableBinaryOperator;
@@ -139,8 +140,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
       // When a timeout happens remotely, the exception might be burried in (few) layers of
       // "ignite exceptions". This recursively unwinds these and throws the original exception.
       Throwable unwrapped = unwrapNestedIgniteException(e);
-      if (unwrapped instanceof OSHDBTimeoutException) {
-        throw (OSHDBTimeoutException) unwrapped;
+      if (unwrapped instanceof OSHDBTimeoutException timeoutException) {
+        throw timeoutException;
       } else {
         throw e;
       }
@@ -150,8 +151,8 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
   /** Recursively unwinds nested ignite exceptions. */
   private static Throwable unwrapNestedIgniteException(IgniteException e) {
     Throwable cause = e.getCause();
-    if (cause instanceof IgniteException && e != cause) {
-      return unwrapNestedIgniteException((IgniteException) cause);
+    if (cause instanceof IgniteException igniteException && e != cause) {
+      return unwrapNestedIgniteException(igniteException);
     }
     return cause;
   }
@@ -193,13 +194,13 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .mapToObj(cellLongId -> asyncGetHandleTimeouts(
               compute.affinityCallAsync(cacheName, cellLongId, () -> {
                 @SuppressWarnings("SerializableStoresNonSerializable")
-                GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                GridOSHEntity cell = cache.localPeek(cellLongId);
                 S ret;
-                if (oshEntityCell == null) {
+                if (cell == null) {
                   ret = identitySupplier.get();
 
                 } else {
-                  ret = cellProcessor.apply(oshEntityCell, cellIterator);
+                  ret = cellProcessor.apply(OSHEntitySource.fromGridOSHEntity(cell), cellIterator);
                 }
                 onClose.run();
                 return ret;
@@ -269,13 +270,13 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
           .filter(ignored -> this.isActive())
           .map(cellLongId -> asyncGetHandleTimeouts(
               compute.affinityCallAsync(cacheName, cellLongId, () -> {
-                GridOSHEntity oshEntityCell = cache.localPeek(cellLongId);
+                GridOSHEntity cell = cache.localPeek(cellLongId);
                 Collection<X> ret;
-                if (oshEntityCell == null) {
+                if (cell == null) {
                   ret = Collections.<X>emptyList();
                 } else {
-                  ret = cellProcessor.apply(oshEntityCell, cellIterator)
-                      .collect(Collectors.toList());
+                  ret = cellProcessor.apply(OSHEntitySource.fromGridOSHEntity(cell), cellIterator)
+                      .toList();
                 }
                 onClose.run();
                 return ret;
@@ -444,10 +445,11 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
             // test if cell exists and contains any relevant data
             GridOSHEntity cell = localCache.localPeek(cellLongId);
             return cell != null
-                && cellProcessor.apply(cell, cellIterator).anyMatch(ignored -> true);
+                && cellProcessor.apply(OSHEntitySource.fromGridOSHEntity(cell), cellIterator)
+                    .anyMatch(ignored -> true);
           })
           .boxed()
-          .collect(Collectors.toList());
+          .toList();
     }
   }
 
@@ -488,13 +490,14 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
                     MapReducerIgniteScanQuery.cellKeyInRange(key, cellIdRangesByLevel)
                 ).setPartition(part), cacheEntry -> {
                   Object data = cacheEntry.getValue();
-                  GridOSHEntity oshEntityCell;
-                  if (data instanceof BinaryObject) {
-                    oshEntityCell = ((BinaryObject) data).deserialize();
+                  GridOSHEntity cell;
+                  if (data instanceof BinaryObject binaryData) {
+                    cell = binaryData.deserialize();
                   } else {
-                    oshEntityCell = (GridOSHEntity) data;
+                    cell = (GridOSHEntity) data;
                   }
-                  Stream<?> cellStream = cellProcessor.apply(oshEntityCell, this.cellIterator);
+                  Stream<?> cellStream = cellProcessor.apply(
+                      OSHEntitySource.fromGridOSHEntity(cell), this.cellIterator);
                   if (cellStream.anyMatch(ignored -> true)) {
                     return Optional.of(cacheEntry.getKey());
                   } else {
@@ -510,7 +513,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
             }
           })
           .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+          .toList();
     }
   }
 }
