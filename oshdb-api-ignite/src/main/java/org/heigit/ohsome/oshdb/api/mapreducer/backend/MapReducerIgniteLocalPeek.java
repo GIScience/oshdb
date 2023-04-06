@@ -32,6 +32,7 @@ import org.heigit.ohsome.oshdb.index.XYGridTree.CellIdRange;
 import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
+import org.heigit.ohsome.oshdb.util.celliterator.OSHEntitySource;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
@@ -105,7 +106,7 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
 
   private List<String> cacheNames(String prefix) {
     return this.typeFilter.stream().map(TableNames::forOSMType).filter(Optional::isPresent)
-        .map(Optional::get).map(tn -> tn.toString(prefix)).collect(Collectors.toList());
+        .map(Optional::get).map(tn -> tn.toString(prefix)).toList();
   }
 
   @Override
@@ -281,7 +282,8 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
           // filter out cache misses === empty oshdb cells or not "local" data
           .filter(Objects::nonNull)
           .filter(ignored -> this.isActive())
-          .map(cell -> cellProcessor.apply(cell, this.cellIterator))
+          .map(cell ->
+              cellProcessor.apply(OSHEntitySource.fromGridOSHEntity(cell), this.cellIterator))
           .reduce(identitySupplier.get(), combiner);
     }
   }
