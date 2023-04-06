@@ -169,7 +169,7 @@ public class OSHDBGeometryBuilderInternal {
    * @param timestamp the timestamp at which to resolve the way's referenced nodes
    * @param areaDecider a TagInterpreter object
    * @param geometryFactory a JTS GeometryFactory object
-   * @return the geometry as a JTS line string
+   * @return the geometry as a JTS line string or polygon
    */
   public static Geometry getWayGeometry(
       OSMWay way,
@@ -188,7 +188,7 @@ public class OSHDBGeometryBuilderInternal {
    *                      an array of OSMNodes in the childEntityData property.
    * @param areaDecider a TagInterpreter object
    * @param geometryFactory a JTS GeometryFactory object
-   * @return the geometry as a JTS line string
+   * @return the geometry as a JTS line string or polygon
    */
   public static Geometry getWayGeometry(
       OSMWay way,
