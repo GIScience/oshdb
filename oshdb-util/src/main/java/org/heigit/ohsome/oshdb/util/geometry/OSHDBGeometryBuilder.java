@@ -1,33 +1,19 @@
 package org.heigit.ohsome.oshdb.util.geometry;
 
-import com.google.common.collect.Lists;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
-import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSMCoordinates;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
-import org.heigit.ohsome.oshdb.osm.OSMRelation;
-import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
-import org.locationtech.jts.geom.TopologyException;
-import org.locationtech.jts.geom.prep.PreparedGeometry;
-import org.locationtech.jts.geom.prep.PreparedPolygon;
-import org.locationtech.jts.index.strtree.STRtree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,54 +47,11 @@ public class OSHDBGeometryBuilder {
    */
   @Nonnull
   public static Geometry getGeometry(
-      OSMEntity entity, OSHDBTimestamp timestamp, TagInterpreter areaDecider
+      OSMEntity entity,
+      OSHDBTimestamp timestamp,
+      TagInterpreter areaDecider
   ) {
-    GeometryFactory geometryFactory = new GeometryFactory();
-    if (OSHDBTemporal.compare(timestamp, entity) < 0) {
-      throw new AssertionError(
-          "cannot produce geometry of entity for timestamp before this entity's version's timestamp"
-      );
-    }
-    if (entity instanceof OSMNode node) {
-      if (node.isVisible()) {
-        return geometryFactory.createPoint(new Coordinate(node.getLongitude(), node.getLatitude()));
-      } else {
-        return geometryFactory.createPoint((Coordinate) null);
-      }
-    } else if (entity instanceof OSMWay way) {
-      if (!way.isVisible()) {
-        LOG.info("way/{} is deleted - falling back to empty (line) geometry", way.getId());
-        return geometryFactory.createLineString((CoordinateSequence) null);
-      }
-      return OSHDBGeometryBuilderInternal.getWayGeometry(way, timestamp, areaDecider, geometryFactory);
-    } else {
-      OSMRelation relation = (OSMRelation) entity;
-      if (!relation.isVisible()) {
-        LOG.info(
-            "relation/{} is deleted - falling back to empty geometry (collection)",
-            relation.getId()
-        );
-        return geometryFactory.createGeometryCollection(null);
-      }
-      if (areaDecider.isArea(entity)) {
-        try {
-          Geometry multipolygon = OSHDBGeometryBuilderInternal.getMultiPolygonGeometry(
-              relation, timestamp, areaDecider, geometryFactory
-          );
-          if (!multipolygon.isEmpty()) {
-            return multipolygon;
-          }
-          // otherwise (empty geometry): fall back to geometry collection builder
-        } catch (IllegalArgumentException e) {
-          // fall back to geometry collection builder
-        }
-      }
-      /* todo:implement multilinestring mode for stuff like route relations
-       * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
-       */
-      return OSHDBGeometryBuilderInternal.getGeometryCollectionGeometry(
-          relation, timestamp, areaDecider, geometryFactory);
-    }
+    return OSHDBGeometryBuilderInternal.getGeometry(entity, timestamp, null, areaDecider);
   }
 
   /**
