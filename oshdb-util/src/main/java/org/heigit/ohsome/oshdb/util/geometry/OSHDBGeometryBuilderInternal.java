@@ -197,7 +197,7 @@ public class OSHDBGeometryBuilderInternal {
       GeometryFactory geometryFactory) {
     return getWayGeometry(
         way,
-        Arrays.stream((OSMNode[]) auxiliaryData.childEntityData()),
+        Arrays.stream(auxiliaryData.childEntityData()),
         areaDecider,
         geometryFactory);
   }
@@ -225,13 +225,14 @@ public class OSHDBGeometryBuilderInternal {
 
   private static Geometry getWayGeometry(
       OSMWay way,
-      Stream<OSMNode> resolvedMembers,
+      Stream<? extends OSMEntity> resolvedMembers,
       TagInterpreter areaDecider,
       GeometryFactory geometryFactory) {
     // todo: handle old-style multipolygons here???
     Coordinate[] coords = resolvedMembers
         .filter(Objects::nonNull)
         .filter(OSMEntity::isVisible)
+        .map(OSMNode.class::cast)
         .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
         .toArray(Coordinate[]::new);
     if (areaDecider.isArea(way)) {
@@ -340,10 +341,15 @@ public class OSHDBGeometryBuilderInternal {
             relationMembers[i].getType(), relationMembers[i].getId(), relation.getId()
         );
       } else {
+        AuxiliaryData subAuxiliaryData = null;
+        if (auxiliaryData != null && auxiliaryData.childWayNodesData() != null) {
+          var childWayNodesData = auxiliaryData.childWayNodesData();
+          subAuxiliaryData = new AuxiliaryData(childWayNodesData[i], null);
+        }
         geoms[i] = getGeometry(
             memberEntity,
             timestamp,
-            auxiliaryData,
+            subAuxiliaryData,
             areaDecider);
       }
     }
