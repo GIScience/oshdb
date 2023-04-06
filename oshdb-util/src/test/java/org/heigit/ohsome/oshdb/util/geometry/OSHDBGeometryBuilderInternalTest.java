@@ -219,8 +219,8 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
       @Test
       void testRelationGetGeometryCollectionGeometryTimestamp() {
         OSMRelation relation = relations(1L, 0);
-        Geometry result =
-            OSHDBGeometryBuilderInternal.getGeometryCollectionGeometry(relation, t1, areaDecider, gf);
+        Geometry result = OSHDBGeometryBuilderInternal
+            .getGeometryCollectionGeometry(relation, t1, areaDecider, gf);
         assertEquals("GeometryCollection", result.getGeometryType());
         assertEquals(1, result.getNumGeometries());
         assertEquals(5, result.getGeometryN(0).getNumPoints());

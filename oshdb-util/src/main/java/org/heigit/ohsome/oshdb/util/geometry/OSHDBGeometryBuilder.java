@@ -21,8 +21,6 @@ import org.slf4j.LoggerFactory;
  * Builds JTS geometries from OSM entities.
  */
 public class OSHDBGeometryBuilder {
-  private static final Logger LOG = LoggerFactory.getLogger(OSHDBGeometryBuilder.class);
-
   private OSHDBGeometryBuilder() {
     throw new IllegalStateException("Utility class");
   }
