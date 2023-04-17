@@ -75,7 +75,6 @@ public interface TagTranslator {
    *
    * @param tag the tag (as an OSHDBTag object)
    * @return the textual representation of this tag
-   * @throws OSHDBTagOrRoleNotFoundException if the given tag cannot be found
    */
   OSMTag lookupTag(OSHDBTag tag);
 
