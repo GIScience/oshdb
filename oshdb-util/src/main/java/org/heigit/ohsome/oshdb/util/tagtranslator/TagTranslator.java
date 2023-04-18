@@ -7,7 +7,6 @@ import java.util.Set;
 import org.heigit.ohsome.oshdb.OSHDBRole;
 import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
-import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTagOrRoleNotFoundException;
 
 public interface TagTranslator {
 
