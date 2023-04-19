@@ -153,4 +153,4 @@ The result from this query is visualized in the following graph:
 
 That's it for our first-steps tutorial. Of course there are many more options and features to explore in the OSHDB. For example how the contribution [view](../manual/views.md) lets you analyze each modification to the OSM objects individually, more advanced [filtering](../manual/filters.md) options, or other concepts like the [`flatMap`](../manual/map-reduce.md#flatmap) function, custom [`aggregateBy`](../manual/aggregation.md) and [`reduce`](../manual/map-reduce.md#reduce) operations, etc.
 
-[^1]: Since Java 17, one of our [backends](database-backends.md) requires additional setting to the JVM, but that should not be relevant for these first steps.
+[^1]: Since Java 17, one of our [backends](../manual/database-backends.md) requires additional setting to the JVM, but that should not be relevant for these first steps.
