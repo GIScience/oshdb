@@ -10,8 +10,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.heigit.ohsome.oshdb.api.object.OSMContributionImpl;
 import org.heigit.ohsome.oshdb.api.object.OSMEntitySnapshotImpl;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
+import org.heigit.ohsome.oshdb.util.celliterator.OSHEntitySource;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableFunction;
 import org.heigit.ohsome.oshdb.util.function.SerializableSupplier;
@@ -19,7 +19,7 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMContribution;
 import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
 
 class Kernels implements Serializable {
-  interface CellProcessor<S> extends SerializableBiFunction<GridOSHEntity, CellIterator, S> {}
+  interface CellProcessor<S> extends SerializableBiFunction<OSHEntitySource, CellIterator, S> {}
 
   interface CancelableProcessStatus {
     default <T> boolean isActive(T ignored) {
@@ -57,10 +57,10 @@ class Kernels implements Serializable {
       SerializableBiFunction<S, R, S> accumulator,
       CancelableProcessStatus process
   ) {
-    return (oshEntityCell, cellIterator) -> {
+    return (source, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateByContribution(oshEntityCell)
+      cellIterator.iterateByContribution(source)
           .takeWhile(process::isActive)
           .forEach(contribution -> {
             OSMContribution osmContribution = new OSMContributionImpl(contribution);
@@ -86,11 +86,11 @@ class Kernels implements Serializable {
       SerializableBiFunction<S, R, S> accumulator,
       CancelableProcessStatus process
   ) {
-    return (oshEntityCell, cellIterator) -> {
+    return (source, cellIterator) -> {
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       // iterate over the history of all OSM objects in the current cell
       List<OSMContribution> contributions = new ArrayList<>();
-      cellIterator.iterateByContribution(oshEntityCell)
+      cellIterator.iterateByContribution(source)
           .takeWhile(process::isActive)
           .forEach(contribution -> {
             OSMContribution thisContribution = new OSMContributionImpl(contribution);
@@ -131,10 +131,10 @@ class Kernels implements Serializable {
       SerializableBiFunction<S, R, S> accumulator,
       CancelableProcessStatus process
   ) {
-    return (oshEntityCell, cellIterator) -> {
+    return (source, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
-      cellIterator.iterateByTimestamps(oshEntityCell)
+      cellIterator.iterateByTimestamps(source)
           .takeWhile(process::isActive)
           .forEach(data -> {
             OSMEntitySnapshot snapshot = new OSMEntitySnapshotImpl(data);
@@ -161,11 +161,11 @@ class Kernels implements Serializable {
       SerializableBiFunction<S, R, S> accumulator,
       CancelableProcessStatus process
   ) {
-    return (oshEntityCell, cellIterator) -> {
+    return (source, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       AtomicReference<S> accInternal = new AtomicReference<>(identitySupplier.get());
       List<OSMEntitySnapshot> osmEntitySnapshots = new ArrayList<>();
-      cellIterator.iterateByTimestamps(oshEntityCell)
+      cellIterator.iterateByTimestamps(source)
           .takeWhile(process::isActive)
           .forEach(data -> {
             OSMEntitySnapshot thisSnapshot = new OSMEntitySnapshotImpl(data);
@@ -204,9 +204,9 @@ class Kernels implements Serializable {
       SerializableFunction<OSMContribution, S> mapper,
       CancelableProcessStatus process
   ) {
-    return (oshEntityCell, cellIterator) -> {
+    return (source, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
-      return cellIterator.iterateByContribution(oshEntityCell)
+      return cellIterator.iterateByContribution(source)
           .takeWhile(process::isActive)
           .map(OSMContributionImpl::new)
           .map(mapper);
@@ -225,11 +225,11 @@ class Kernels implements Serializable {
       SerializableFunction<List<OSMContribution>, Iterable<S>> mapper,
       CancelableProcessStatus process
   ) {
-    return (oshEntityCell, cellIterator) -> {
+    return (source, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       List<OSMContribution> contributions = new ArrayList<>();
       List<S> result = new LinkedList<>();
-      cellIterator.iterateByContribution(oshEntityCell)
+      cellIterator.iterateByContribution(source)
           .takeWhile(process::isActive)
           .map(OSMContributionImpl::new)
           .forEach(contribution -> {
@@ -261,9 +261,9 @@ class Kernels implements Serializable {
       SerializableFunction<OSMEntitySnapshot, S> mapper,
       CancelableProcessStatus process
   ) {
-    return (oshEntityCell, cellIterator) -> {
+    return (source, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
-      return cellIterator.iterateByTimestamps(oshEntityCell)
+      return cellIterator.iterateByTimestamps(source)
           .takeWhile(process::isActive)
           .map(OSMEntitySnapshotImpl::new)
           .map(mapper);
@@ -282,11 +282,11 @@ class Kernels implements Serializable {
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<S>> mapper,
       CancelableProcessStatus process
   ) {
-    return (oshEntityCell, cellIterator) -> {
+    return (source, cellIterator) -> {
       // iterate over the history of all OSM objects in the current cell
       List<OSMEntitySnapshot> snapshots = new ArrayList<>();
       List<S> result = new LinkedList<>();
-      cellIterator.iterateByTimestamps(oshEntityCell)
+      cellIterator.iterateByTimestamps(source)
           .takeWhile(process::isActive)
           .map(OSMEntitySnapshotImpl::new)
           .forEach(contribution -> {

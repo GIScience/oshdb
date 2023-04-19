@@ -15,8 +15,7 @@ import org.locationtech.jts.geom.Geometry;
  *
  * <p>Alongside the entity and the timestamp, also the entity's geometry is provided.</p>
  */
-public class OSMEntitySnapshotImpl implements
-    org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot {
+public class OSMEntitySnapshotImpl implements OSMEntitySnapshot {
   private final IterateByTimestampEntry data;
 
   public OSMEntitySnapshotImpl(IterateByTimestampEntry data) {
@@ -39,6 +38,7 @@ public class OSMEntitySnapshotImpl implements
   ) {
     this.data = new IterateByTimestampEntry(
         other.getTimestamp(),
+        other.getLastContributionTimestamp(),
         other.getEntity(),
         other.getOSHEntity(),
         reclippedGeometry,
@@ -48,27 +48,32 @@ public class OSMEntitySnapshotImpl implements
 
   @Override
   public OSHDBTimestamp getTimestamp() {
-    return data.timestamp;
+    return data.timestamp();
+  }
+
+  @Override
+  public OSHDBTimestamp getLastContributionTimestamp() {
+    return data.lastModificationTimestamp();
   }
 
   @Override
   public Geometry getGeometry() {
-    return data.geometry.get();
+    return data.geometry().get();
   }
 
   @Override
   public Geometry getGeometryUnclipped() {
-    return data.unclippedGeometry.get();
+    return data.unclippedGeometry().get();
   }
 
   @Override
   public OSMEntity getEntity() {
-    return data.osmEntity;
+    return data.osmEntity();
   }
 
   @Override
   public OSHEntity getOSHEntity() {
-    return data.oshEntity;
+    return data.oshEntity();
   }
 
   /**

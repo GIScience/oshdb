@@ -21,8 +21,6 @@ import org.heigit.ohsome.oshdb.OSHDBBoundable;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTemporal;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
-import org.heigit.ohsome.oshdb.grid.GridOSHEntity;
-import org.heigit.ohsome.oshdb.index.XYGrid;
 import org.heigit.ohsome.oshdb.osh.OSHEntities;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
 import org.heigit.ohsome.oshdb.osm.OSMEntity;
@@ -30,7 +28,6 @@ import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
-import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.geometry.Geo;
@@ -59,8 +56,8 @@ import org.slf4j.LoggerFactory;
  * Allows to iterate through the contents of OSH grid cells.
  *
  * <p>There are two modes of iterating through a cell: 1) iterate at specific timestamps
- * (entity snapshots) {@link #iterateByTimestamps(GridOSHEntity)} or 2) iterate through
- * all (minor) versions of each entity {@link #iterateByContribution(GridOSHEntity)}.
+ * (entity snapshots) {@link #iterateByTimestamps(OSHEntitySource)} or 2) iterate through
+ * all (minor) versions of each entity {@link #iterateByContribution(OSHEntitySource)}.
  */
 public class CellIterator implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(CellIterator.class);
@@ -208,43 +205,31 @@ public class CellIterator implements Serializable {
   }
 
   /**
-   * Holds the result of a single item returned by {@link #iterateByTimestamps(GridOSHEntity)}.
+   * Holds the result of a single item returned by {@link #iterateByTimestamps(OSHEntitySource)}.
+   *
+   * @param timestamp timestamp of the snapshot
+   * @param lastModificationTimestamp last modification timestamp before the snapshot's timestamp
+   * @param osmEntity the exact version of the OSM object
+   * @param oshEntity the whole version history of the OSM object
+   * @param geometry an object which holds the geometry of the OSM object, or a method to build it
+   *             on request, clipped to the query area of interest
+   * @param unclippedGeometry holds the full unclipped geometry of the OSM object
+   *                     or a function to build it
    */
-  public static class IterateByTimestampEntry {
-    public final OSHDBTimestamp timestamp;
-    public final OSMEntity osmEntity;
-    public final OSHEntity oshEntity;
-    public final LazyEvaluatedObject<Geometry> geometry;
-    public final LazyEvaluatedObject<Geometry> unclippedGeometry;
-
-    /**
-     * Properties associated with each entity snapshot.
-     *
-     * @param timestamp timestamp of the snapshot
-     * @param osmEntity the exact version of the OSM object
-     * @param oshEntity the whole version history of the OSM object
-     * @param geom an object which holds the geometry of the OSM object, or a method to build it
-     *             on request, clipped to the query area of interest
-     * @param unclippedGeom holds the full unclipped geometry of the OSM object
-     *                     or a function to build it
-     */
-    public IterateByTimestampEntry(
-        OSHDBTimestamp timestamp, @Nonnull OSMEntity osmEntity, @Nonnull OSHEntity oshEntity,
-        LazyEvaluatedObject<Geometry> geom, LazyEvaluatedObject<Geometry> unclippedGeom
-    ) {
-      this.timestamp = timestamp;
-      this.osmEntity = osmEntity;
-      this.oshEntity = oshEntity;
-      this.geometry = geom;
-      this.unclippedGeometry = unclippedGeom;
-    }
-  }
+  public record IterateByTimestampEntry(
+      OSHDBTimestamp timestamp,
+      OSHDBTimestamp lastModificationTimestamp,
+      @Nonnull OSMEntity osmEntity,
+      @Nonnull OSHEntity oshEntity,
+      LazyEvaluatedObject<Geometry> geometry,
+      LazyEvaluatedObject<Geometry> unclippedGeometry
+  ) {}
 
   /**
-   * Helper method to easily iterate over all entities in a cell that match a given condition/filter
+   * Helper method to easily iterate over all entities that match a given condition/filter
    * as they existed at the given timestamps.
    *
-   * @param cell the data cell
+   * @param source a provider of a stream of OSHEntity objects and a corresponding bounding box
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries at each
    *         timestamp. If an object has not been modified between timestamps, the output may
@@ -252,20 +237,20 @@ public class CellIterator implements Serializable {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public Stream<IterateByTimestampEntry> iterateByTimestamps(GridOSHEntity cell) {
-    var cellBoundingBox = XYGrid.getBoundingBox(new CellId(cell.getLevel(), cell.getId()), true);
+  public Stream<IterateByTimestampEntry> iterateByTimestamps(OSHEntitySource source) {
+    var cellBoundingBox = source.getBoundingBox();
     final boolean allFullyInside = fullyInside(cellBoundingBox);
     if (!allFullyInside && isBoundByPolygon && bboxOutsidePolygon.test(cellBoundingBox)) {
       return Stream.empty();
     }
-    return iterateByTimestamps(cell.getEntities(), allFullyInside);
+    return iterateByTimestamps(source.getData(), allFullyInside);
   }
 
   /**
-   * Helper method to easily iterate over all entities in a cell that match a given condition/filter
+   * Helper method to easily iterate over all entities that match a given condition/filter
    * as they existed at the given timestamps.
    *
-   * @param cellData the entities to iterate through
+   * @param oshData the entities to iterate through
    * @param allFullyInside indicator that exact geometry inclusion checks can be skipped
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries at each
@@ -274,9 +259,9 @@ public class CellIterator implements Serializable {
    *         optimize away recalculating expensive geometry operations on unchanged feature
    *         geometries later on in the code.
    */
-  public Stream<IterateByTimestampEntry> iterateByTimestamps(Iterable<? extends OSHEntity> cellData,
+  private Stream<IterateByTimestampEntry> iterateByTimestamps(Stream<? extends OSHEntity> oshData,
       boolean allFullyInside) {
-    return Streams.stream(cellData).flatMap(oshEntity -> {
+    return oshData.flatMap(oshEntity -> {
       if (!oshEntityPreFilter.test(oshEntity)
           || !allFullyInside && (
               !oshEntity.getBoundable().intersects(boundingBox)
@@ -295,15 +280,18 @@ public class CellIterator implements Serializable {
       // optimize loop by requesting modification timestamps first, and skip geometry calculations
       // where not needed
       SortedMap<OSHDBTimestamp, List<OSHDBTimestamp>> queryTs = new TreeMap<>();
+      SortedMap<OSHDBTimestamp, OSHDBTimestamp> lastModificationTimestamps = new TreeMap<>();
       if (!includeOldStyleMultipolygons) {
         List<OSHDBTimestamp> modTs =
             OSHEntityTimeUtils.getModificationTimestamps(oshEntity, osmEntityFilter);
         int j = 0;
+        OSHDBTimestamp lastModificationTimestamp = null;
         for (OSHDBTimestamp requestedT : timestamps) {
           boolean needToRequest = false;
           while (j < modTs.size()
               && modTs.get(j).getEpochSecond() <= requestedT.getEpochSecond()) {
             needToRequest = true;
+            lastModificationTimestamp = modTs.get(j);
             j++;
           }
           if (needToRequest) {
@@ -311,6 +299,7 @@ public class CellIterator implements Serializable {
           } else if (queryTs.size() > 0) {
             queryTs.get(queryTs.lastKey()).add(requestedT);
           }
+          lastModificationTimestamps.put(requestedT, lastModificationTimestamp);
         }
       } else {
         // todo: make this work with old style multipolygons!!?!
@@ -331,17 +320,16 @@ public class CellIterator implements Serializable {
           // skip because this entity is deleted at this timestamp
           continue;
         }
-        if (osmEntity instanceof OSMWay && ((OSMWay) osmEntity).getMembers().length == 0
-            || osmEntity instanceof OSMRelation
-                && ((OSMRelation) osmEntity).getMembers().length == 0) {
+        if (osmEntity instanceof OSMWay osmWay && osmWay.getMembers().length == 0
+            || osmEntity instanceof OSMRelation osmRelation
+                && osmRelation.getMembers().length == 0) {
           // skip way/relation with zero nodes/members
           continue;
         }
 
         boolean isOldStyleMultipolygon = false;
-        if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation
-            && tagInterpreter.isOldStyleMultipolygon((OSMRelation) osmEntity)) {
-          final OSMRelation rel = (OSMRelation) osmEntity;
+        if (includeOldStyleMultipolygons && osmEntity instanceof OSMRelation rel
+            && tagInterpreter.isOldStyleMultipolygon(rel)) {
           for (int i = 0; i < rel.getMembers().length; i++) {
             final OSMMember relMember = rel.getMembers()[i];
             if (relMember.getType() == OSMType.WAY
@@ -396,16 +384,17 @@ public class CellIterator implements Serializable {
             });
           }
 
+          var lastModificationTimestamp = lastModificationTimestamps.get(timestamp);
           if (fullyInside || !geom.get().isEmpty()) {
             LazyEvaluatedObject<Geometry> fullGeom = fullyInside ? geom : new LazyEvaluatedObject<>(
                 () -> OSHDBGeometryBuilder.getGeometry(osmEntity, timestamp, tagInterpreter));
-            results.add(
-                new IterateByTimestampEntry(timestamp, osmEntity, oshEntity, geom, fullGeom)
+            results.add(new IterateByTimestampEntry(
+                timestamp, lastModificationTimestamp, osmEntity, oshEntity, geom, fullGeom)
             );
             // add skipped timestamps (where nothing has changed from the last timestamp) to result
             for (OSHDBTimestamp additionalT : queryTs.get(timestamp)) {
-              results.add(
-                  new IterateByTimestampEntry(additionalT, osmEntity, oshEntity, geom, fullGeom)
+              results.add(new IterateByTimestampEntry(
+                  additionalT, lastModificationTimestamp, osmEntity, oshEntity, geom, fullGeom)
               );
             }
           }
@@ -470,97 +459,72 @@ public class CellIterator implements Serializable {
   }
 
   /**
-   * Holds the result of a single item returned by {@link #iterateByContribution(GridOSHEntity)}.
+   * Holds the result of a single item returned by {@link #iterateByContribution(OSHEntitySource)}.
+   *
+   * @param timestamp the timestamp when the OSM object was modified
+   * @param osmEntity the version of the OSM object after the modification
+   * @param previousOsmEntity the version of the OSM object before the modification
+   * @param oshEntity the full version history of the OSM object
+   * @param geometry the geometry of the OSM object (or a function to build it) of the state
+   *                 of the OSM object after the modification, clipped to the query
+   *                 area of interest
+   * @param previousGeometry the geometry of the OSM object (or a function to build it) of
+   *                         the state of the OSM object before the modification, clipped to the
+   *                         the query area of interest
+   * @param unclippedGeometry same as {@link #geometry}, but not clipped to the query area
+   * @param unclippedPreviousGeometry same as {@link #previousGeometry}, but not clipped to
+   *                                  the query area
+   * @param activities a set of contribution types this modification can be classified with
+   * @param changeset the changeset id this data modification is a part of
    */
-  public static class IterateAllEntry {
-    public final OSHDBTimestamp timestamp;
-    @Nonnull
-    public final OSMEntity osmEntity;
-    public final OSMEntity previousOsmEntity;
-    public final OSHEntity oshEntity;
-    public final LazyEvaluatedObject<Geometry> geometry;
-    public final LazyEvaluatedObject<Geometry> previousGeometry;
-    public final LazyEvaluatedObject<Geometry> unclippedGeometry;
-    public final LazyEvaluatedObject<Geometry> unclippedPreviousGeometry;
-    public final LazyEvaluatedContributionTypes activities;
-    public final long changeset;
-
-    /**
-     * Properties associated with each contribution object.
-     *
-     * @param timestamp the timestamp when the OSM object was modified
-     * @param osmEntity the version of the OSM object after the modification
-     * @param previousOsmEntity the version of the OSM object before the modification
-     * @param oshEntity the full version history of the OSM object
-     * @param geometry the geometry of the OSM object (or a function to build it) of the state
-     *                 of the OSM object after the modification, clipped to the query
-     *                 area of interest
-     * @param previousGeometry the geometry of the OSM object (or a function to build it) of
-     *                         the state of the OSM object before the modification, clipped to the
-     *                         the query area of interest
-     * @param unclippedGeometry same as {@link #geometry}, but not clipped to the query area
-     * @param previousUnclippedGeometry same as {@link #previousGeometry}, but not clipped to
-     *                                  the query area
-     * @param activities a set of contribution types this modification can be classified with
-     * @param changeset the changeset id this data modification is a part of
-     */
-    public IterateAllEntry(
-        OSHDBTimestamp timestamp,
-        @Nonnull OSMEntity osmEntity, OSMEntity previousOsmEntity, @Nonnull OSHEntity oshEntity,
-        LazyEvaluatedObject<Geometry> geometry, LazyEvaluatedObject<Geometry> previousGeometry,
-        LazyEvaluatedObject<Geometry> unclippedGeometry,
-        LazyEvaluatedObject<Geometry> previousUnclippedGeometry,
-        LazyEvaluatedContributionTypes activities,
-        long changeset
-    ) {
-      this.timestamp = timestamp;
-      this.osmEntity = osmEntity;
-      this.previousOsmEntity = previousOsmEntity;
-      this.oshEntity = oshEntity;
-      this.geometry = geometry;
-      this.previousGeometry = previousGeometry;
-      this.unclippedGeometry = unclippedGeometry;
-      this.unclippedPreviousGeometry = previousUnclippedGeometry;
-      this.activities = activities;
-      this.changeset = changeset;
-    }
-  }
+  public record IterateAllEntry(
+      OSHDBTimestamp timestamp,
+      @Nonnull OSMEntity osmEntity,
+      OSMEntity previousOsmEntity,
+      OSHEntity oshEntity,
+      LazyEvaluatedObject<Geometry> geometry,
+      LazyEvaluatedObject<Geometry> previousGeometry,
+      LazyEvaluatedObject<Geometry> unclippedGeometry,
+      LazyEvaluatedObject<Geometry> unclippedPreviousGeometry,
+      LazyEvaluatedContributionTypes activities,
+      long changeset
+  ) {}
 
   /**
-   * Helper method to easily iterate over all entity modifications in a cell that match a given
+   * Helper method to easily iterate over all entity modifications that match a given
    * condition/filter.
    *
-   * @param cell the data cell
+   * @param source a provider of a stream of OSHEntity objects and a corresponding bounding box
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
-  public Stream<IterateAllEntry> iterateByContribution(GridOSHEntity cell) {
-    var cellBoundingBox = XYGrid.getBoundingBox(new CellId(cell.getLevel(), cell.getId()), true);
+  public Stream<IterateAllEntry> iterateByContribution(OSHEntitySource source) {
+    var cellBoundingBox = source.getBoundingBox();
     final boolean allFullyInside = fullyInside(cellBoundingBox);
     if (!allFullyInside && isBoundByPolygon && bboxOutsidePolygon.test(cellBoundingBox)) {
       return Stream.empty();
     }
-    return iterateByContribution(cell.getEntities(), allFullyInside);
+    return iterateByContribution(source.getData(), allFullyInside);
   }
 
   /**
-   * Helper method to easily iterate over all entity modifications in a cell that match a given
+   * Helper method to easily iterate over all entity modifications that match a given
    * condition/filter.
    *
-   * @param cellData the entities to iterate through
+   * @param oshData the entities to iterate through
    * @param allFullyInside indicator that exact geometry inclusion checks can be skipped
    *
    * @return a stream of matching filtered OSMEntities with their clipped Geometries and timestamp
    *         intervals.
    */
-  public Stream<IterateAllEntry> iterateByContribution(Iterable<? extends OSHEntity> cellData,
+  private Stream<IterateAllEntry> iterateByContribution(Stream<? extends OSHEntity> oshData,
       boolean allFullyInside) {
     if (includeOldStyleMultipolygons) {
       //todo: remove this by finishing the functionality below
       throw new UnsupportedOperationException("this is not yet properly implemented (probably)");
     }
-    return Streams.stream(cellData)
+    return oshData
         .filter(oshEntity -> allFullyInside || oshEntity.getBoundable().intersects(boundingBox))
         .filter(oshEntityPreFilter)
         .filter(oshEntity -> allFullyInside || !isBoundByPolygon
@@ -621,8 +585,8 @@ public class CellIterator implements Serializable {
 
     private IterateAllEntry getNext() {
       while (pos < osmEntityAtTimestamps.size()) {
-        OSHDBTimestamp timestamp = modTs.get(pos);
-        OSMEntity osmEntity = osmEntityAtTimestamps.get(pos);
+        final OSHDBTimestamp timestamp = modTs.get(pos);
+        final OSMEntity osmEntity = osmEntityAtTimestamps.get(pos);
         pos++;
 
         // todo: replace with variable outside of osmEntitiyLoop (than we can also get rid of

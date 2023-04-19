@@ -194,7 +194,8 @@ class TestAutoAggregation {
 
   private static OSMEntitySnapshot snapshot(OSHNode node) {
     var timestamp = timestamps.get().first();
-    var data = new IterateByTimestampEntry(timestamp, node.getVersions().iterator().next(), node,
+    var data = new IterateByTimestampEntry(timestamp, null,
+        node.getVersions().iterator().next(), node,
         new LazyEvaluatedObject<>(point),
         new LazyEvaluatedObject<>(point));
     return new OSMEntitySnapshotImpl(data);

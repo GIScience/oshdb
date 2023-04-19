@@ -36,6 +36,11 @@ class ApplyOSMEntitySnapshotTest extends FilterTest {
     }
 
     @Override
+    public OSHDBTimestamp getLastContributionTimestamp() {
+      throw new UnsupportedOperationException(UNSUPPORTED_IN_TEST);
+    }
+
+    @Override
     public Geometry getGeometry() {
       return this.geometry;
     }

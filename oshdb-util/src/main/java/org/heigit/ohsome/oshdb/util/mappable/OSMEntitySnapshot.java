@@ -17,6 +17,13 @@ public interface OSMEntitySnapshot extends OSHDBMapReducible, Comparable<OSMEnti
   OSHDBTimestamp getTimestamp();
 
   /**
+   * The timestamp when the entity of the snapshot was last modified before the snapshot timestamp.
+   *
+   * @return last modification timestamp as an OSHDBTimestamp object
+   */
+  OSHDBTimestamp getLastContributionTimestamp();
+
+  /**
    * The geometry of this entity at the snapshot's timestamp clipped to the requested area of
    * interest.
    *

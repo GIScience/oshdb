@@ -1,6 +1,19 @@
 Changelog
 =========
 
+## 1.2.0-SNAPSHOT (current master)
+
+### new features
+
+* `OSMEntitySnapshot` now also returns the `lastContributionTimestamp` for each snapshot ([#495])
+
+### other changes
+
+* `CellIterator` is now decoupled from implementation of the "Grid" ([#495])
+
+[#495]: https://github.com/GIScience/oshdb/pull/495
+
+
 ## 1.1.1
 
 * update ignite dependency to [2.14.0-heigit1] ([#491])

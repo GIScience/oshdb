@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ObjectInputStream;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.heigit.ohsome.oshdb.OSHDBBoundingBox;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
@@ -19,7 +18,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the {@link CellIterator#iterateByContribution(GridOSHEntity)} method.
+ * Tests the {@link CellIterator#iterateByContribution(OSHEntitySource)} method.
  */
 class IterateByContributionTest {
   private static JdbcConnectionPool source;
@@ -73,11 +72,11 @@ class IterateByContributionTest {
             osmEntity -> true,
             false
         )).iterateByContribution(
-            oshCellRawData
-        ).collect(Collectors.toList());
+            OSHEntitySource.fromGridOSHEntity(oshCellRawData)
+        ).toList();
         countTotal += result.size();
         for (IterateAllEntry entry : result) {
-          if (entry.activities.contains(ContributionType.CREATION)) {
+          if (entry.activities().contains(ContributionType.CREATION)) {
             countCreated++;
           } else {
             countOther++;
