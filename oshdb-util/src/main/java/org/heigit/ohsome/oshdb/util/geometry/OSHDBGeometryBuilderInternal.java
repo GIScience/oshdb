@@ -26,7 +26,6 @@ import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.osm.OSMWay;
 import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
@@ -84,56 +83,22 @@ public class OSHDBGeometryBuilderInternal {
       );
     }
     if (entity instanceof OSMNode node) {
-      if (node.isVisible()) {
-        return geometryFactory.createPoint(new Coordinate(node.getLongitude(), node.getLatitude()));
-      } else {
-        return geometryFactory.createPoint((Coordinate) null);
-      }
+      return getNodeGeometry(node, geometryFactory);
     } else if (entity instanceof OSMWay way) {
-      if (!way.isVisible()) {
-        OSHDBGeometryBuilderInternal.LOG.info(
-            "way/{} is deleted - falling back to empty (line) geometry", way.getId());
-        return geometryFactory.createLineString((CoordinateSequence) null);
-      }
       return getWayGeometry(way,
           timestamp,
           auxiliaryData,
           areaDecider,
           geometryFactory);
-    } else {
-      OSMRelation relation = (OSMRelation) entity;
-      if (!relation.isVisible()) {
-        OSHDBGeometryBuilderInternal.LOG.info(
-            "relation/{} is deleted - falling back to empty geometry (collection)",
-            relation.getId());
-        return geometryFactory.createGeometryCollection(null);
-      }
-      if (areaDecider.isArea(entity)) {
-        try {
-          Geometry multipolygon = getMultiPolygonGeometry(
-              relation,
-              timestamp,
-              auxiliaryData,
-              areaDecider,
-              geometryFactory
-          );
-          if (!multipolygon.isEmpty()) {
-            return multipolygon;
-          }
-          // otherwise (empty geometry): fall back to geometry collection builder
-        } catch (IllegalArgumentException e) {
-          // fall back to geometry collection builder
-        }
-      }
-      /* todo:implement multilinestring mode for stuff like route relations
-       * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
-       */
-      return getGeometryCollectionGeometry(
-          relation,
+    } else if (entity instanceof OSMRelation relation) {
+      return getRelationGeometry(relation,
           timestamp,
           auxiliaryData,
           areaDecider,
           geometryFactory);
+    } else {
+      throw new IllegalStateException(
+          "entity must be an instance of either OSMNode, OSMWay, or OSMRelation");
     }
   }
 
@@ -159,6 +124,24 @@ public class OSHDBGeometryBuilderInternal {
         null,
         auxiliaryData,
         areaDecider);
+  }
+
+
+  /**
+   * Construct the geometry of an OSMNode.
+   *
+   * @param node the node to construct the geometry of
+   * @param geometryFactory a JTS GeometryFactory object
+   * @return the geometry as a JTS point
+   */
+  public static Geometry getNodeGeometry(OSMNode node, GeometryFactory geometryFactory) {
+    if (!node.isVisible()) {
+      OSHDBGeometryBuilderInternal.LOG.info(
+          "node/{} is deleted - falling back to empty (line) geometry", node.getId());
+      return geometryFactory.createEmpty(0);
+    } else {
+      return geometryFactory.createPoint(new Coordinate(node.getLongitude(), node.getLatitude()));
+    }
   }
 
 
@@ -208,7 +191,13 @@ public class OSHDBGeometryBuilderInternal {
       OSHDBTimestamp timestamp,
       @Nullable AuxiliaryData auxiliaryData,
       TagInterpreter areaDecider,
-      GeometryFactory geometryFactory) {
+      GeometryFactory geometryFactory
+  ) {
+    if (!way.isVisible()) {
+      OSHDBGeometryBuilderInternal.LOG.info(
+          "way/{} is deleted - falling back to empty (line) geometry", way.getId());
+      return geometryFactory.createEmpty(1);
+    }
     if (auxiliaryData != null) {
       return getWayGeometry(
           way,
@@ -251,8 +240,49 @@ public class OSHDBGeometryBuilderInternal {
       return geometryFactory.createPoint(coords[0]);
     } else {
       LOG.warn("way/{} with no nodes - falling back to empty (point) geometry", way.getId());
-      return geometryFactory.createPoint((Coordinate) null);
+      return geometryFactory.createEmpty(0);
     }
+  }
+
+  private static Geometry getRelationGeometry(
+      OSMRelation relation,
+      OSHDBTimestamp timestamp,
+      AuxiliaryData auxiliaryData,
+      TagInterpreter areaDecider,
+      GeometryFactory geometryFactory
+  ) {
+    if (!relation.isVisible()) {
+      OSHDBGeometryBuilderInternal.LOG.info(
+          "relation/{} is deleted - falling back to empty geometry (collection)",
+          relation.getId());
+      return geometryFactory.createEmpty(-1);
+    }
+    if (areaDecider.isArea(relation)) {
+      try {
+        Geometry multipolygon = getMultiPolygonGeometry(
+                relation,
+                timestamp,
+                auxiliaryData,
+                areaDecider,
+                geometryFactory
+        );
+        if (!multipolygon.isEmpty()) {
+          return multipolygon;
+        }
+        // otherwise (empty geometry): fall back to geometry collection builder
+      } catch (IllegalArgumentException e) {
+        // fall back to geometry collection builder
+      }
+    }
+    /* todo:implement multilinestring mode for stuff like route relations
+     * if (areaDecider.isLine(entity)) { return getMultiLineStringGeometry(timestamp); }
+     */
+    return getGeometryCollectionGeometry(
+            relation,
+            timestamp,
+            auxiliaryData,
+            areaDecider,
+            geometryFactory);
   }
 
   /**
