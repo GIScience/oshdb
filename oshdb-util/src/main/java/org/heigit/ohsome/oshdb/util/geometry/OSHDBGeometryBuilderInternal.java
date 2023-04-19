@@ -63,6 +63,7 @@ public class OSHDBGeometryBuilderInternal {
    *                          order of the array items must correspond to the getMembers() of the
    *                          original entity.
    */
+  @SuppressWarnings("java:S6218")
   public record AuxiliaryData(
       @Nonnull OSMEntity[] childEntityData,
       @Nullable OSMNode[][] childWayNodesData
@@ -555,7 +556,7 @@ public class OSHDBGeometryBuilderInternal {
   private static List<LinkedList<OSMNode>> waysToLines(
       Stream<OSMEntity> members, OSHDBTimestamp timestamp) {
     return members
-        .map(osm -> (OSMWay) osm)
+        .map(OSMWay.class::cast)
         .filter(Objects::nonNull)
         .filter(OSMEntity::isVisible)
         .map(way -> way.getMemberEntities(timestamp)
