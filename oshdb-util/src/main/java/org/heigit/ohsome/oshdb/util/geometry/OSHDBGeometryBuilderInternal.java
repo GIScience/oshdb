@@ -42,9 +42,16 @@ import org.slf4j.LoggerFactory;
  */
 public class OSHDBGeometryBuilderInternal {
   private static final Logger LOG = LoggerFactory.getLogger(OSHDBGeometryBuilderInternal.class);
+  private final TagInterpreter areaDecider;
+  private final GeometryFactory geometryFactory;
 
-  private OSHDBGeometryBuilderInternal() {
-    throw new IllegalStateException("Utility class");
+  public OSHDBGeometryBuilderInternal(TagInterpreter areaDecider, GeometryFactory geometryFactory) {
+    this.areaDecider = areaDecider;
+    this.geometryFactory = geometryFactory;
+  }
+
+  public OSHDBGeometryBuilderInternal(TagInterpreter areaDecider) {
+    this(areaDecider, new GeometryFactory());
   }
 
 
@@ -55,47 +62,40 @@ public class OSHDBGeometryBuilderInternal {
    * their referenced entities are already known for a specific timestamp.</p>
    *
    * @param childEntityData The directly referenced child entities of an OSMEntity: for a way,
-   *                        this would be an array of OSMNodes, for a relation an Array of OSMWays.
+   *                        this would be a list of OSMNodes, for a relation an Array of OSMWays.
    *                        The order of the array items must correspond to the getMembers() of the
    *                        original entity.
    * @param childWayNodesData The indirectly referenced child-child entities of an OSMRelation. The
    *                          order of the array items must correspond to the getMembers() of the
    *                          original entity.
    */
-  @SuppressWarnings("java:S6218")
   public record AuxiliaryData(
-      @Nonnull OSMEntity[] childEntityData,
-      @Nullable OSMNode[][] childWayNodesData
+      @Nonnull List<? extends OSMEntity> childEntityData,
+      @Nullable List<List<OSMNode>> childWayNodesData
   ) {}
 
 
   @Nonnull
-  static Geometry getGeometry(
+  Geometry getGeometry(
       OSMEntity entity,
       @Nullable OSHDBTimestamp timestamp,
-      @Nullable AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider
+      @Nullable AuxiliaryData auxiliaryData
   ) {
-    GeometryFactory geometryFactory = new GeometryFactory();
     if (timestamp != null && OSHDBTemporal.compare(timestamp, entity) < 0) {
       throw new AssertionError(
           "cannot produce geometry of entity for timestamp before this entity's version's timestamp"
       );
     }
     if (entity instanceof OSMNode node) {
-      return getNodeGeometry(node, geometryFactory);
+      return getNodeGeometry(node);
     } else if (entity instanceof OSMWay way) {
       return getWayGeometry(way,
           timestamp,
-          auxiliaryData,
-          areaDecider,
-          geometryFactory);
+          auxiliaryData);
     } else if (entity instanceof OSMRelation relation) {
       return getRelationGeometry(relation,
           timestamp,
-          auxiliaryData,
-          areaDecider,
-          geometryFactory);
+          auxiliaryData);
     } else {
       throw new IllegalStateException(
           "entity must be an instance of either OSMNode, OSMWay, or OSMRelation");
@@ -110,20 +110,17 @@ public class OSHDBGeometryBuilderInternal {
    * @param entity the entity to generate the geometry for
    * @param auxiliaryData the child entities the original OSM entity references (at the
    *                      timestamp one is interested in).
-   * @param areaDecider A TagInterpreter object to perform geometry type decisions
    * @return a JTS geometry object
    */
   @Nonnull
-  public static Geometry getGeometry(
+  public Geometry getGeometry(
       OSMEntity entity,
-      @Nonnull AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider
+      @Nonnull AuxiliaryData auxiliaryData
   ) {
     return getGeometry(
         entity,
         null,
-        auxiliaryData,
-        areaDecider);
+        auxiliaryData);
   }
 
 
@@ -131,10 +128,9 @@ public class OSHDBGeometryBuilderInternal {
    * Construct the geometry of an OSMNode.
    *
    * @param node the node to construct the geometry of
-   * @param geometryFactory a JTS GeometryFactory object
    * @return the geometry as a JTS point
    */
-  public static Geometry getNodeGeometry(OSMNode node, GeometryFactory geometryFactory) {
+  public Geometry getNodeGeometry(OSMNode node) {
     if (!node.isVisible()) {
       OSHDBGeometryBuilderInternal.LOG.info(
           "node/{} is deleted - falling back to empty (line) geometry", node.getId());
@@ -151,17 +147,13 @@ public class OSHDBGeometryBuilderInternal {
    *
    * @param way the way to construct the geometry of
    * @param timestamp the timestamp at which to resolve the way's referenced nodes
-   * @param areaDecider a TagInterpreter object
-   * @param geometryFactory a JTS GeometryFactory object
    * @return the geometry as a JTS line string or polygon
    */
-  public static Geometry getWayGeometry(
+  public Geometry getWayGeometry(
       OSMWay way,
-      OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory) {
+      OSHDBTimestamp timestamp) {
     var members = way.getMemberEntities(timestamp);
-    return getWayGeometry(way, members, areaDecider, geometryFactory);
+    return getWayGeometry(way, members);
   }
 
   /**
@@ -169,29 +161,21 @@ public class OSHDBGeometryBuilderInternal {
    *
    * @param way the way to construct the geometry of
    * @param auxiliaryData the auxiliary data containing the nodes the way references. Must contain
-   *                      an array of OSMNodes in the childEntityData property.
-   * @param areaDecider a TagInterpreter object
-   * @param geometryFactory a JTS GeometryFactory object
+   *                      a list of OSMNodes in the childEntityData property.
    * @return the geometry as a JTS line string or polygon
    */
-  public static Geometry getWayGeometry(
+  public Geometry getWayGeometry(
       OSMWay way,
-      @Nonnull AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory) {
+      @Nonnull AuxiliaryData auxiliaryData) {
     return getWayGeometry(
         way,
-        Arrays.stream(auxiliaryData.childEntityData()),
-        areaDecider,
-        geometryFactory);
+        auxiliaryData.childEntityData().stream());
   }
 
-  private static Geometry getWayGeometry(
+  private Geometry getWayGeometry(
       OSMWay way,
       OSHDBTimestamp timestamp,
-      @Nullable AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      @Nullable AuxiliaryData auxiliaryData
   ) {
     if (!way.isVisible()) {
       OSHDBGeometryBuilderInternal.LOG.info(
@@ -201,29 +185,30 @@ public class OSHDBGeometryBuilderInternal {
     if (auxiliaryData != null) {
       return getWayGeometry(
           way,
-          auxiliaryData,
-          areaDecider,
-          geometryFactory);
+          auxiliaryData);
     } else {
       return getWayGeometry(
           way,
-          timestamp,
-          areaDecider,
-          geometryFactory);
+          timestamp);
     }
   }
 
-  private static Geometry getWayGeometry(
+  /**
+   * Construct the geometry of an OSMWay, given the nodes it references as auxiliary data.
+   *
+   * @param way the way to construct the geometry of
+   * @param resolvedMembers a stream of the nodes which the way references
+   * @return the geometry as a JTS line string or polygon
+   */
+  public Geometry getWayGeometry(
       OSMWay way,
-      Stream<? extends OSMEntity> resolvedMembers,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory) {
+      Stream<? extends OSMEntity> resolvedMembers) {
     // todo: handle old-style multipolygons here???
     Coordinate[] coords = resolvedMembers
         .filter(Objects::nonNull)
         .filter(OSMEntity::isVisible)
         .map(OSMNode.class::cast)
-        .map(nd -> new Coordinate(nd.getLongitude(), nd.getLatitude()))
+        .map(OSHDBGeometryBuilder::getCoordinate)
         .toArray(Coordinate[]::new);
     if (areaDecider.isArea(way)) {
       if (coords.length >= 4 && coords[0].equals2D(coords[coords.length - 1])) {
@@ -244,12 +229,10 @@ public class OSHDBGeometryBuilderInternal {
     }
   }
 
-  private static Geometry getRelationGeometry(
+  private Geometry getRelationGeometry(
       OSMRelation relation,
       OSHDBTimestamp timestamp,
-      AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      AuxiliaryData auxiliaryData
   ) {
     if (!relation.isVisible()) {
       OSHDBGeometryBuilderInternal.LOG.info(
@@ -262,9 +245,7 @@ public class OSHDBGeometryBuilderInternal {
         Geometry multipolygon = getMultiPolygonGeometry(
                 relation,
                 timestamp,
-                auxiliaryData,
-                areaDecider,
-                geometryFactory
+                auxiliaryData
         );
         if (!multipolygon.isEmpty()) {
           return multipolygon;
@@ -280,9 +261,7 @@ public class OSHDBGeometryBuilderInternal {
     return getGeometryCollectionGeometry(
             relation,
             timestamp,
-            auxiliaryData,
-            areaDecider,
-            geometryFactory);
+            auxiliaryData);
   }
 
   /**
@@ -291,22 +270,16 @@ public class OSHDBGeometryBuilderInternal {
    *
    * @param relation the relation to construct the geometry of
    * @param timestamp the timestamp at which to resolve the relation's referenced nodes
-   * @param areaDecider a TagInterpreter object
-   * @param geometryFactory a JTS GeometryFactory object
    * @return the geometry as a JTS geometry collection
    */
-  public static Geometry getGeometryCollectionGeometry(
+  public Geometry getGeometryCollectionGeometry(
       OSMRelation relation,
-      OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      OSHDBTimestamp timestamp
   ) {
     return getGeometryCollectionGeometry(
         relation,
         timestamp,
-        null,
-        areaDecider,
-        geometryFactory);
+        null);
   }
 
   /**
@@ -315,32 +288,24 @@ public class OSHDBGeometryBuilderInternal {
    *
    * @param relation the relation to construct the geometry of
    * @param auxiliaryData the auxiliary data containing the referenced ways and way-nodes.
-   *                      Must contain an array of OSMWays in the childEntityData property and
-   *                      an array of arrays of OSMNodes in the childWayNodesData property.
-   * @param areaDecider a TagInterpreter object
-   * @param geometryFactory a JTS GeometryFactory object
+   *                      Must contain a list of OSMWays in the childEntityData property and
+   *                      a list of lists of OSMNodes in the childWayNodesData property.
    * @return the geometry as a JTS geometry collection
    */
-  public static Geometry getGeometryCollectionGeometry(
+  public Geometry getGeometryCollectionGeometry(
       OSMRelation relation,
-      @Nonnull AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      @Nonnull AuxiliaryData auxiliaryData
   ) {
     return getGeometryCollectionGeometry(
         relation,
         null,
-        auxiliaryData,
-        areaDecider,
-        geometryFactory);
+        auxiliaryData);
   }
 
-  private static Geometry getGeometryCollectionGeometry(
+  private Geometry getGeometryCollectionGeometry(
       OSMRelation relation,
       OSHDBTimestamp timestamp,
-      @Nullable AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      @Nullable AuxiliaryData auxiliaryData
   ) {
     OSMMember[] relationMembers = relation.getMembers();
     Geometry[] geoms = new Geometry[relationMembers.length];
@@ -349,7 +314,7 @@ public class OSHDBGeometryBuilderInternal {
       OSHEntity memberOSHEntity = relationMembers[i].getEntity();
       OSMEntity memberEntity;
       if (auxiliaryData != null) {
-        memberEntity = auxiliaryData.childEntityData()[i];
+        memberEntity = auxiliaryData.childEntityData().get(i);
       } else {
         // memberOSHEntity might be null when working on an extract with incomplete relation members
         memberEntity = memberOSHEntity == null ? null :
@@ -375,13 +340,12 @@ public class OSHDBGeometryBuilderInternal {
         AuxiliaryData subAuxiliaryData = null;
         if (auxiliaryData != null && auxiliaryData.childWayNodesData() != null) {
           var childWayNodesData = auxiliaryData.childWayNodesData();
-          subAuxiliaryData = new AuxiliaryData(childWayNodesData[i], null);
+          subAuxiliaryData = new AuxiliaryData(childWayNodesData.get(i), null);
         }
         geoms[i] = getGeometry(
             memberEntity,
             timestamp,
-            subAuxiliaryData,
-            areaDecider);
+            subAuxiliaryData);
       }
     }
     if (completeGeometry) {
@@ -400,15 +364,11 @@ public class OSHDBGeometryBuilderInternal {
    *
    * @param relation the relation to construct the geometry of
    * @param timestamp the timestamp at which to resolve the relation's referenced nodes
-   * @param areaDecider a TagInterpreter object
-   * @param geometryFactory a JTS GeometryFactory object
    * @return the geometry as a JTS multi polygon
    */
-  public static Geometry getMultiPolygonGeometry(
+  public Geometry getMultiPolygonGeometry(
       OSMRelation relation,
-      OSHDBTimestamp timestamp,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      OSHDBTimestamp timestamp
   ) {
     List<LinkedList<OSMNode>> outerLines = waysToLines(
         relation.getMemberEntities(timestamp, areaDecider::isMultipolygonOuterMember),
@@ -422,8 +382,7 @@ public class OSHDBGeometryBuilderInternal {
 
     return getMultiPolygonGeometry(
         outerLines,
-        innerLines,
-        geometryFactory
+        innerLines
     );
   }
 
@@ -433,54 +392,40 @@ public class OSHDBGeometryBuilderInternal {
    *
    * @param relation the relation to construct the geometry of
    * @param auxiliaryData the auxiliary data containing the referenced ways and way-nodes.
-   *                      Must contain an array of OSMWays in the childEntityData property and
-   *                      an array of arrays of OSMNodes in the childWayNodesData property.
-   * @param areaDecider a TagInterpreter object
-   * @param geometryFactory a JTS GeometryFactory object
+   *                      Must contain a list of OSMWays in the childEntityData property and
+   *                      a list of lists of OSMNodes in the childWayNodesData property.
    * @return the geometry as a JTS multi polygon
    */
-  public static Geometry getMultiPolygonGeometry(
+  public Geometry getMultiPolygonGeometry(
       OSMRelation relation,
-      @Nonnull AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      @Nonnull AuxiliaryData auxiliaryData
   ) {
     return getMultiPolygonGeometry(
         relation,
         auxiliaryData.childEntityData(),
-        auxiliaryData.childWayNodesData(),
-        areaDecider,
-        geometryFactory);
+        auxiliaryData.childWayNodesData());
   }
 
-  static Geometry getMultiPolygonGeometry(
+  Geometry getMultiPolygonGeometry(
       OSMRelation relation,
       OSHDBTimestamp timestamp,
-      @Nullable AuxiliaryData auxiliaryData,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      @Nullable AuxiliaryData auxiliaryData
   ) {
     if (auxiliaryData != null) {
       return getMultiPolygonGeometry(
           relation,
-          auxiliaryData,
-          areaDecider,
-          geometryFactory);
+          auxiliaryData);
     } else {
       return getMultiPolygonGeometry(
           relation,
-          timestamp,
-          areaDecider,
-          geometryFactory);
+          timestamp);
     }
   }
 
-  private static Geometry getMultiPolygonGeometry(
+  private Geometry getMultiPolygonGeometry(
       OSMRelation relation,
-      OSMEntity[] waysData,
-      OSMNode[][] waysNodesData,
-      TagInterpreter areaDecider,
-      GeometryFactory geometryFactory
+      List<? extends OSMEntity> waysData,
+      List<List<OSMNode>> waysNodesData
   ) {
     List<LinkedList<OSMNode>> outerLines = new LinkedList<>();
     List<LinkedList<OSMNode>> innerLines = new LinkedList<>();
@@ -488,12 +433,12 @@ public class OSHDBGeometryBuilderInternal {
     var members = relation.getMembers();
     for (var i = 0; i < members.length; i++) {
       var member = members[i];
-      var memberData = waysData[i];
+      var memberData = waysData.get(i);
       if (memberData == null || !memberData.isVisible()) {
         continue;
       }
 
-      var line = Arrays.stream(waysNodesData[i])
+      var line = waysNodesData.get(i).stream()
           .filter(Objects::nonNull)
           .filter(OSMEntity::isVisible)
           .collect(Collectors.toCollection(LinkedList::new));
@@ -507,23 +452,30 @@ public class OSHDBGeometryBuilderInternal {
 
     return getMultiPolygonGeometry(
         outerLines,
-        innerLines,
-        geometryFactory
+        innerLines
     );
   }
 
-
-  private static Geometry getMultiPolygonGeometry(
+  /**
+   * Construct the geometry of an OSMRelation, interpreted as a MultiPolygon geometry type,
+   * given the line segements of the outer and inner rings it consists of.
+   *
+   * @param outerLines A list of segments which can be glued into 1 to n closed rings which form
+   *                   the outer shells of the multi polygon
+   * @param innerLines A list of segments which can be glued into 0 to n closed rings which form
+   *                   the inner holes of the multi polygon
+   * @return
+   */
+  public Geometry getMultiPolygonGeometry(
       List<LinkedList<OSMNode>> outerLines,
-      List<LinkedList<OSMNode>> innerLines,
-      GeometryFactory geometryFactory
+      List<LinkedList<OSMNode>> innerLines
   ) {
     // construct inner and outer rings
     List<LinkedList<OSMNode>> outerRingsNodes = buildRings(outerLines);
     List<LinkedList<OSMNode>> innerRingsNodes = buildRings(innerLines);
 
     // check if there are any pinched off sections in outer rings
-    splitPinchedRings(outerRingsNodes, innerRingsNodes, geometryFactory);
+    splitPinchedRings(outerRingsNodes, innerRingsNodes);
     // check if there are any touching inner/outer rings, merge any
     mergeTouchingRings(innerRingsNodes);
     // create JTS rings for non-degenerate rings only
@@ -557,7 +509,6 @@ public class OSHDBGeometryBuilderInternal {
         // todo: check for inners containing other inners -> inner-in-outer-in-inner-in-outer case
         try {
           return constructMultipolygonPart(
-              geometryFactory,
               innersTree,
               geometryFactory.createPolygon(outer)
           );
@@ -566,7 +517,6 @@ public class OSHDBGeometryBuilderInternal {
           Geometry buffered = geometryFactory.createPolygon(outer).buffer(0);
           if (buffered instanceof Polygon polygon) {
             return constructMultipolygonPart(
-                geometryFactory,
                 innersTree,
                 polygon
             );
@@ -698,12 +648,10 @@ public class OSHDBGeometryBuilderInternal {
    *
    * @param ringsNodes a collection of node-lists, each forming a ring (i.e. a closed linestring)
    * @param holeRingsNodes a collection where holes formed by "upended" figure-8's should be stored
-   * @param geometryFactory a {@link GeometryFactory} object to create temporary features
    */
-  private static void splitPinchedRings(
+  private void splitPinchedRings(
       Collection<LinkedList<OSMNode>> ringsNodes,
-      Collection<LinkedList<OSMNode>> holeRingsNodes,
-      GeometryFactory geometryFactory
+      Collection<LinkedList<OSMNode>> holeRingsNodes
   ) {
     Map<Long, Integer> nodeIds = new HashMap<>();
     Collection<LinkedList<OSMNode>> additionalRings = new LinkedList<>();
@@ -887,8 +835,7 @@ public class OSHDBGeometryBuilderInternal {
     target.addAll(source);
   }
 
-  private static Polygon constructMultipolygonPart(
-      GeometryFactory geometryFactory,
+  private Polygon constructMultipolygonPart(
       STRtree inners,
       Polygon outer
   ) throws TopologyException {

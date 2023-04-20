@@ -49,7 +49,8 @@ public class OSHDBGeometryBuilder {
       OSHDBTimestamp timestamp,
       TagInterpreter areaDecider
   ) {
-    return OSHDBGeometryBuilderInternal.getGeometry(entity, timestamp, null, areaDecider);
+    var geometryBuilder = new OSHDBGeometryBuilderInternal(areaDecider);
+    return geometryBuilder.getGeometry(entity, timestamp, null);
   }
 
   /**

@@ -4,9 +4,9 @@ import static org.heigit.ohsome.oshdb.osm.OSMCoordinates.GEOM_PRECISION_TO_LONG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
 import org.heigit.ohsome.oshdb.osm.OSM;
-import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMMember;
 import org.heigit.ohsome.oshdb.osm.OSMNode;
 import org.heigit.ohsome.oshdb.osm.OSMRelation;
@@ -17,15 +17,13 @@ import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaAlway
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaMultipolygonAllOuters;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.FakeTagInterpreterAreaNever;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
-import org.heigit.ohsome.oshdb.util.taginterpreter.TagInterpreter;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 
 /**
- * Tests the {@link OSHDBGeometryBuilder} class.
+ * Tests the {@link OSHDBGeometryBuilderInternal} class.
  */
 class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
   private static final double DELTA = 1E-6;
@@ -61,9 +59,12 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
 
   @Nested
   class Node {
+    private final OSHDBGeometryBuilderInternal geometryBuilder =
+            new OSHDBGeometryBuilderInternal(areaDecider);
+
     @Test
     void testNodeGetGeometryAuxiliary() {
-      Geometry result = OSHDBGeometryBuilderInternal.getGeometry(n1, null, null, null);
+      Geometry result = geometryBuilder.getGeometry(n1, new AuxiliaryData(List.of(), List.of()));
       assertTrue(result instanceof Point);
       assertEquals(100, result.getCoordinates()[0].x, DELTA);
       assertEquals(80, result.getCoordinates()[0].y, DELTA);
@@ -73,14 +74,17 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
 
   @Nested
   class Way {
-    AuxiliaryData aux = new AuxiliaryData(new OSMEntity[]{ n1, n2, n3, n4, n1 }, null);
+    private final OSHDBGeometryBuilderInternal geometryBuilderLines =
+            new OSHDBGeometryBuilderInternal(new FakeTagInterpreterAreaNever());
+    private final OSHDBGeometryBuilderInternal geometryBuilderAreas =
+            new OSHDBGeometryBuilderInternal(new FakeTagInterpreterAreaAlways());
+    AuxiliaryData aux = new AuxiliaryData(List.of(n1, n2, n3, n4, n1), null);
 
     @Nested
     class GetGeometry {
       @Test
       void testWayGetGeometryLineString() {
-        var areaDecider = new FakeTagInterpreterAreaNever();
-        Geometry result = OSHDBGeometryBuilderInternal.getGeometry(w2, aux, areaDecider);
+        Geometry result = geometryBuilderLines.getGeometry(w2, aux);
         assertEquals("LineString", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
         assertEquals(100, result.getCoordinates()[0].x, DELTA);
@@ -91,8 +95,7 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
 
       @Test
       void testWayGetGeometryPolygon() {
-        var areaDecider = new FakeTagInterpreterAreaAlways();
-        Geometry result = OSHDBGeometryBuilderInternal.getGeometry(w2, aux, areaDecider);
+        Geometry result = geometryBuilderAreas.getGeometry(w2, aux);
         assertEquals("Polygon", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
         assertEquals(result.getCoordinates()[0].x, result.getCoordinates()[4].x, DELTA);
@@ -102,12 +105,9 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
 
     @Nested
     class GetWayGeometry {
-      GeometryFactory gf = new GeometryFactory();
-
       @Test
       void testWayGetWayGeometryAuxiliaryDataLineString() {
-        var areaDecider = new FakeTagInterpreterAreaNever();
-        Geometry result = OSHDBGeometryBuilderInternal.getWayGeometry(w2, aux, areaDecider, gf);
+        Geometry result = geometryBuilderLines.getWayGeometry(w2, aux);
         assertEquals("LineString", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
         assertEquals(100, result.getCoordinates()[0].x, DELTA);
@@ -118,8 +118,7 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
 
       @Test
       void testWayGetWayGeometryAuxiliaryDataPolygon() {
-        var areaDecider = new FakeTagInterpreterAreaAlways();
-        Geometry result = OSHDBGeometryBuilderInternal.getWayGeometry(w2, aux, areaDecider, gf);
+        Geometry result = geometryBuilderAreas.getWayGeometry(w2, aux);
         assertEquals("Polygon", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
         assertEquals(result.getCoordinates()[0].x, result.getCoordinates()[4].x, DELTA);
@@ -129,8 +128,7 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
       @Test
       void testWayGetWayGeometryDefaultLineString() {
         OSMWay way = ways(2L, 0);
-        var areaDecider = new FakeTagInterpreterAreaNever();
-        Geometry result = OSHDBGeometryBuilderInternal.getWayGeometry(way, t1, areaDecider, gf);
+        Geometry result = geometryBuilderLines.getWayGeometry(way, t1);
         assertEquals("LineString", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
         assertEquals(100, result.getCoordinates()[0].x, DELTA);
@@ -142,8 +140,7 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
       @Test
       void testWayGetWayGeometryDefaultPolygon() {
         OSMWay way = ways(2L, 0);
-        var areaDecider = new FakeTagInterpreterAreaAlways();
-        Geometry result = OSHDBGeometryBuilderInternal.getWayGeometry(way, t1, areaDecider, gf);
+        Geometry result = geometryBuilderAreas.getWayGeometry(way, t1);
         assertEquals("Polygon", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
         assertEquals(result.getCoordinates()[0].x, result.getCoordinates()[4].x, DELTA);
@@ -155,24 +152,26 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
 
   @Nested
   class Relation {
+    private final OSHDBGeometryBuilderInternal geometryBuilderMultiPolygons =
+            new OSHDBGeometryBuilderInternal(new FakeTagInterpreterAreaMultipolygonAllOuters());
+    private final OSHDBGeometryBuilderInternal geometryBuilderGeometryCollections =
+            new OSHDBGeometryBuilderInternal(new FakeTagInterpreterAreaNever());
     AuxiliaryData aux = new AuxiliaryData(
-        new OSMEntity[]{ w2 },
-        new OSMNode[][]{ new OSMNode[] { n1, n2, n3, n4, n1 } });
+        List.of(w2),
+        List.of(List.of(n1, n2, n3, n4, n1)));
 
     @Nested
     class GetGeometry {
       @Test
       void testRelationGetGeometryPolygon() {
-        var areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
-        Geometry result = OSHDBGeometryBuilderInternal.getGeometry(r1, aux, areaDecider);
+        Geometry result = geometryBuilderMultiPolygons.getGeometry(r1, aux);
         assertEquals("Polygon", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
       }
 
       @Test
       void testRelationGetGeometryOther() {
-        var areaDecider = new FakeTagInterpreterAreaNever();
-        Geometry result = OSHDBGeometryBuilderInternal.getGeometry(r1, aux, areaDecider);
+        Geometry result = geometryBuilderGeometryCollections.getGeometry(r1, aux);
         assertEquals("GeometryCollection", result.getGeometryType());
         assertEquals(1, result.getNumGeometries());
         assertEquals(5, result.getGeometryN(0).getNumPoints());
@@ -181,13 +180,9 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
 
     @Nested
     class GetMultiPolygonGeometry {
-      GeometryFactory gf = new GeometryFactory();
-      TagInterpreter areaDecider = new FakeTagInterpreterAreaMultipolygonAllOuters();
-
       @Test
       void testRelationGetMultiPolygonGeometryAuxiliary() {
-        Geometry result =
-            OSHDBGeometryBuilderInternal.getMultiPolygonGeometry(r1, aux, areaDecider, gf);
+        Geometry result = geometryBuilderMultiPolygons.getMultiPolygonGeometry(r1, aux);
         assertEquals("Polygon", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
       }
@@ -195,8 +190,7 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
       @Test
       void testRelationGetMultiPolygonGeometryTimestamp() {
         OSMRelation relation = relations(1L, 0);
-        Geometry result =
-            OSHDBGeometryBuilderInternal.getMultiPolygonGeometry(relation, t1, areaDecider, gf);
+        Geometry result = geometryBuilderMultiPolygons.getMultiPolygonGeometry(relation, t1);
         assertEquals("Polygon", result.getGeometryType());
         assertEquals(5, result.getNumPoints());
       }
@@ -204,13 +198,10 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
 
     @Nested
     class GetGeometryCollectionGeometry {
-      GeometryFactory gf = new GeometryFactory();
-      TagInterpreter areaDecider = new FakeTagInterpreterAreaNever();
-
       @Test
       void testRelationGetGeometryCollectionGeometryAuxiliary() {
         Geometry result =
-            OSHDBGeometryBuilderInternal.getGeometryCollectionGeometry(r1, aux, areaDecider, gf);
+                geometryBuilderGeometryCollections.getGeometryCollectionGeometry(r1, aux);
         assertEquals("GeometryCollection", result.getGeometryType());
         assertEquals(1, result.getNumGeometries());
         assertEquals(5, result.getGeometryN(0).getNumPoints());
@@ -219,8 +210,8 @@ class OSHDBGeometryBuilderInternalTest extends OSHDBGeometryTest {
       @Test
       void testRelationGetGeometryCollectionGeometryTimestamp() {
         OSMRelation relation = relations(1L, 0);
-        Geometry result = OSHDBGeometryBuilderInternal
-            .getGeometryCollectionGeometry(relation, t1, areaDecider, gf);
+        Geometry result =
+                geometryBuilderGeometryCollections.getGeometryCollectionGeometry(relation, t1);
         assertEquals("GeometryCollection", result.getGeometryType());
         assertEquals(1, result.getNumGeometries());
         assertEquals(5, result.getGeometryN(0).getNumPoints());
