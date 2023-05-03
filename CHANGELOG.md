@@ -10,8 +10,10 @@ Changelog
 ### other changes
 
 * `CellIterator` is now decoupled from implementation of the "Grid" ([#495])
+* Enhance geometry builder with methods to generate geometries from entities when their members are already pre-resolved for a specific timestamp ([#501])
 
 [#495]: https://github.com/GIScience/oshdb/pull/495
+[#501]: https://github.com/GIScience/oshdb/pull/501
 
 
 ## 1.1.1
