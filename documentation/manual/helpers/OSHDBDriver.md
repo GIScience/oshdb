@@ -7,7 +7,7 @@ Replace your OSHDB dependency with the following:
 <dependency>
    <groupId>org.heigit.ohsome</groupId>
    <artifactId>oshdb-database-driver</artifactId>
-   <version>1.1.1</version>
+   <version>1.1.2</version>
 </dependency>
 ```
 
