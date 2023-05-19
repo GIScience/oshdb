@@ -1,6 +1,13 @@
 Changelog
 =========
 
+## 1.1.2
+
+* update ignite dependency to 2.15.0 ([#506])
+
+[#506]: https://github.com/GIScience/oshdb/pull/506
+
+
 ## 1.1.1
 
 * update ignite dependency to [2.14.0-heigit1] ([#491])
