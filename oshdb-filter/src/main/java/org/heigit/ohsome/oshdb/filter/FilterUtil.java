@@ -1,9 +1,10 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static java.util.Collections.emptySet;
 
 public class FilterUtil {
 
@@ -12,24 +13,26 @@ public class FilterUtil {
     }
 
     public static Set<Long> ids(FilterExpression expression) {
-        var normalized = expression.normalize();
-        return ids(normalized);
+        return ids(expression.normalize());
     }
 
-    private static Set<Long> ids(List<List<Filter>> normalized) {
+    public static Set<Long> ids(List<List<Filter>> normalized) {
         var ids = new HashSet<Long>();
         for (var orGroups : normalized) {
+            var groupIds = new HashSet<Long>();
             for (var filter: orGroups) {
                 if (filter instanceof IdFilterEquals equals){
-                    ids.add(equals.getId());
+                    groupIds.add(equals.getId());
                 } else if (filter instanceof IdFilterEqualsAnyOf equalsAnyOf) {
-                    ids.addAll(equalsAnyOf.getIds());
+                    groupIds.addAll(equalsAnyOf.getIds());
                 } else if (filter instanceof IdFilterRange range) {
-                    range.getRange().getIds().forEach(ids::add);
-                } else {
-                    return Collections.emptySet();
+                    range.getRange().getIds().forEach(groupIds::add);
                 }
             }
+            if (groupIds.isEmpty()) {
+                return emptySet();
+            }
+            ids.addAll(groupIds);
         }
         return ids;
     }
