@@ -1,10 +1,10 @@
 package org.heigit.ohsome.oshdb.filter;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import static java.util.Collections.emptySet;
+import static java.util.Collections.emptyList;
+import static java.util.Comparator.comparingLong;
 
 public class FilterUtil {
 
@@ -12,28 +12,43 @@ public class FilterUtil {
         // utility class
     }
 
-    public static Set<Long> ids(FilterExpression expression) {
+    public static List<IdRange> ids(FilterExpression expression) {
         return ids(expression.normalize());
     }
 
-    public static Set<Long> ids(List<List<Filter>> normalized) {
-        var ids = new HashSet<Long>();
+    public static List<IdRange> ids(List<List<Filter>> normalized) {
+        var ranges = new ArrayList<IdRange>();
         for (var orGroups : normalized) {
-            var groupIds = new HashSet<Long>();
+            var groupRanges = new ArrayList<IdRange>();
             for (var filter: orGroups) {
                 if (filter instanceof IdFilterEquals equals){
-                    groupIds.add(equals.getId());
+                    groupRanges.add(new IdRange(equals.getId()));
                 } else if (filter instanceof IdFilterEqualsAnyOf equalsAnyOf) {
-                    groupIds.addAll(equalsAnyOf.getIds());
+                    equalsAnyOf.getIds().stream().map(IdRange::new).forEach(groupRanges::add);
                 } else if (filter instanceof IdFilterRange range) {
-                    range.getRange().getIds().forEach(groupIds::add);
+                    groupRanges.add(range.getRange());
                 }
             }
-            if (groupIds.isEmpty()) {
-                return emptySet();
+            if (groupRanges.isEmpty()) {
+                return emptyList();
             }
-            ids.addAll(groupIds);
+            ranges.addAll(groupRanges);
         }
-        return ids;
+        var compact = new ArrayList<IdRange>(ranges.size());
+
+        ranges.sort(comparingLong(IdRange::getFromId));
+        var itr = ranges.iterator();
+        var range = itr.next();
+        while (itr.hasNext()) {
+            var next = itr.next();
+            if (next.getFromId() <= range.getToId() + 1) {
+                range = new IdRange(range.getFromId(), next.getToId());
+            } else {
+                compact.add(range);
+                range = next;
+            }
+        }
+        compact.add(range);
+        return compact;
     }
 }

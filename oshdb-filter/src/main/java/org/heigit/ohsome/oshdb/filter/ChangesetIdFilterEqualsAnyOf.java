@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Contract;
  * A filter which selects OSM contributions by matching to a list of changeset ids.
  */
 public class ChangesetIdFilterEqualsAnyOf extends NegatableFilter {
-  private final Collection<Long> changesetIds;
+  private final Set<Long> changesetIds;
 
   ChangesetIdFilterEqualsAnyOf(@Nonnull Collection<Long> changesetIdList) {
     this(new HashSet<>(changesetIdList));
@@ -47,7 +47,7 @@ public class ChangesetIdFilterEqualsAnyOf extends NegatableFilter {
   }
 
   @Contract(pure = true)
-  public Collection<Long> getChangesetIdList() {
+  public Set<Long> getChangesetIdList() {
     return this.changesetIds;
   }
 }

@@ -12,7 +12,7 @@ import org.heigit.ohsome.oshdb.OSHDBTag;
  */
 abstract class TagFilterAnyOf implements Filter {
   final int keyId;
-  final HashSet<OSHDBTag> tags;
+  final Set<OSHDBTag> tags;
 
   TagFilterAnyOf(@Nonnull Collection<OSHDBTag> tags) {
     Optional<OSHDBTag> firstTag = tags.stream().findFirst();
