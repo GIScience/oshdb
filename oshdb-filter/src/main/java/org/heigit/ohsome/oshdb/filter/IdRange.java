@@ -1,6 +1,7 @@
 package org.heigit.ohsome.oshdb.filter;
 
 import java.io.Serializable;
+import java.util.stream.LongStream;
 
 /**
  * Helper class to handle ranges of ids (incl. user ids, changeset ids, etc.).
@@ -33,5 +34,9 @@ class IdRange implements Serializable {
     return (fromId == Long.MIN_VALUE ? "" : fromId)
         + ".."
         + (toId == Long.MAX_VALUE ? "" : toId);
+  }
+
+  public LongStream getIds() {
+    return LongStream.range(fromId, toId+1);
   }
 }
