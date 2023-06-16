@@ -8,6 +8,8 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
  * A filter which executes a "id [not] in range" check.
  */
 public class IdFilterRange extends NegatableFilter {
+  private final IdRange range;
+
   IdFilterRange(@Nonnull IdRange range) {
     super(new FilterInternal() {
       @Override
@@ -35,5 +37,10 @@ public class IdFilterRange extends NegatableFilter {
         return "id:in-range" + range;
       }
     });
+    this.range = range;
+  }
+
+  public IdRange getRange() {
+    return range;
   }
 }

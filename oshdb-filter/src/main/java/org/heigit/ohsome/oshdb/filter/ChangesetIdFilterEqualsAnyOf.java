@@ -14,11 +14,13 @@ import org.jetbrains.annotations.Contract;
  * A filter which selects OSM contributions by matching to a list of changeset ids.
  */
 public class ChangesetIdFilterEqualsAnyOf extends NegatableFilter {
-  private final Collection<Long> changesetIdList;
+  private final Collection<Long> changesetIds;
 
   ChangesetIdFilterEqualsAnyOf(@Nonnull Collection<Long> changesetIdList) {
+    this(new HashSet<>(changesetIdList));
+  }
+  ChangesetIdFilterEqualsAnyOf(@Nonnull Set<Long> changesetIds) {
     super(new FilterInternal() {
-      private final Set<Long> changesetIds = new HashSet<>(changesetIdList);
 
       @Override
       public boolean applyOSH(OSHEntity entity) {
@@ -37,15 +39,15 @@ public class ChangesetIdFilterEqualsAnyOf extends NegatableFilter {
 
       @Override
       public String toString() {
-        return "changeset:in(" + changesetIdList.stream().map(String::valueOf)
+        return "changeset:in(" + changesetIds.stream().map(String::valueOf)
             .collect(Collectors.joining(",")) + ")";
       }
     });
-    this.changesetIdList = changesetIdList;
+    this.changesetIds = changesetIds;
   }
 
   @Contract(pure = true)
   public Collection<Long> getChangesetIdList() {
-    return this.changesetIdList;
+    return this.changesetIds;
   }
 }
