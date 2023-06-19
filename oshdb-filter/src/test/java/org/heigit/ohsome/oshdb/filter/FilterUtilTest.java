@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.filter;
 
+import org.heigit.ohsome.oshdb.OSHDBTag;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.junit.jupiter.api.Test;
 
@@ -42,9 +43,17 @@ class FilterUtilTest extends FilterTest{
                 EnumSet.of(OSMType.RELATION), List.of(new IdRange(123L))));
     }
 
-    private void extractIds(String filter, Map<EnumSet<OSMType>,List<IdRange>> expected) {
+    @Test
+    void extractTags() {
+        var expression = parser.parse("type:way and (highway=primary or building=*)");
+        var result = FilterUtil.tags(expression, x -> true);
+        assertTrue(result.containsKey(EnumSet.of(OSMType.WAY)));
+        assertTrue(result.get(EnumSet.of(OSMType.WAY)).containsAll(List.of(new OSHDBTag(2,7), new OSHDBTag(1,-1))));
+    }
+
+    private void extractIds(String filter, Map<EnumSet<OSMType>, List<IdRange>> expected) {
        var expression = parser.parse(filter);
-       var actual = FilterUtil.ids(expression);
+       var actual = FilterUtil.extractIds(expression);
 
        assertEquals(expected.size(), actual.size());
        for (var entry : expected.entrySet()) {
