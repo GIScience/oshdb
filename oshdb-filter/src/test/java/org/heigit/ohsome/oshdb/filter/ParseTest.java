@@ -158,6 +158,8 @@ class ParseTest extends FilterTest {
     FilterExpression expression = parser.parse("id:(1,2,3)");
     assertTrue(expression instanceof IdFilterEqualsAnyOf);
     assertEquals("id:in1,2,3", expression.toString());
+    var filter = (IdFilterEqualsAnyOf) expression;
+    assertTrue(filter.getIds().containsAll(List.of(1L, 2L, 3L)));
   }
 
   @Test
