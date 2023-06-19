@@ -65,6 +65,7 @@ public class IdRange implements Serializable {
     return 1 + toId - fromId;
   }
 
+  /** Converts the id range to a stream of consecutive ids. */
   public LongStream getIds() {
     return LongStream.range(fromId, toId+1);
   }

@@ -9,7 +9,7 @@ import static java.util.Comparator.comparingLong;
 public class FilterUtil {
 
     private FilterUtil() {
-        // utility class
+        throw new IllegalStateException("utility class");
     }
 
     public static List<IdRange> ids(FilterExpression expression) {
