@@ -265,8 +265,8 @@ public class OSHRelationImpl extends OSHEntityImpl
       var members = relation.getMembers();
       if (version.isVisible() && !Arrays.equals(members, lastMembers)) {
         changed |= CHANGED_MEMBERS;
-        lastMembers = members;
       }
+      lastMembers = members;
 
       builder.build(version, changed);
 
