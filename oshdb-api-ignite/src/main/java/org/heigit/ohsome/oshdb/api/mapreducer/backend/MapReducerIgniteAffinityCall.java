@@ -292,7 +292,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
 
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(
-      SerializableFunction<OSMContribution, R> mapper,
+      SerializableFunction<OSMContribution, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
@@ -331,7 +331,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
 
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, R> mapper,
+      SerializableFunction<OSMEntitySnapshot, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
@@ -371,7 +371,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
 
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+      SerializableFunction<OSMContribution, Optional<X>> mapper) throws Exception {
     return stream(Kernels.getOSMContributionCellStreamer(mapper, this));
   }
 
@@ -383,7 +383,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+      SerializableFunction<OSMEntitySnapshot, Optional<X>> mapper) throws Exception {
     return stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper, this));
   }
 

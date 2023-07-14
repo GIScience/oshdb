@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -110,7 +111,8 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
   // === map-reduce operations ===
 
   @Override
-  protected <R, S> S mapReduceCellsOSMContribution(SerializableFunction<OSMContribution, R> mapper,
+  protected <R, S> S mapReduceCellsOSMContribution(
+      SerializableFunction<OSMContribution, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner) throws Exception {
     // load tag interpreter helper which is later used for geometry building
@@ -147,7 +149,8 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
+      SerializableFunction<OSMEntitySnapshot, Optional<R>> mapper,
+      SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner)
       throws Exception {
     // load tag interpreter helper which is later used for geometry building
@@ -185,7 +188,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+      SerializableFunction<OSMContribution, Optional<X>> mapper) throws Exception {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -219,7 +222,7 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+      SerializableFunction<OSMEntitySnapshot, Optional<X>> mapper) throws Exception {
     // load tag interpreter helper which is later used for geometry building
     TagInterpreter tagInterpreter = this.getTagInterpreter();
 
@@ -367,12 +370,12 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
   private static class MapReduceCellsOSMContributionOnIgniteCacheComputeJob
       <R, S, P extends Geometry & Polygonal>
-      extends MapReduceCellsOnIgniteCacheComputeJob<OSMContribution, R, R, S, P> {
+      extends MapReduceCellsOnIgniteCacheComputeJob<OSMContribution, R, Optional<R>, S, P> {
     MapReduceCellsOSMContributionOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         OSHEntityFilter preFilter, OSMEntityFilter filter,
-        SerializableFunction<OSMContribution, R> mapper,
+        SerializableFunction<OSMContribution, Optional<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
       super(tagInterpreter, cacheName, cellIdRangesByLevel, tstamps, bbox, poly, preFilter, filter,
@@ -417,12 +420,12 @@ public class MapReducerIgniteScanQuery<X> extends MapReducer<X> {
 
   private static class MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob
       <R, S, P extends Geometry & Polygonal>
-      extends MapReduceCellsOnIgniteCacheComputeJob<OSMEntitySnapshot, R, R, S, P> {
+      extends MapReduceCellsOnIgniteCacheComputeJob<OSMEntitySnapshot, R, Optional<R>, S, P> {
     MapReduceCellsOSMEntitySnapshotOnIgniteCacheComputeJob(TagInterpreter tagInterpreter,
         String cacheName, Map<Integer, TreeMap<Long, CellIdRange>> cellIdRangesByLevel,
         SortedSet<OSHDBTimestamp> tstamps, OSHDBBoundingBox bbox, P poly,
         OSHEntityFilter preFilter, OSMEntityFilter filter,
-        SerializableFunction<OSMEntitySnapshot, R> mapper,
+        SerializableFunction<OSMEntitySnapshot, Optional<R>> mapper,
         SerializableSupplier<S> identitySupplier, SerializableBiFunction<S, R, S> accumulator,
         SerializableBinaryOperator<S> combiner) {
       super(tagInterpreter, cacheName, cellIdRangesByLevel, tstamps, bbox, poly, preFilter, filter,

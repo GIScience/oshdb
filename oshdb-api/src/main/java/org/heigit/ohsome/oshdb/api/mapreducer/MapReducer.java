@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TimeZone;
@@ -475,8 +476,9 @@ public abstract class MapReducer<X> implements
   @Override
   @Contract(pure = true)
   public MapReducer<X> filter(SerializablePredicate<X> f) {
-    return this
-        .flatMap(data -> f.test(data) ? Collections.singletonList(data) : Collections.emptyList());
+    MapReducer<X> ret = this.copy();
+    ret.mappers.add(new FilterFunction(f));
+    return ret;
   }
 
   /**
@@ -592,7 +594,8 @@ public abstract class MapReducer<X> implements
       List<MapFunction> mapFunctions = new ArrayList<>(ret.mappers);
       ret.mappers.clear();
       ret.grouping = Grouping.BY_ID;
-      @SuppressWarnings("unchecked") // now in the reduce step the backend will return a list of items
+      @SuppressWarnings("unchecked")
+      // now in the reduce step the backend will return a list of items
       MapReducer<List<?>> listMapReducer = (MapReducer<List<?>>) ret;
       for (MapFunction action : mapFunctions) {
         if (action.isFlatMapper()) {
@@ -754,8 +757,10 @@ public abstract class MapReducer<X> implements
 
     var prevMapper = this.getMapper();
     SerializableFunction<Object, Iterable<X>> prevFlatMapper =
-        this.mappers.stream().noneMatch(MapFunction::isFlatMapper)
-            ? root -> (Iterable<X>) List.of(prevMapper.apply(root))
+        this.mappers.stream().allMatch(this::canUseFastPath)
+            ? root -> (Iterable<X>) prevMapper.apply(root)
+                .map(Collections::singletonList)
+                .orElse(Collections.emptyList())
             : this.getFlatMapper();
     MapReducer<? extends Entry<U, ? extends OSHDBMapReducible>> mapRed;
     if (isOSMContributionViewQuery()) {
@@ -833,12 +838,12 @@ public abstract class MapReducer<X> implements
     checkTimeout();
     switch (this.grouping) {
       case NONE:
-        if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
-          final SerializableFunction<Object, X> mapper = this.getMapper();
+        if (this.mappers.stream().allMatch(this::canUseFastPath)) {
+          final SerializableFunction<Object, Optional<X>> mapper = this.getMapper();
           if (isOSMContributionViewQuery()) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-            final SerializableFunction<OSMContribution, X> contributionMapper =
+            final SerializableFunction<OSMContribution, Optional<X>> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMContribution(
                 contributionMapper,
@@ -849,7 +854,7 @@ public abstract class MapReducer<X> implements
           } else if (isOSMEntitySnapshotViewQuery()) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
+            final SerializableFunction<OSMEntitySnapshot, Optional<X>> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapReduceCellsOSMEntitySnapshot(
                 snapshotMapper,
@@ -888,11 +893,11 @@ public abstract class MapReducer<X> implements
         }
       case BY_ID:
         final SerializableFunction<Object, Iterable<X>> flatMapper;
-        if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
-          final SerializableFunction<Object, X> mapper = this.getMapper();
-          flatMapper = data -> Collections.singletonList(mapper.apply(data));
-          // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in
-          // this case? should we add this as optimization case to getFlatMapper()??
+        if (this.mappers.stream().allMatch(this::canUseFastPath)) {
+          final SerializableFunction<Object, Optional<X>> mapper = this.getMapper();
+          flatMapper = data -> mapper.apply(data)
+              .map(Collections::singletonList)
+              .orElse(Collections.emptyList());
         } else {
           flatMapper = this.getFlatMapper();
         }
@@ -1302,10 +1307,11 @@ public abstract class MapReducer<X> implements
   @Deprecated
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public void forEach(SerializableConsumer<X> action) throws Exception {
+    final Object ignored = new Object();
     this.map(data -> {
       action.accept(data);
-      return null;
-    }).reduce(() -> null, (ignored, ignored2) -> null);
+      return ignored;
+    }).reduce(() -> ignored, (ignored2, ignored3) -> ignored);
   }
 
   /**
@@ -1349,18 +1355,18 @@ public abstract class MapReducer<X> implements
     checkTimeout();
     switch (this.grouping) {
       case NONE:
-        if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
-          final SerializableFunction<Object, X> mapper = this.getMapper();
+        if (this.mappers.stream().allMatch(this::canUseFastPath)) {
+          final SerializableFunction<Object, Optional<X>> mapper = this.getMapper();
           if (isOSMContributionViewQuery()) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-            final SerializableFunction<OSMContribution, X> contributionMapper =
+            final SerializableFunction<OSMContribution, Optional<X>> contributionMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMContribution(contributionMapper);
           } else if (isOSMEntitySnapshotViewQuery()) {
             @SuppressWarnings("Convert2MethodRef")
             // having just `mapper::apply` here is problematic, see https://github.com/GIScience/oshdb/pull/37
-            final SerializableFunction<OSMEntitySnapshot, X> snapshotMapper =
+            final SerializableFunction<OSMEntitySnapshot, Optional<X>> snapshotMapper =
                 data -> mapper.apply(data);
             return this.mapStreamCellsOSMEntitySnapshot(snapshotMapper);
           } else {
@@ -1394,11 +1400,11 @@ public abstract class MapReducer<X> implements
         }
       case BY_ID:
         final SerializableFunction<Object, Iterable<X>> flatMapper;
-        if (this.mappers.stream().noneMatch(MapFunction::isFlatMapper)) {
-          final SerializableFunction<Object, X> mapper = this.getMapper();
-          flatMapper = data -> Collections.singletonList(mapper.apply(data));
-          // todo: check if this is actually necessary, doesn't getFlatMapper() do the "same" in
-          // this case? should we add this as optimization case to getFlatMapper()??
+        if (this.mappers.stream().allMatch(this::canUseFastPath)) {
+          final SerializableFunction<Object, Optional<X>> mapper = this.getMapper();
+          flatMapper = data -> mapper.apply(data)
+              .map(Collections::singletonList)
+              .orElse(Collections.emptyList());
         } else {
           flatMapper = this.getFlatMapper();
         }
@@ -1430,13 +1436,13 @@ public abstract class MapReducer<X> implements
   // -----------------------------------------------------------------------------------------------
 
   protected abstract Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) throws Exception;
+      SerializableFunction<OSMContribution, Optional<X>> mapper) throws Exception;
 
   protected abstract Stream<X> flatMapStreamCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<X>> mapper) throws Exception;
 
   protected abstract Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception;
+      SerializableFunction<OSMEntitySnapshot, Optional<X>> mapper) throws Exception;
 
   protected abstract Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper) throws Exception;
@@ -1485,7 +1491,7 @@ public abstract class MapReducer<X> implements
    *         `accumulator` and `combiner` steps)
    */
   protected abstract <R, S> S mapReduceCellsOSMContribution(
-      SerializableFunction<OSMContribution, R> mapper,
+      SerializableFunction<OSMContribution, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
@@ -1585,7 +1591,7 @@ public abstract class MapReducer<X> implements
    *         `accumulator` and `combiner` steps)
    */
   protected abstract <R, S> S mapReduceCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, R> mapper,
+      SerializableFunction<OSMEntitySnapshot, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
@@ -1714,14 +1720,18 @@ public abstract class MapReducer<X> implements
   }
 
   // concatenates all applied `map` functions
-  private SerializableFunction<Object, X> getMapper() {
+  private SerializableFunction<Object, Optional<X>> getMapper() {
     // todo: maybe we can somehow optimize this?? at least for special cases like
     // this.mappers.size() == 1
-    return (SerializableFunction<Object, X>) data -> {
+    return (SerializableFunction<Object, Optional<X>>) data -> {
       // working with raw Objects since we don't know the actual intermediate types ¯\_(ツ)_/¯
       Object result = data;
       for (MapFunction mapper : this.mappers) {
-        if (mapper.isFlatMapper()) {
+        if (mapper instanceof FilterFunction filter) {
+          if (!filter.test(result)) {
+            return Optional.empty();
+          }
+        } else if (mapper.isFlatMapper()) {
           assert false : "flatMap callback requested in getMapper";
           throw new UnsupportedOperationException("cannot flat map this");
         } else {
@@ -1731,7 +1741,7 @@ public abstract class MapReducer<X> implements
       @SuppressWarnings("unchecked")
       // after applying all mapper functions, the result type is X
       X mappedResult = (X) result;
-      return mappedResult;
+      return Optional.of(mappedResult);
     };
   }
 
@@ -1927,5 +1937,9 @@ public abstract class MapReducer<X> implements
     var formatter = new SimpleDateFormat("yyyy-MM-dd");
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return formatter.format(new Date());
+  }
+
+  private boolean canUseFastPath(MapFunction f) {
+    return f instanceof FilterFunction || !f.isFlatMapper();
   }
 }

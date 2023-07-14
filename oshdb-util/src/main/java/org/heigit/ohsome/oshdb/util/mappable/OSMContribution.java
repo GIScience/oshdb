@@ -91,7 +91,8 @@ public interface OSMContribution extends OSHDBMapReducible, Comparable<OSMContri
    * {@link #getContributionTypes() getContributionTypes}. This method is
    * preferred to {@code getContributionTypes().contains(ContributionType)}
    * because the class uses lazy evaluation and the computation of a
-   * {@link ContributionType.GEOMETRY_CHANGE} can be computation intensive.
+   * {@link ContributionType#GEOMETRY_CHANGE} can be computation intensive.
+   * </p>
    *
    * @param contributionType the ContributionType to check
    * @return true if this contribution does the respective change, false otherwise
