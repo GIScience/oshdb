@@ -7,6 +7,10 @@ Changelog
 
 * `OSMEntitySnapshot` now also returns the `lastContributionTimestamp` for each snapshot ([#495])
 
+### performance improvements
+
+* Significantly improve performance of queries which use filters and don't use `flatMap` ([#511])
+
 ### other changes
 
 * `CellIterator` is now decoupled from implementation of the "Grid" ([#495])
@@ -14,6 +18,7 @@ Changelog
 
 [#495]: https://github.com/GIScience/oshdb/pull/495
 [#501]: https://github.com/GIScience/oshdb/pull/501
+[#511]: https://github.com/GIScience/oshdb/pull/511
 
 
 ## 1.1.2
