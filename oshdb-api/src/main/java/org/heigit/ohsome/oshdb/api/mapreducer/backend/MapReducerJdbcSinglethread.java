@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.heigit.ohsome.oshdb.api.db.OSHDBDatabase;
 import org.heigit.ohsome.oshdb.api.db.OSHDBJdbc;
@@ -105,7 +106,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
   @Override
   protected <R, S> S mapReduceCellsOSMContribution(
-      SerializableFunction<OSMContribution, R> mapper,
+      SerializableFunction<OSMContribution, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
@@ -143,7 +144,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
   @Override
   protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, R> mapper,
+      SerializableFunction<OSMEntitySnapshot, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       SerializableBinaryOperator<S> combiner
@@ -183,7 +184,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
   @Override
   protected Stream<X> mapStreamCellsOSMContribution(
-      SerializableFunction<OSMContribution, X> mapper) throws Exception {
+      SerializableFunction<OSMContribution, Optional<X>> mapper) throws Exception {
     return this.stream(Kernels.getOSMContributionCellStreamer(mapper, this));
   }
 
@@ -196,7 +197,7 @@ public class MapReducerJdbcSinglethread<X> extends MapReducerJdbc<X> {
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-      SerializableFunction<OSMEntitySnapshot, X> mapper) throws Exception {
+      SerializableFunction<OSMEntitySnapshot, Optional<X>> mapper) throws Exception {
     return this.stream(Kernels.getOSMEntitySnapshotCellStreamer(mapper, this));
   }
 

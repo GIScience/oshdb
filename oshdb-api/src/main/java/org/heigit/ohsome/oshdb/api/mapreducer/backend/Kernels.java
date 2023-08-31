@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -43,7 +44,7 @@ class Kernels implements Serializable {
 
   @Nonnull
   static <R, S> CellProcessor<S> getOSMContributionCellReducer(
-      SerializableFunction<OSMContribution, R> mapper,
+      SerializableFunction<OSMContribution, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator
   ) {
@@ -52,7 +53,7 @@ class Kernels implements Serializable {
 
   @Nonnull
   static <R, S> CellProcessor<S> getOSMContributionCellReducer(
-      SerializableFunction<OSMContribution, R> mapper,
+      SerializableFunction<OSMContribution, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       CancelableProcessStatus process
@@ -64,7 +65,8 @@ class Kernels implements Serializable {
           .takeWhile(process::isActive)
           .forEach(contribution -> {
             OSMContribution osmContribution = new OSMContributionImpl(contribution);
-            accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(osmContribution)));
+            mapper.apply(osmContribution).ifPresent(mapped ->
+                accInternal.set(accumulator.apply(accInternal.get(), mapped)));
           });
       return accInternal.get();
     };
@@ -117,7 +119,7 @@ class Kernels implements Serializable {
 
   @Nonnull
   static <R, S> CellProcessor<S> getOSMEntitySnapshotCellReducer(
-      SerializableFunction<OSMEntitySnapshot, R> mapper,
+      SerializableFunction<OSMEntitySnapshot, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator
   ) {
@@ -126,7 +128,7 @@ class Kernels implements Serializable {
 
   @Nonnull
   static <R, S> CellProcessor<S> getOSMEntitySnapshotCellReducer(
-      SerializableFunction<OSMEntitySnapshot, R> mapper,
+      SerializableFunction<OSMEntitySnapshot, Optional<R>> mapper,
       SerializableSupplier<S> identitySupplier,
       SerializableBiFunction<S, R, S> accumulator,
       CancelableProcessStatus process
@@ -139,7 +141,8 @@ class Kernels implements Serializable {
           .forEach(data -> {
             OSMEntitySnapshot snapshot = new OSMEntitySnapshotImpl(data);
             // immediately fold the result
-            accInternal.set(accumulator.apply(accInternal.get(), mapper.apply(snapshot)));
+            mapper.apply(snapshot).ifPresent(mapped ->
+                accInternal.set(accumulator.apply(accInternal.get(), mapped)));
           });
       return accInternal.get();
     };
@@ -194,23 +197,23 @@ class Kernels implements Serializable {
 
   @Nonnull
   static <S> CellProcessor<Stream<S>> getOSMContributionCellStreamer(
-      SerializableFunction<OSMContribution, S> mapper
+      SerializableFunction<OSMContribution, Optional<S>> mapper
   ) {
     return getOSMContributionCellStreamer(mapper, NC);
   }
 
   @Nonnull
   static <S> CellProcessor<Stream<S>> getOSMContributionCellStreamer(
-      SerializableFunction<OSMContribution, S> mapper,
+      SerializableFunction<OSMContribution, Optional<S>> mapper,
       CancelableProcessStatus process
   ) {
-    return (source, cellIterator) -> {
-      // iterate over the history of all OSM objects in the current cell
-      return cellIterator.iterateByContribution(source)
-          .takeWhile(process::isActive)
-          .map(OSMContributionImpl::new)
-          .map(mapper);
-    };
+    // iterate over the history of all OSM objects in the current cell
+    return (source, cellIterator) -> cellIterator.iterateByContribution(source)
+        .takeWhile(process::isActive)
+        .map(OSMContributionImpl::new)
+        .map(mapper)
+        .filter(Optional::isPresent)
+        .map(Optional::get);
   }
 
   @Nonnull
@@ -251,23 +254,23 @@ class Kernels implements Serializable {
 
   @Nonnull
   static <S> CellProcessor<Stream<S>> getOSMEntitySnapshotCellStreamer(
-      SerializableFunction<OSMEntitySnapshot, S> mapper
+      SerializableFunction<OSMEntitySnapshot, Optional<S>> mapper
   ) {
     return getOSMEntitySnapshotCellStreamer(mapper, NC);
   }
 
   @Nonnull
   static <S> CellProcessor<Stream<S>> getOSMEntitySnapshotCellStreamer(
-      SerializableFunction<OSMEntitySnapshot, S> mapper,
+      SerializableFunction<OSMEntitySnapshot, Optional<S>> mapper,
       CancelableProcessStatus process
   ) {
-    return (source, cellIterator) -> {
-      // iterate over the history of all OSM objects in the current cell
-      return cellIterator.iterateByTimestamps(source)
-          .takeWhile(process::isActive)
-          .map(OSMEntitySnapshotImpl::new)
-          .map(mapper);
-    };
+    // iterate over the history of all OSM objects in the current cell
+    return (source, cellIterator) -> cellIterator.iterateByTimestamps(source)
+        .takeWhile(process::isActive)
+        .map(OSMEntitySnapshotImpl::new)
+        .map(mapper)
+        .filter(Optional::isPresent)
+        .map(Optional::get);
   }
 
   @Nonnull

@@ -99,7 +99,11 @@ abstract class MapReducerJdbc<X> extends MapReducer<X> implements CancelableProc
     private final Connection conn;
     GridOSHEntity next;
 
-    public GridOSHEntityIterator(ResultSet oshCellsRawData, PreparedStatement pstmt, Connection conn) {
+    public GridOSHEntityIterator(
+        ResultSet oshCellsRawData,
+        PreparedStatement pstmt,
+        Connection conn
+    ) {
       this.oshCellsRawData = oshCellsRawData;
       this.preparedStatement = pstmt;
       this.conn = conn;

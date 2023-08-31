@@ -247,13 +247,6 @@ class HelpersOSMContributionViewTest {
 
     assertEquals(21, result4.get(true).size());
     assertEquals(21, result4.get(false).size());
-
-    // doesn't crash with null pointers
-    Set<Object> result5 = this.createMapReducer()
-        .timestamps(timestamps2)
-        .map(x -> null)
-        .uniq();
-    assertEquals(1, result5.size() );
   }
 
 }

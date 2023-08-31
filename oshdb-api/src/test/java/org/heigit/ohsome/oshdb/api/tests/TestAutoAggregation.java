@@ -6,6 +6,7 @@ import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -135,7 +136,7 @@ class TestAutoAggregation {
 
     @Override
     protected Stream<X> mapStreamCellsOSMContribution(
-        SerializableFunction<OSMContribution, X> mapper)  {
+        SerializableFunction<OSMContribution, Optional<X>> mapper)  {
       throw new UnsupportedOperationException();
     }
 
@@ -147,7 +148,7 @@ class TestAutoAggregation {
 
     @Override
     protected Stream<X> mapStreamCellsOSMEntitySnapshot(
-        SerializableFunction<OSMEntitySnapshot, X> mapper) {
+        SerializableFunction<OSMEntitySnapshot, Optional<X>> mapper) {
       throw new UnsupportedOperationException();
     }
 
@@ -159,7 +160,8 @@ class TestAutoAggregation {
 
     @Override
     protected <R, S> S mapReduceCellsOSMContribution(
-        SerializableFunction<OSMContribution, R> mapper, SerializableSupplier<S> identitySupplier,
+        SerializableFunction<OSMContribution, Optional<R>> mapper,
+        SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
       throw new UnsupportedOperationException();
     }
@@ -174,10 +176,15 @@ class TestAutoAggregation {
 
     @Override
     protected <R, S> S mapReduceCellsOSMEntitySnapshot(
-        SerializableFunction<OSMEntitySnapshot, R> mapper, SerializableSupplier<S> identitySupplier,
+        SerializableFunction<OSMEntitySnapshot, Optional<R>> mapper,
+        SerializableSupplier<S> identitySupplier,
         SerializableBiFunction<S, R, S> accumulator, SerializableBinaryOperator<S> combiner) {
-      return nodes.stream().map(TestAutoAggregation::snapshot).map(mapper).reduce(identitySupplier.get(),
-          accumulator, combiner);
+      return nodes.stream()
+          .map(TestAutoAggregation::snapshot)
+          .map(mapper)
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .reduce(identitySupplier.get(), accumulator, combiner);
     }
 
     @Override
