@@ -228,7 +228,7 @@ public abstract class MapReducer<X> implements
   public MapReducer<X> areaOfInterest(@NotNull OSHDBBoundingBox bboxFilter) {
     MapReducer<X> ret = this.copy();
     if (this.polyFilter == null) {
-      ret.bboxFilter = bboxFilter.intersection(bboxFilter);
+      ret.bboxFilter = ret.bboxFilter.intersection(bboxFilter);
     } else {
       ret.polyFilter = Geo.clip(ret.polyFilter, bboxFilter);
       ret.bboxFilter = OSHDBGeometryBuilder.boundingBoxOf(ret.polyFilter.getEnvelopeInternal());

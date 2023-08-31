@@ -46,6 +46,28 @@ class OSMDataFiltersTest {
   }
 
   @Test
+  void bboxesNotIntersecting() throws Exception {
+    Integer result = createMapReducerOSMEntitySnapshot()
+        .filter("type:node")
+        .areaOfInterest(OSHDBBoundingBox.bboxWgs84Coordinates(0, 0, 1, 1))
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .count();
+    assertEquals(0, result.intValue());
+  }
+
+  @Test
+  void bboxesIntersecting() throws Exception {
+    Integer result = createMapReducerOSMEntitySnapshot()
+        .filter("type:node")
+        .areaOfInterest(OSHDBBoundingBox.bboxWgs84Coordinates(-180, -90, 180, 90))
+        .areaOfInterest(bbox)
+        .timestamps(timestamps1)
+        .count();
+    assertEquals(2, result.intValue());
+  }
+
+  @Test
   void polygon() throws Exception {
     Integer result = createMapReducerOSMEntitySnapshot()
         .filter("type:node")
