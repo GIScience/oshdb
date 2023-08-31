@@ -1,7 +1,7 @@
 Changelog
 =========
 
-## 1.2.0-SNAPSHOT (current master)
+## 1.2.0
 
 ### new features
 
@@ -11,14 +11,23 @@ Changelog
 
 * Significantly improve performance of queries which use filters and don't use `flatMap` ([#511])
 
+### bugfixes
+
+* `areaOfInterest(bbox)` should not override previously set bbox ([#512])
+* Fix a (rare) bug which can cause relation-versions with no members to be misinterpreted ([#510])
+
 ### other changes
 
 * `CellIterator` is now decoupled from implementation of the "Grid" ([#495])
 * Enhance geometry builder with methods to generate geometries from entities when their members are already pre-resolved for a specific timestamp ([#501])
+* Upgrade "ohsome parent" repository to version 2.14.0 ([#513])
 
 [#495]: https://github.com/GIScience/oshdb/pull/495
 [#501]: https://github.com/GIScience/oshdb/pull/501
+[#510]: https://github.com/GIScience/oshdb/pull/510
 [#511]: https://github.com/GIScience/oshdb/pull/511
+[#512]: https://github.com/GIScience/oshdb/pull/512
+[#513]: https://github.com/GIScience/oshdb/pull/513
 
 
 ## 1.1.2
