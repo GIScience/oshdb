@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## 1.3.0-SNAPSHOT (current master)
+
+
 ## 1.2.0
 
 ### new features
