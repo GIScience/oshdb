@@ -56,7 +56,7 @@ pipeline {
           echo "${env.BRANCH_NAME}"
           echo "${env.BUILD_NUMBER}"
           echo "${LATEST_COMMIT_ID}"
-          // report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
+          report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
 
           // // jacoco
           // report_dir = report_basedir + "/jacoco/"
