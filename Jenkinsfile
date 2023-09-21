@@ -32,56 +32,57 @@ pipeline {
       }
     }
 
-    // stage ('Reports and Statistics') {
-    //   steps {
-    //     script {
-    //       withSonarQubeEnv('sonarcloud GIScience/ohsome') {
-    //         // START CUSTOM oshdb
-    //         SONAR_CLI_PARAMETER = "-Dsonar.projectName=OSHDB"
-    //         // END CUSTOM oshdb
-    //         if (env.CHANGE_ID) {
-    //           SONAR_CLI_PARAMETER += " " +
-    //             "-Dsonar.pullrequest.key=${env.CHANGE_ID} " +
-    //             "-Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} " +
-    //             "-Dsonar.pullrequest.base=${env.CHANGE_TARGET}"
-    //         } else {
-    //           SONAR_CLI_PARAMETER += " " +
-    //             "-Dsonar.branch.name=${env.BRANCH_NAME}"
-    //         }
-    //         sh "mvn $MAVEN_GENERAL_OPTIONS sonar:sonar ${SONAR_CLI_PARAMETER}"
-    //       }
-    //       report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
+    stage ('Reports and Statistics') {
+      steps {
+        script {
+          withSonarQubeEnv('sonarcloud GIScience/ohsome') {
+            // START CUSTOM oshdb
+            SONAR_CLI_PARAMETER = "-Dsonar.projectName=OSHDB"
+            // END CUSTOM oshdb
+            if (env.CHANGE_ID) {
+              SONAR_CLI_PARAMETER += " " +
+                "-Dsonar.pullrequest.key=${env.CHANGE_ID} " +
+                "-Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} " +
+                "-Dsonar.pullrequest.base=${env.CHANGE_TARGET}"
+            } else {
+              SONAR_CLI_PARAMETER += " " +
+                "-Dsonar.branch.name=${env.BRANCH_NAME}"
+            }
+            sh "mvn $MAVEN_GENERAL_OPTIONS sonar:sonar ${SONAR_CLI_PARAMETER}"
+          }
+          echo "${REPO_NAME}"
+          // report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
 
-    //       // jacoco
-    //       report_dir = report_basedir + "/jacoco/"
+          // // jacoco
+          // report_dir = report_basedir + "/jacoco/"
 
-    //       jacoco(
-    //           execPattern      : '**/target/jacoco.exec',
-    //           classPattern     : '**/target/classes',
-    //           sourcePattern    : '**/src/main/java',
-    //           inclusionPattern : 'org/heigit/**'
-    //       )
-    //       sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
+          // jacoco(
+          //     execPattern      : '**/target/jacoco.exec',
+          //     classPattern     : '**/target/classes',
+          //     sourcePattern    : '**/src/main/java',
+          //     inclusionPattern : 'org/heigit/**'
+          // )
+          // sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
 
-    //       // warnings plugin
-    //       // START CUSTOM oshdb
-    //       // CUSTOM: use test-compile
-    //       rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS -V -e test-compile checkstyle:checkstyle pmd:pmd pmd:cpd spotbugs:spotbugs -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
-    //       // END CUSTOM oshdb
+          // // warnings plugin
+          // // START CUSTOM oshdb
+          // // CUSTOM: use test-compile
+          // rtMaven.run pom: 'pom.xml', goals: '$MAVEN_GENERAL_OPTIONS -V -e test-compile checkstyle:checkstyle pmd:pmd pmd:cpd spotbugs:spotbugs -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
+          // // END CUSTOM oshdb
 
-    //       recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
-    //       recordIssues enabledForFailure: true, tool: checkStyle()
-    //       recordIssues enabledForFailure: true, tool: spotBugs()
-    //       recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
-    //       recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
-    //     }
-    //   }
+          // recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
+          // recordIssues enabledForFailure: true, tool: checkStyle()
+          // recordIssues enabledForFailure: true, tool: spotBugs()
+          // recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
+          // recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
+        }
+      }
     //   post {
     //     failure {
     //       rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
     //     }
     //   }
-    // }
+    }
 
     // stage ('Deploy Snapshot') {
     //   when {
