@@ -48,9 +48,14 @@ pipeline {
               SONAR_CLI_PARAMETER += " " +
                 "-Dsonar.branch.name=${env.BRANCH_NAME}"
             }
-            sh "mvn $MAVEN_GENERAL_OPTIONS sonar:sonar ${SONAR_CLI_PARAMETER}"
+            sh "mvn --batch-mode --update-snapshots sonar:sonar ${SONAR_CLI_PARAMETER}"
           }
           echo "${REPO_NAME}"
+          echo "${SONAR_CLI_PARAMETER}"
+          echo "${VERSION}"
+          echo "${env.BRANCH_NAME}"
+          echo "${env.BUILD_NUMBER}"
+          echo "${LATEST_COMMIT_ID}"
           // report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
 
           // // jacoco
