@@ -67,6 +67,9 @@ pipeline {
               sourcePattern    : '**/src/main/java',
               inclusionPattern : 'org/heigit/**'
           )
+
+          ls report_basedir
+
           // sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
 
           // // warnings plugin
