@@ -58,15 +58,15 @@ pipeline {
           echo "${LATEST_COMMIT_ID}"
           report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
 
-          // // jacoco
-          // report_dir = report_basedir + "/jacoco/"
+          // jacoco
+          report_dir = report_basedir + "/jacoco/"
 
-          // jacoco(
-          //     execPattern      : '**/target/jacoco.exec',
-          //     classPattern     : '**/target/classes',
-          //     sourcePattern    : '**/src/main/java',
-          //     inclusionPattern : 'org/heigit/**'
-          // )
+          jacoco(
+              execPattern      : '**/target/jacoco.exec',
+              classPattern     : '**/target/classes',
+              sourcePattern    : '**/src/main/java',
+              inclusionPattern : 'org/heigit/**'
+          )
           // sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
 
           // // warnings plugin
