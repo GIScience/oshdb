@@ -26,19 +26,19 @@ pipeline {
       }
     }
 
-    stage ('Build and Test') {
-      steps {
+    // stage ('Build and Test') {
+    //   steps {
 
-        setup_basic_env()
+    //     setup_basic_env()
 
-        mavenbuild('clean compile verify javadoc:jar source:jar -P jacoco,sign,git') //javadoc:jar source:jar  
-      }
-      post {
-        failure {
-          rocket_buildfail()
-        }
-      }
-    }
+    //     mavenbuild('clean compile verify javadoc:jar source:jar -P jacoco,sign,git') //javadoc:jar source:jar  
+    //   }
+    //   post {
+    //     failure {
+    //       rocket_buildfail()
+    //     }
+    //   }
+    // }
 
     stage ('Reports and Statistics') {
       steps {
@@ -101,7 +101,7 @@ pipeline {
           echo "${env.BUILD_NUMBER}"
           echo "${LATEST_COMMIT_ID}"
         //archiveArtifacts: "/jenkins/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}/jacoco/**"
-        archiveArtifacts artifacts: '/jenkins/reports/**/jacoco/**/*.gif', followSymlinks: false
+        archiveArtifacts artifacts: '/jenkins/reports/**'
       }
     //   post {
     //     failure {
