@@ -108,7 +108,7 @@ pipeline {
     //       rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
     //     }
     //   }
-    }
+    // }
 
     // stage ('Deploy Snapshot') {
     //   when {
