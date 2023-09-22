@@ -21,7 +21,7 @@ pipeline {
     stage ("test ls") {
       steps {
         script {
-          sh "tree /jenkins/reports -L 6"
+          sh "tree /jenkins/reports"
         }
       }
     }
