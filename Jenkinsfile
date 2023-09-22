@@ -101,7 +101,7 @@ pipeline {
           echo "${env.BUILD_NUMBER}"
           echo "${LATEST_COMMIT_ID}"
         //archiveArtifacts: "/jenkins/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}/jacoco/**"
-        archiveArtifacts artifacts: '/jenkins/reports/**/jacoco/**', followSymlinks: false
+        archiveArtifacts artifacts: '/jenkins/reports/**/jacoco/**/*.gif', followSymlinks: false
       }
     //   post {
     //     failure {
