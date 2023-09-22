@@ -94,7 +94,13 @@ pipeline {
           // recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
         }
         //trying to move the reports to jenkins main server with use of the archiveArtifacts method
-        archiveArtifacts: "/jenkins/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}/jacoco/**"
+          echo "${REPO_NAME}"
+          echo "${SONAR_CLI_PARAMETER}"
+          echo "${VERSION}"
+          echo "${env.BRANCH_NAME}"
+          echo "${env.BUILD_NUMBER}"
+          echo "${LATEST_COMMIT_ID}"
+        //archiveArtifacts: "/jenkins/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}/jacoco/**"
       }
     //   post {
     //     failure {
