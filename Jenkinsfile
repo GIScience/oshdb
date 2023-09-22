@@ -100,7 +100,7 @@ pipeline {
           echo "${env.BRANCH_NAME}"
           echo "${env.BUILD_NUMBER}"
           echo "${LATEST_COMMIT_ID}"
-        archiveArtifacts artifacts: "../reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}/jacoco/**"
+        archiveArtifacts artifacts: '**'//"../reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}/jacoco/**"
       }
     //   post {
     //     failure {
