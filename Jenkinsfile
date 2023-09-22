@@ -104,7 +104,7 @@ pipeline {
       }
       post {
         always {
-          archiveArtifacts artifacts: "jenkins/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}/jacoco/**"
+          archiveArtifacts artifacts: "/jenkins/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}/jacoco/**"
         }
       }
     //   post {
