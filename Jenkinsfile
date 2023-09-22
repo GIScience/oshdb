@@ -21,7 +21,7 @@ pipeline {
     stage ("test ls") {
       steps {
         script {
-          pwd
+          sh "ls ."
         }
       }
     }
