@@ -100,7 +100,7 @@ pipeline {
           recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
           recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
         }
-        archiveArtifacts artifacts: "/${REPO_NAME}_${env.BRANCH_NAME}/${REPO_NAME}/target/site/jacoco/**"
+        archiveArtifacts artifacts: "/${REPO_NAME}/target/site/**"
       }
       post {
         failure {
