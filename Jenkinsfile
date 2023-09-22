@@ -66,10 +66,10 @@ pipeline {
           echo "${env.BUILD_NUMBER}"
           echo "${LATEST_COMMIT_ID}"
           report_basedir = "/jenkins/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
-          //env.REPORT_BASEDIR = "/jenkins/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
 
           // jacoco
           report_dir = report_basedir + "/jacoco/"
+          env.REPORTS = (report_dir + '**')
 
           jacoco(
               execPattern      : '**/target/jacoco.exec',
@@ -94,8 +94,7 @@ pipeline {
           // recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
         }
         //trying to move the reports to jenkins main server with use of the archiveArtifacts method
-        tmp = report_dir + '**'
-        archiveArtifacts: tmp
+        archiveArtifacts: env.REPORTS
       }
     //   post {
     //     failure {
