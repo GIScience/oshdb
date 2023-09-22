@@ -94,7 +94,8 @@ pipeline {
           // recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
         }
         //trying to move the reports to jenkins main server with use of the archiveArtifacts method
-        archiveArtifacts: env.REPORT_BASEDIR
+        echo env.REPORT_BASEDIR
+        //archiveArtifacts: env.REPORT_BASEDIR
       }
     //   post {
     //     failure {
