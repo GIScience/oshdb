@@ -26,19 +26,19 @@ pipeline {
       }
     }
 
-    // stage ('Build and Test') {
-    //   steps {
+    stage ('Build and Test') {
+      steps {
 
-    //     setup_basic_env()
+        setup_basic_env()
 
-    //     mavenbuild('clean compile verify javadoc:jar source:jar -P jacoco,sign,git') //javadoc:jar source:jar  
-    //   }
-    //   post {
-    //     failure {
-    //       rocket_buildfail()
-    //     }
-    //   }
-    // }
+        mavenbuild('clean compile verify javadoc:jar source:jar -P jacoco,sign,git') //javadoc:jar source:jar  
+      }
+      post {
+        failure {
+          rocket_buildfail()
+        }
+      }
+    }
 
     stage ('Reports and Statistics') {
       steps {
@@ -92,6 +92,8 @@ pipeline {
           // recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
           // recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
         }
+        //trying to move the reports to jenkins main server with use of the archiveArtifacts method
+        archiveArtifacts: "${report_dir/*}"
       }
     //   post {
     //     failure {
