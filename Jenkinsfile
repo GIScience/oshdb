@@ -42,6 +42,7 @@ pipeline {
 
     stage ('Reports and Statistics') {
       steps {
+        setup_basic_env()
         script {
           withSonarQubeEnv('sonarcloud GIScience/ohsome') {
             // START CUSTOM oshdb
