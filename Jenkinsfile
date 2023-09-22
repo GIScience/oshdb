@@ -21,7 +21,7 @@ pipeline {
     stage ("test ls") {
       steps {
         script {
-          sh "ls /srv/reports"
+          sh "ls /jenkins"
         }
       }
     }
