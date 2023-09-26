@@ -103,46 +103,46 @@ pipeline {
             }
         }
 
-    // START CUSTOM oshdb
-    stage ('Trigger Benchmarks') {
-      when {
-        expression {
-          return env.BRANCH_NAME ==~ BENCHMARK_BRANCH_REGEX
+        // START CUSTOM oshdb
+        stage('Trigger Benchmarks') {
+            when {
+                expression {
+                    return env.BRANCH_NAME ==~ BENCHMARK_BRANCH_REGEX
+                }
+            }
+            steps {
+                build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
+            }
+            post {
+                failure {
+                    rocket_basicsend("Triggering of Benchmarks for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?")
+                }
+            }
         }
-      }
-      steps {
-        build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
-      }
-      post {
-        failure {
-          rocket_basicsend("Triggering of Benchmarks for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?")
-        }
-      }
-    }
 
-    // stage ('Build Examples') {
-    //   when {
-    //     anyOf {
-    //       equals expected: true, actual: RELEASE_DEPLOY
-    //       equals expected: true, actual: SNAPSHOT_DEPLOY
-    //     }
-    //   }
-    //   steps {
-    //     script {
-    //       if (RELEASE_DEPLOY == true) {
-    //         build job: 'oshdb-examples/oshdb-stable', quietPeriod: 360, wait: false
-    //       } else {
-    //         build job: 'oshdb-examples/oshdb-snapshot', quietPeriod: 360, wait: false
-    //       }
-    //     }
-    //   }
-    //   post {
-    //     failure {
-    //       rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Triggering of Examples build for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>)." , rawMessage: true
-    //     }
-    //   }
-    // }
-    // // END CUSTOM oshdb
+        stage('Build Examples') {
+            when {
+                anyOf {
+                    equals expected: true, actual: RELEASE_DEPLOY
+                    equals expected: true, actual: SNAPSHOT_DEPLOY
+                }
+            }
+            steps {
+                script {
+                    if (RELEASE_DEPLOY == true) {
+                        build job: 'oshdb-examples/oshdb-stable', quietPeriod: 360, wait: false
+          } else {
+                        build job: 'oshdb-examples/oshdb-snapshot', quietPeriod: 360, wait: false
+                    }
+                }
+            }
+            post {
+                failure {
+                    rocket_basicsend("Triggering of Examples build for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>).")
+                }
+            }
+        }
+    // END CUSTOM oshdb
 
     // stage ('Publish Javadoc') {
     //   when {
