@@ -26,7 +26,7 @@ pipeline {
                         echo month_now.toString()
                         return month_pre != month_now
                     }
-                    return false
+                    return true
                 }
             }
             steps {
