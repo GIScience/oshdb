@@ -8,54 +8,58 @@ pipeline {
     }
 
     environment {
-        REPO_NAME = sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
-        VERSION = sh(returnStdout: true, script: 'mvn --batch-mode org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
-        LATEST_AUTHOR = sh(returnStdout: true, script: 'git show -s --pretty=%an').trim()
-        LATEST_COMMIT_ID = sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
-
-        MAVEN_GENERAL_OPTIONS = '--batch-mode --update-snapshots'
-        MAVEN_TEST_OPTIONS = ' '
+        // this regex determines which branch is deployed as a snapshot
         SNAPSHOT_BRANCH_REGEX = /(^master$)/
-        // START CUSTOM oshdb
-        BENCHMARK_BRANCH_REGEX = /(^master$)/
-        // END CUSTOM oshdb
         RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
-        RELEASE_DEPLOY = false
-        SNAPSHOT_DEPLOY = false
     }
 
     stages {
-        stage('Build and Test') {
+
+              stage('Build and Test') {
             steps {
-                script {
-                    env.MAVEN_HOME = '/usr/share/maven'
+                // setting up a few basic env variables like REPO_NAME and LATEST_AUTHOR
+                setup_basic_env()
 
-                    echo REPO_NAME
-                    echo LATEST_AUTHOR
-                    echo LATEST_COMMIT_ID
-
-                    echo env.BRANCH_NAME
-                    echo env.BUILD_NUMBER
-                    echo env.TAG_NAME
-
-                    if (!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
-                        echo 'Version:'
-                        echo VERSION
-                        error 'The version declaration is invalid. It is neither a release nor a snapshot. Maybe an error occured while fetching the parent pom using maven?'
-                    }
-                }
-                script {
-                    withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-                        sh 'mvn $MAVEN_GENERAL_OPTIONS clean compile javadoc:jar source:jar verify -P jacoco,sign,git -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
-                    }
-                }
+                mavenbuild('clean compile javadoc:jar source:jar verify -P jacoco,sign,git')
             }
             post {
                 failure {
-                    rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "*${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Review the code!" , rawMessage: true
+                    rocket_buildfail()
+                    rocket_testfail()
                 }
             }
         }
+        // stage('Build and Test') {
+        //     steps {
+        //         script {
+        //             env.MAVEN_HOME = '/usr/share/maven'
+
+        //             echo REPO_NAME
+        //             echo LATEST_AUTHOR
+        //             echo LATEST_COMMIT_ID
+
+        //             echo env.BRANCH_NAME
+        //             echo env.BUILD_NUMBER
+        //             echo env.TAG_NAME
+
+        //             if (!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
+        //                 echo 'Version:'
+        //                 echo VERSION
+        //                 error 'The version declaration is invalid. It is neither a release nor a snapshot. Maybe an error occured while fetching the parent pom using maven?'
+        //             }
+        //         }
+        //         script {
+        //             withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
+        //                 sh 'mvn $MAVEN_GENERAL_OPTIONS clean compile javadoc:jar source:jar verify -P jacoco,sign,git -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
+        //             }
+        //         }
+        //     }
+        //     post {
+        //         failure {
+        //             rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "*${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Review the code!" , rawMessage: true
+        //         }
+        //     }
+        // }
 
         stage('Reports and Statistics') {
             steps {
