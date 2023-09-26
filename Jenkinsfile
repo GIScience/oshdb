@@ -18,6 +18,7 @@ pipeline {
             steps {
 
               rocket_basicsend('test message')
+              rocket_buildfail()
                 // setting up a few basic env variables like REPO_NAME and LATEST_AUTHOR
                 setup_basic_env()
 
