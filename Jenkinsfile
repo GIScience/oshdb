@@ -104,21 +104,21 @@ pipeline {
         }
 
     // START CUSTOM oshdb
-    // stage ('Trigger Benchmarks') {
-    //   when {
-    //     expression {
-    //       return env.BRANCH_NAME ==~ BENCHMARK_BRANCH_REGEX
-    //     }
-    //   }
-    //   steps {
-    //     build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
-    //   }
-    //   post {
-    //     failure {
-    //       rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Triggering of Benchmarks for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?" , rawMessage: true
-    //     }
-    //   }
-    // }
+    stage ('Trigger Benchmarks') {
+      when {
+        expression {
+          return env.BRANCH_NAME ==~ BENCHMARK_BRANCH_REGEX
+        }
+      }
+      steps {
+        build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
+      }
+      post {
+        failure {
+          rocket_basicsend("Triggering of Benchmarks for ${REPO_NAME}-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Does the benchmark job still exist?")
+        }
+      }
+    }
 
     // stage ('Build Examples') {
     //   when {
