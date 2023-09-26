@@ -10,11 +10,29 @@ pipeline {
     environment {
         // this regex determines which branch is deployed as a snapshot
         SNAPSHOT_BRANCH_REGEX = /(^master$)/
-        BENCHMARK_BRANCH_REGEX = /(^jenkins_testing_2$)/
+        BENCHMARK_BRANCH_REGEX = /(^master$)/
         RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
     }
 
     stages {
+
+        stage('Check Dependencies') {
+            when {
+                expression {
+                    if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
+                        month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+                        echo month_pre.toString()
+                        month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+                        echo month_now.toString()
+                        return month_pre != month_now
+                    }
+                    return false
+                }
+            }
+            steps {
+              check_dependencies()
+            }
+        }
 
         stage('Build and Test') {
             steps {
