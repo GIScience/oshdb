@@ -14,12 +14,17 @@ pipeline {
     }
 
     stages {
+
+        stage('Call Buildfail') {
+          steps {
+            rocket_buildfail()
+          }
+        }
         stage('Build and Test') {
             steps {
                 // setting up a few basic env variables like REPO_NAME and LATEST_AUTHOR
+
                 setup_basic_env()
-                rocket_buildfail()
-                rocket_testfail()
 
                 mavenbuild('clean compile javadoc:jar source:jar verify -P jacoco,sign,git')
             }
