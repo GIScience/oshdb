@@ -1,113 +1,68 @@
 pipeline {
-  agent {label 'main'}
-  options {
-    timeout(time: 30, unit: 'MINUTES')
-  }
-  tools {
-    maven 'Maven 3'
-  }
-
-  environment {
-    REPO_NAME = sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
-    VERSION = sh(returnStdout: true, script: 'mvn --batch-mode org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
-    LATEST_AUTHOR = sh(returnStdout: true, script: 'git show -s --pretty=%an').trim()
-    LATEST_COMMIT_ID = sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
-
-    MAVEN_GENERAL_OPTIONS = '--batch-mode --update-snapshots'
-    MAVEN_TEST_OPTIONS = ' '
-    SNAPSHOT_BRANCH_REGEX = /(^master$)/
-    // START CUSTOM oshdb
-    BENCHMARK_BRANCH_REGEX = /(^master$)/
-    // END CUSTOM oshdb
-    RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
-    RELEASE_DEPLOY = false
-    SNAPSHOT_DEPLOY = false
-  }
-
-  stages {
-    stage ('Build and Test') {
-      steps {
-        script {
-          env.MAVEN_HOME = '/usr/share/maven'
-
-          echo REPO_NAME
-          echo LATEST_AUTHOR
-          echo LATEST_COMMIT_ID
-
-          echo env.BRANCH_NAME
-          echo env.BUILD_NUMBER
-          echo env.TAG_NAME
-
-          if (!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
-            echo 'Version:'
-            echo VERSION
-            error 'The version declaration is invalid. It is neither a release nor a snapshot. Maybe an error occured while fetching the parent pom using maven?'
-          }
-        }
-        script {
-          withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-            sh 'mvn $MAVEN_GENERAL_OPTIONS clean compile javadoc:jar source:jar verify -P jacoco,sign,git -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
-          }
-        }
-      }
-      post {
-        failure {
-          rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "*${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Review the code!" , rawMessage: true
-        }
-      }
+    agent { label 'main' }
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+    }
+    tools {
+        maven 'Maven 3'
     }
 
-    stage ('Reports and Statistics') {
-      steps {
-        script {
-          withSonarQubeEnv('sonarcloud GIScience/ohsome') {
-            // START CUSTOM oshdb
-            SONAR_CLI_PARAMETER = "-Dsonar.projectName=OSHDB"
-            // END CUSTOM oshdb
-            if (env.CHANGE_ID) {
-              SONAR_CLI_PARAMETER += " " +
-                "-Dsonar.pullrequest.key=${env.CHANGE_ID} " +
-                "-Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} " +
-                "-Dsonar.pullrequest.base=${env.CHANGE_TARGET}"
-            } else {
-              SONAR_CLI_PARAMETER += " " +
-                "-Dsonar.branch.name=${env.BRANCH_NAME}"
+    environment {
+        REPO_NAME = sh(returnStdout: true, script: 'basename `git remote get-url origin` .git').trim()
+        VERSION = sh(returnStdout: true, script: 'mvn --batch-mode org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev "(^\\[|Download\\w+)"').trim()
+        LATEST_AUTHOR = sh(returnStdout: true, script: 'git show -s --pretty=%an').trim()
+        LATEST_COMMIT_ID = sh(returnStdout: true, script: 'git describe --tags --long  --always').trim()
+
+        MAVEN_GENERAL_OPTIONS = '--batch-mode --update-snapshots'
+        MAVEN_TEST_OPTIONS = ' '
+        SNAPSHOT_BRANCH_REGEX = /(^master$)/
+        // START CUSTOM oshdb
+        BENCHMARK_BRANCH_REGEX = /(^master$)/
+        // END CUSTOM oshdb
+        RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
+        RELEASE_DEPLOY = false
+        SNAPSHOT_DEPLOY = false
+    }
+
+    stages {
+        stage('Build and Test') {
+            steps {
+                script {
+                    env.MAVEN_HOME = '/usr/share/maven'
+
+                    echo REPO_NAME
+                    echo LATEST_AUTHOR
+                    echo LATEST_COMMIT_ID
+
+                    echo env.BRANCH_NAME
+                    echo env.BUILD_NUMBER
+                    echo env.TAG_NAME
+
+                    if (!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
+                        echo 'Version:'
+                        echo VERSION
+                        error 'The version declaration is invalid. It is neither a release nor a snapshot. Maybe an error occured while fetching the parent pom using maven?'
+                    }
+                }
+                script {
+                    withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
+                        sh 'mvn $MAVEN_GENERAL_OPTIONS clean compile javadoc:jar source:jar verify -P jacoco,sign,git -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
+                    }
+                }
             }
-            sh "mvn $MAVEN_GENERAL_OPTIONS sonar:sonar ${SONAR_CLI_PARAMETER}"
-          }
-          //report_basedir = "/srv/reports/${REPO_NAME}/${VERSION}_${env.BRANCH_NAME}/${env.BUILD_NUMBER}_${LATEST_COMMIT_ID}"
-
-          // jacoco
-          //report_dir = report_basedir + "/jacoco/"
-
-          jacoco(
-              execPattern      : '**/target/jacoco.exec',
-              classPattern     : '**/target/classes',
-              sourcePattern    : '**/src/main/java',
-              inclusionPattern : 'org/heigit/**'
-          )
-          //sh "mkdir -p ${report_dir} && rm -Rf ${report_dir}* && find . -path '*/target/site/jacoco' -exec cp -R --parents {} ${report_dir} \\; && find ${report_dir} -path '*/target/site/jacoco' | while read line; do echo \$line; neu=\${line/target\\/site\\/jacoco/} ;  mv \$line/* \$neu ; done && find ${report_dir} -type d -empty -delete"
-
-          // warnings plugin
-          // START CUSTOM oshdb
-          // CUSTOM: use test-compile
-          sh 'mvn $MAVEN_GENERAL_OPTIONS -V -e test-compile checkstyle:checkstyle pmd:pmd pmd:cpd spotbugs:spotbugs -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
-          // END CUSTOM oshdb
-
-          recordIssues enabledForFailure: true, tools: [mavenConsole(),  java(), javaDoc()]
-          recordIssues enabledForFailure: true, tool: checkStyle()
-          recordIssues enabledForFailure: true, tool: spotBugs()
-          recordIssues enabledForFailure: true, tool: cpd(pattern: '**/target/cpd.xml')
-          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
+            post {
+                failure {
+                    rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "*${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Review the code!" , rawMessage: true
+                }
+            }
         }
-        archiveArtifacts artifacts: "**"
-      }
-      // post {
-      //   failure {
-      //     rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
-      //   }
-      // }
-    }
+
+        stage('Reports and Statistics') {
+            steps {
+                script {
+                  reports_sonar_jacoco()
+            }
+        }
 
     // stage ('Deploy Snapshot') {
     //   when {
@@ -319,5 +274,5 @@ pipeline {
     //     }
     //   }
     // }
-  }
+    }
 }
