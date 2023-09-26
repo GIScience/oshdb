@@ -10,6 +10,7 @@ pipeline {
     environment {
         // this regex determines which branch is deployed as a snapshot
         SNAPSHOT_BRANCH_REGEX = /(^master$)/
+        BENCHMARK_BRANCH_REGEX = /(^jenkins_testing_2$)/
         RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
     }
 
@@ -53,33 +54,6 @@ pipeline {
                 }
             }
             }
-
-    // stage ('Deploy Snapshot') {
-    //   when {
-    //     expression {
-    //       return env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX && VERSION ==~ /.*-SNAPSHOT$/
-    //     }
-    //   }
-    //   steps {
-    //     script {
-    //       // START CUSTOM oshdb
-    //       // CUSTOM: added withDep profile
-    //       withCredentials([
-    //           file(credentialsId: 'nexus-settings', variable: 'settingsFile'),
-    //           string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')
-    //       ]) {
-    //         sh 'mvn $MAVEN_GENERAL_OPTIONS clean compile -s $settingsFile javadoc:jar source:jar deploy -P sign,git,withDep -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
-    //       }
-    //       // END CUSTOM oshdb
-    //       SNAPSHOT_DEPLOY = true
-    //     }
-    //   }
-    //   post {
-    //     failure {
-    //       rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Deployment of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Is Artifactory running?" , rawMessage: true
-    //     }
-    //   }
-    // }
 
         stage('Deploy Release') {
             when {
