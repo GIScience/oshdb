@@ -63,7 +63,7 @@ pipeline {
                   reports_sonar_jacoco()
             }
         }
-
+        }
     // stage ('Deploy Snapshot') {
     //   when {
     //     expression {
