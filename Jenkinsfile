@@ -9,15 +9,13 @@ pipeline {
 
     environment {
         // this regex determines which branch is deployed as a snapshot
-        SNAPSHOT_BRANCH_REGEX = /(^jenkins_testing_2$)/
+        SNAPSHOT_BRANCH_REGEX = /(^master$)/
         RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
     }
 
     stages {
         stage('Build and Test') {
             steps {
-
-              rocket_basicsend('test message')
               rocket_buildfail()
                 // setting up a few basic env variables like REPO_NAME and LATEST_AUTHOR
                 setup_basic_env()
