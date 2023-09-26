@@ -29,37 +29,7 @@ pipeline {
                 }
             }
         }
-        // stage('Build and Test') {
-        //     steps {
-        //         script {
-        //             env.MAVEN_HOME = '/usr/share/maven'
 
-        //             echo REPO_NAME
-        //             echo LATEST_AUTHOR
-        //             echo LATEST_COMMIT_ID
-
-        //             echo env.BRANCH_NAME
-        //             echo env.BUILD_NUMBER
-        //             echo env.TAG_NAME
-
-        //             if (!(VERSION ==~ RELEASE_REGEX || VERSION ==~ /.*-SNAPSHOT$/)) {
-        //                 echo 'Version:'
-        //                 echo VERSION
-        //                 error 'The version declaration is invalid. It is neither a release nor a snapshot. Maybe an error occured while fetching the parent pom using maven?'
-        //             }
-        //         }
-        //         script {
-        //             withCredentials([string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')]) {
-        //                 sh 'mvn $MAVEN_GENERAL_OPTIONS clean compile javadoc:jar source:jar verify -P jacoco,sign,git -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS -Dgpg.passphrase=$PASSPHRASE'
-        //             }
-        //         }
-        //     }
-        //     post {
-        //         failure {
-        //             rocketSend channel: 'jenkinsohsome', emoji: ':sob:' , message: "*${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}. Review the code!" , rawMessage: true
-        //         }
-        //     }
-        // }
 
         stage('Reports and Statistics') {
             steps {
@@ -68,6 +38,23 @@ pipeline {
             }
         }
         }
+
+            stage ('Deploy Snapshot') {
+      when {
+        expression {
+          return env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX && VERSION ==~ /.*-SNAPSHOT$/
+        }
+      }
+      steps {
+        deploy_snapshot('clean compile javadoc:jar source:jar deploy -P sign,git,withDep -DskipTests=true')
+      }
+      post {
+        failure {
+          rocket_snapshotdeployfail()
+        }
+      }
+    }
+
     // stage ('Deploy Snapshot') {
     //   when {
     //     expression {
