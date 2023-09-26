@@ -9,7 +9,7 @@ pipeline {
 
     environment {
         // this regex determines which branch is deployed as a snapshot
-        SNAPSHOT_BRANCH_REGEX = /(^master$)/
+        SNAPSHOT_BRANCH_REGEX = /(^jenkins_testing_2$)/
         RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
     }
 
