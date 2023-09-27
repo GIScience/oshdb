@@ -15,25 +15,6 @@ pipeline {
     }
 
     stages {
-
-        stage('Check Dependencies') {
-            when {
-                expression {
-                    if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
-                        month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-                        echo month_pre.toString()
-                        month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-                        echo month_now.toString()
-                        return month_pre != month_now
-                    }
-                    return true
-                }
-            }
-            steps {
-              check_dependencies()
-            }
-        }
-
         stage('Build and Test') {
             steps {
                 // setting up a few basic env variables like REPO_NAME and LATEST_AUTHOR
@@ -173,6 +154,26 @@ pipeline {
         //     }
         // }
 
+        // CHECK DEPENDENCIES CANNTO WORK, SINCE ROCKET_BASICSEND CANT DEAL WITH MULTILINE OUTPUT YET
+
+        //     stage('Check Dependencies') {
+        //     when {
+        //         expression {
+        //             if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
+        //                 month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+        //                 echo month_pre.toString()
+        //                 month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+        //                 echo month_now.toString()
+        //                 return month_pre != month_now
+        //             }
+        //             return false
+        //         }
+        //     }
+        //     steps {
+        //       check_dependencies()
+        //     }
+        // }
+
     // stage ('Check Dependencies') {
     //   when {
     //     expression {
@@ -246,5 +247,15 @@ pipeline {
     //     }
     //   }
     // }
+
+            stage('Wrapping Up') {
+            steps {
+                encourage()
+                status_change()
+            }
+            }
     }
 }
+
+
+//TODO Publish docs and reports, port these three jobs to jenkins.heigit oshdb-benchmark/master, oshdb-examples/oshdb-stable, oshdb-examples/oshdb-snapshot, figure out what to do with the check dependencies stage since the multilien rocketchat does not work
