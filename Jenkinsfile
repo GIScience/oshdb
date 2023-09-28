@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'main' }
+    agent { label 'worker' }
     options {
         timeout(time: 30, unit: 'MINUTES')
     }
@@ -258,6 +258,5 @@ pipeline {
             }
     }
 }
-
 
 //TODO Publish docs and reports, port these three jobs to jenkins.heigit oshdb-benchmark/master, oshdb-examples/oshdb-stable, oshdb-examples/oshdb-snapshot, figure out what to do with the check dependencies stage since the multilien rocketchat does not work
