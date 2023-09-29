@@ -33,6 +33,7 @@ import org.heigit.ohsome.oshdb.util.CellId;
 import org.heigit.ohsome.oshdb.util.TableNames;
 import org.heigit.ohsome.oshdb.util.celliterator.CellIterator;
 import org.heigit.ohsome.oshdb.util.celliterator.OSHEntitySource;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBNotImplementedException;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBTimeoutException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
@@ -80,28 +81,28 @@ public class MapReducerIgniteLocalPeek<X> extends MapReducer<X> {
   protected Stream<X> mapStreamCellsOSMContribution(
       SerializableFunction<OSMContribution, Optional<X>> mapper
   ) throws Exception {
-    throw new UnsupportedOperationException("Stream function not yet implemented");
+    throw new OSHDBNotImplementedException("Stream function not yet implemented");
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMContributionGroupedById(
       SerializableFunction<List<OSMContribution>, Iterable<X>> mapper
   ) throws Exception {
-    throw new UnsupportedOperationException("Stream function not yet implemented");
+    throw new OSHDBNotImplementedException("Stream function not yet implemented");
   }
 
   @Override
   protected Stream<X> mapStreamCellsOSMEntitySnapshot(
       SerializableFunction<OSMEntitySnapshot, Optional<X>> mapper
   ) throws Exception {
-    throw new UnsupportedOperationException("Stream function not yet implemented");
+    throw new OSHDBNotImplementedException("Stream function not yet implemented");
   }
 
   @Override
   protected Stream<X> flatMapStreamCellsOSMEntitySnapshotGroupedById(
       SerializableFunction<List<OSMEntitySnapshot>, Iterable<X>> mapper
   ) throws Exception {
-    throw new UnsupportedOperationException("Stream function not yet implemented");
+    throw new OSHDBNotImplementedException("Stream function not yet implemented");
   }
 
   private List<String> cacheNames(String prefix) {
