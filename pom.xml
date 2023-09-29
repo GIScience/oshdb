@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>oshdb-parent</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
   <name>OSHDB parent module</name>
   <description>Common dependencies, settings and profiles that are shared by all components of the OSHDB</description>
   <packaging>pom</packaging>
@@ -33,7 +33,6 @@
   <properties>
     <guava.version>31.1-jre</guava.version>
     <jts.version>1.19.0</jts.version>
-    <wololo.version>0.17.0</wololo.version>
     <!-- h2.version has to be in sync with ignite.version -->
     <h2.version>1.4.197</h2.version>
     <postgresql.version>42.5.4</postgresql.version>

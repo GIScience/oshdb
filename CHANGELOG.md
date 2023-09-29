@@ -1,6 +1,16 @@
 Changelog
 =========
 
+## 1.3.0-SNAPSHOT (current master)
+
+
+## 1.2.1
+
+* Fix performance degradation in the streaming endpoints when running on Ignite using the `AFFINITY_CALL` backend ([#516])
+
+[#516]: https://github.com/GIScience/oshdb/pull/516
+
+
 ## 1.2.0
 
 ### new features
