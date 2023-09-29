@@ -30,5 +30,5 @@ Add any other context about the problem here.
 Please complete the following information:
  - OS: [e.g. Ubuntu 20.04 LTS]
  - Java Version: [e.g. openjdk version "11.0.9.1"]
- - OSHDB Version: [e.g. 1.2.0]
+ - OSHDB Version: [e.g. 1.2.1]
  - Maven version: [e.g. 3.6.3]
