@@ -260,7 +260,7 @@ public class MapReducerIgniteAffinityCall<X> extends MapReducer<X>
             cacheName, cellIdRangeToCellIds(), cellIdRanges, cellProcessor, cellIterator
         );
       }
-      ArrayList<Long> cellsWithData = asyncGetHandleTimeouts(
+      var cellsWithData = asyncGetHandleTimeouts(
           compute.broadcastAsync(preflight),
           this.timeout
       ).stream()
