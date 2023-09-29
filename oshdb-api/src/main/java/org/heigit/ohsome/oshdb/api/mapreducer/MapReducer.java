@@ -50,6 +50,7 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
 import org.heigit.ohsome.oshdb.osm.OSMType;
 import org.heigit.ohsome.oshdb.util.OSHDBTagKey;
 import org.heigit.ohsome.oshdb.util.exceptions.OSHDBInvalidTimestampException;
+import org.heigit.ohsome.oshdb.util.exceptions.OSHDBNotImplementedException;
 import org.heigit.ohsome.oshdb.util.function.OSHEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.OSMEntityFilter;
 import org.heigit.ohsome.oshdb.util.function.SerializableBiFunction;
@@ -1343,7 +1344,7 @@ public abstract class MapReducer<X> implements
   public Stream<X> stream() throws Exception {
     try {
       return this.streamInternal();
-    } catch (UnsupportedOperationException e) {
+    } catch (OSHDBNotImplementedException e) {
       LOG.info("stream not directly supported by chosen backend, falling back to "
           + ".collect().stream()");
       return this.collect().stream();
