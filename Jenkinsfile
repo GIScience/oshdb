@@ -34,9 +34,7 @@ pipeline {
 
         stage('Reports and Statistics') {
             steps {
-                script {
-                    reports_sonar_jacoco()
-                }
+                reports_sonar_jacoco()
             }
         }
 
@@ -156,106 +154,30 @@ pipeline {
         //     }
         // }
 
-        // CHECK DEPENDENCIES CANNTO WORK, SINCE ROCKET_BASICSEND CANT DEAL WITH MULTILINE OUTPUT YET
-
-        //     stage('Check Dependencies') {
-        //     when {
-        //         expression {
-        //             if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
-        //                 month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-        //                 echo month_pre.toString()
-        //                 month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-        //                 echo month_now.toString()
-        //                 return month_pre != month_now
-        //             }
-        //             return false
-        //         }
-        //     }
-        //     steps {
-        //       check_dependencies()
-        //     }
-        // }
-
-    // stage ('Check Dependencies') {
-    //   when {
-    //     expression {
-    //       if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
-    //         month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-    //         echo month_pre.toString()
-    //         month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-    //         echo month_now.toString()
-    //         return month_pre != month_now
-    //       }
-    //       return false
-    //     }
-    //   }
-    //   steps {
-    //     script {
-    //       try {
-    //         update_notify = sh(returnStdout: true, script: 'mvn $MAVEN_GENERAL_OPTIONS versions:display-dependency-updates | grep -Pzo "(?s)The following dependencies([^\\n]*\\S\\n)*[^\\n]*\\s\\n"').trim()
-    //         echo update_notify
-    //         rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "Check your dependencies in *${REPO_NAME}*. You might have updates: ${update_notify}" , rawMessage: true
-    //       } catch (err) {
-    //         echo "No maven dependency upgrades found."
-    //       }
-    //     }
-    //     script {
-    //       try {
-    //         update_notify = sh(returnStdout: true, script: 'mvn $MAVEN_GENERAL_OPTIONS versions:display-plugin-updates | grep -Pzo "(?s)The following plugin update([^\\n]*\\S\\n)*[^\\n]*\\s\\n"').trim()
-    //         echo update_notify
-    //         rocketSend channel: 'jenkinsohsome', emoji: ':wave:' , message: "Check your maven plugins in *${REPO_NAME}*. You might have updates: ${update_notify}" , rawMessage: true
-    //       } catch (err) {
-    //         echo "No maven plugin upgrades found."
-    //       }
-    //     }
-    //   }
-    // }
-
-    // stage ('Encourage') {
-    //   when {
-    //     expression {
-    //       if (currentBuild.number > 1) {
-    //         date_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis()).clearTime()
-    //         echo date_pre.format( 'yyyyMMdd' )
-    //         date_now = new Date(currentBuild.rawBuild.getStartTimeInMillis()).clearTime()
-    //         echo date_now.format( 'yyyyMMdd' )
-    //         return date_pre.numberAwareCompareTo(date_now) < 0
-    //       }
-    //       return false
-    //     }
-    //   }
-    //   steps {
-    //     rocketSend channel: 'jenkinsohsome', emoji: ':wink:', message: "Hey, this is just your daily notice that Jenkins is still working for you on *${REPO_NAME}* Branch ${env.BRANCH_NAME}! Happy and for free! Keep it up!" , rawMessage: true
-    //   }
-    //   post {
-    //     failure {
-    //       rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
-    //     }
-    //   }
-    // }
-
-    // stage ('Report Status Change') {
-    //   when {
-    //     expression {
-    //       return ((currentBuild.number > 1) && (currentBuild.getPreviousBuild().result == 'FAILURE'))
-    //     }
-    //   }
-    //   steps {
-    //     rocketSend channel: 'jenkinsohsome', emoji: ':sunglasses:', message: "We had some problems, but we are BACK TO NORMAL! Nice debugging: *${REPO_NAME}*-build-nr. ${env.BUILD_NUMBER} *succeeded* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
-    //   }
-    //   post {
-    //     failure {
-    //       rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Reporting of *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
-    //     }
-    //   }
-    // }
-
-            stage('Wrapping Up') {
+        stage('Check Dependencies') {
+            when {
+                expression {
+                    if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
+                        month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+                        echo month_pre.toString()
+                        month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+                        echo month_now.toString()
+                        return month_pre != month_now
+                    }
+                    return false
+                }
+            }
             steps {
-                encourage()
-                status_change()
+                check_dependencies()
             }
-            }
+        }
+
+        stage('Wrapping Up') {
+        steps {
+            encourage()
+            status_change()
+        }
+        }
     }
 }
 
