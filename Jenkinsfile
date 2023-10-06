@@ -35,7 +35,7 @@ pipeline {
 
         stage('testing ground') {
             steps {
-                println(currentBuild.previousBuild.startTimeInMillis())
+                println(currentBuild.StartTimeInMillis() - currentBuild.previousBuild.StartTimeInMillis())
             }
         }
     //     stage('Reports and Statistics') {
