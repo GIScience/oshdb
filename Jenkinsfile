@@ -35,7 +35,7 @@ pipeline {
 
         stage('testing ground') {
             steps {
-                echo currentBuild.startTimeInMillis
+                echo currentBuild.startTimeInMillis()
             }
         }
     //     stage('Reports and Statistics') {
