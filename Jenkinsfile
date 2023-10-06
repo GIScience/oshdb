@@ -179,6 +179,22 @@ pipeline {
         }
         }
     }
+
+    // The monthly trigger
+    triggers {
+        cron('20 18 6 * *') // Run at 18:20 on the 6th day of every month
+    }
+
+    // Monthly stage
+    stages {
+        stage('Monthly Stage') {
+            steps {
+                script {
+                    echo "monthly stage output"
+                }
+            }
+        }
+    }
 }
 
 //TODO Publish docs and reports, port these three jobs to jenkins.heigit oshdb-benchmark/master, oshdb-examples/oshdb-stable, oshdb-examples/oshdb-snapshot, figure out what to do with the check dependencies stage since the multilien rocketchat does not work
