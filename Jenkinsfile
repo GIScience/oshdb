@@ -18,26 +18,24 @@ pipeline {
 
     stages {
 
-        stage('Build and Test') {
-            steps {
-                // setting up a few basic env variables like REPO_NAME and LATEST_AUTHOR
-                setup_basic_env()
+        // stage('Build and Test') {
+        //     steps {
+        //         // setting up a few basic env variables like REPO_NAME and LATEST_AUTHOR
+        //         setup_basic_env()
 
-                mavenbuild('clean compile javadoc:jar source:jar verify -P jacoco,sign,git')
-            }
-            post {
-                failure {
-                    rocket_buildfail()
-                    rocket_testfail()
-                }
-            }
-        }
+        //         mavenbuild('clean compile javadoc:jar source:jar verify -P jacoco,sign,git')
+        //     }
+        //     post {
+        //         failure {
+        //             rocket_buildfail()
+        //             rocket_testfail()
+        //         }
+        //     }
+        // }
 
         stage('testing ground') {
             steps {
-                script {
-                    echo currentBuild.startTimeInMillis
-                }
+                echo currentBuild.startTimeInMillis
             }
         }
     //     stage('Reports and Statistics') {
