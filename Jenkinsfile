@@ -174,23 +174,34 @@ pipeline {
     //     //     }
     //     // }
 
-    //     stage('Check Dependencies') {
-            // when {
-            //     expression {
-            //         if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
-            //             month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-            //             echo month_pre.toString()
-            //             month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-            //             echo month_now.toString()
-            //             return month_pre != month_now
-            //         }
-            //         return false
-            //     }
-            // }
-    //         steps {
-    //             check_dependencies()
-    //         }
-    //     }
+        // stage('Check Dependencies') {
+        //     when {
+        //         expression {
+        //             if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
+        //                 month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+        //                 echo month_pre.toString()
+        //                 month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+        //                 echo month_now.toString()
+        //                 return month_pre != month_now
+        //             }
+        //             return false
+        //         }
+        //     }
+        //     steps {
+        //         check_dependencies()
+        //     }
+        // }
+
+        // stage('Check Dependencies') {
+        //     when {
+        //         expression {
+        //             return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 2592000000000 ) //2592000000000 one month in milliseconds
+        //         }
+        //     }
+        //     steps {
+        //         check_dependencies()
+        //     }
+        // }
 
         stage('Wrapping Up') {
         steps {
