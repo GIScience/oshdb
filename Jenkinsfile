@@ -35,7 +35,7 @@ pipeline {
 
         stage('testing ground') {
             steps {
-                println(previousBuild.StartTimeInMillis())
+                println(currentBuild.StartTimeInMillis())
             }
         }
     //     stage('Reports and Statistics') {
