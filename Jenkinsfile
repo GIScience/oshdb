@@ -40,6 +40,17 @@ pipeline {
                 println(currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis())
             }
         }
+
+        stage('conditional') {
+            when {
+                expression {
+                    return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 1000 )
+                }
+            }
+            steps {
+                println('last build is older than a minute')
+            }
+        }
     //     stage('Reports and Statistics') {
     //         steps {
     //             reports_sonar_jacoco()
@@ -163,18 +174,18 @@ pipeline {
     //     // }
 
     //     stage('Check Dependencies') {
-    //         when {
-    //             expression {
-    //                 if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
-    //                     month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-    //                     echo month_pre.toString()
-    //                     month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
-    //                     echo month_now.toString()
-    //                     return month_pre != month_now
-    //                 }
-    //                 return false
-    //             }
-    //         }
+            // when {
+            //     expression {
+            //         if ((currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) {
+            //             month_pre = new Date(currentBuild.previousBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+            //             echo month_pre.toString()
+            //             month_now = new Date(currentBuild.rawBuild.getStartTimeInMillis())[Calendar.MONTH]
+            //             echo month_now.toString()
+            //             return month_pre != month_now
+            //         }
+            //         return false
+            //     }
+            // }
     //         steps {
     //             check_dependencies()
     //         }
