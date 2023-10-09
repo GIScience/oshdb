@@ -85,7 +85,7 @@ pipeline {
                 }
             }
             steps {
-                build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
+                // build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
             }
             post {
                 failure {
@@ -102,13 +102,13 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    if (RELEASE_DEPLOY == true) {
-                        build job: 'oshdb-examples/oshdb-stable', quietPeriod: 360, wait: false
-          } else {
-                        build job: 'oshdb-examples/oshdb-snapshot', quietPeriod: 360, wait: false
-                    }
-                }
+        //         script {
+        //             if (RELEASE_DEPLOY == true) {
+        //                 build job: 'oshdb-examples/oshdb-stable', quietPeriod: 360, wait: false
+        //   } else {
+        //                 build job: 'oshdb-examples/oshdb-snapshot', quietPeriod: 360, wait: false
+        //             }
+        //         }
             }
             post {
                 failure {
