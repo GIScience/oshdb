@@ -49,7 +49,7 @@ pipeline {
             }
             steps {
                 println('last build is older than a minute')
-                check_dependencies()
+                //check_dependencies()
             }
         }
     //     stage('Reports and Statistics') {
