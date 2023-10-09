@@ -118,42 +118,6 @@ pipeline {
         }
     // END CUSTOM oshdb
 
-    //     // stage('Publish Javadoc') {
-    //     //     when {
-    //     //         anyOf {
-    //     //             equals expected: true, actual: RELEASE_DEPLOY
-    //     //             equals expected: true, actual: SNAPSHOT_DEPLOY
-    //     //         }
-    //     //     }
-    //     //     steps {
-    //     //         script {
-    //     //             // load dependencies to artifactory
-    //     //             sh 'mvn $MAVEN_GENERAL_OPTIONS org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
-
-    //     //             javadc_dir = '/srv/javadoc/java/' + REPO_NAME + '/' + VERSION + '/'
-    //     //             echo javadc_dir
-
-    //     //             sh 'mvn $MAVEN_GENERAL_OPTIONS clean javadoc:javadoc -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
-    //     //             sh "echo ${javadc_dir}"
-    //     //             // make sure jenkins uses bash not dash!
-    //     //             sh "mkdir -p ${javadc_dir} && rm -Rf ${javadc_dir}* && find . -path '*/target/site/apidocs' -exec cp -R --parents {} ${javadc_dir} \\; && find ${javadc_dir} -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find ${javadc_dir} -type d -empty -delete"
-    //     //         }
-
-    //     //         // START CUSTOM oshdb
-    //     //         script {
-    //     //             javadc_dir = javadc_dir + 'aggregated/'
-    //     //             sh 'mvn $MAVEN_GENERAL_OPTIONS --update-snapshots clean javadoc:aggregate -Dmaven.repo.local=.m2 $MAVEN_TEST_OPTIONS'
-    //     //             sh "mkdir -p ${javadc_dir} && rm -Rf ${javadc_dir}* && find . -path './target/site/apidocs' -exec cp -R --parents {} ${javadc_dir} \\; && find ${javadc_dir} -path '*/target/site/apidocs' | while read line; do echo \$line; neu=\${line/target\\/site\\/apidocs/} ;  mv \$line/* \$neu ; done && find ${javadc_dir} -type d -empty -delete"
-    //     //         }
-    //     //     // END CUSTOM oshdb
-    //     //     }
-    //     //     post {
-    //     //         failure {
-    //     //             rocketSend channel: 'jenkinsohsome', emoji: ':disappointed:', message: "Deployment of javadoc *${REPO_NAME}*-build nr. ${env.BUILD_NUMBER} *failed* on Branch - ${env.BRANCH_NAME}  (<${env.BUILD_URL}|Open Build in Jenkins>). Latest commit from  ${LATEST_AUTHOR}." , rawMessage: true
-    //     //         }
-    //     //     }
-    //     // }
-
         stage('Check Dependencies') {
             when {
                 expression {
@@ -173,5 +137,3 @@ pipeline {
         }
     }
 }
-
-//TODO Publish docs and reports, port these three jobs to jenkins.heigit oshdb-benchmark/master, oshdb-examples/oshdb-stable, oshdb-examples/oshdb-snapshot, figure out what to do with the check dependencies stage since the multilien rocketchat does not work
