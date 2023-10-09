@@ -44,11 +44,12 @@ pipeline {
         stage('conditional') {
             when {
                 expression {
-                    return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 60000 )
+                    return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 120000 ) //2592000000000
                 }
             }
             steps {
                 println('last build is older than a minute')
+                check_dependencies()
             }
         }
     //     stage('Reports and Statistics') {
