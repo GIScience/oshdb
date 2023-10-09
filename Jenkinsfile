@@ -121,7 +121,7 @@ pipeline {
         stage('Check Dependencies') {
             when {
                 expression {
-                    return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 2592000000000) //2592000000000 one month in milliseconds
+                    return (((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 2592000000000) && (currentBuild.number > 1) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) //2592000000000 one month in milliseconds
                 }
             }
             steps {
