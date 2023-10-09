@@ -44,7 +44,7 @@ pipeline {
         stage('conditional') {
             when {
                 expression {
-                    return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 1000 )
+                    return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 60000 )
                 }
             }
             steps {
