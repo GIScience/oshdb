@@ -17,7 +17,6 @@ pipeline {
     }
 
     stages {
-
         stage('Build and Test') {
             steps {
                 // setting up a few basic env variables like REPO_NAME and LATEST_AUTHOR
@@ -155,11 +154,10 @@ pipeline {
     //     //     }
     //     // }
 
-
         stage('Check Dependencies') {
             when {
                 expression {
-                    return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 2592000000000 ) //2592000000000 one month in milliseconds
+                    return ((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 2592000000000) //2592000000000 one month in milliseconds
                 }
             }
             steps {
@@ -168,13 +166,12 @@ pipeline {
         }
 
         stage('Wrapping Up') {
-        steps {
-            encourage()
-            status_change()
-        }
+            steps {
+                encourage()
+                status_change()
+            }
         }
     }
-
 }
 
 //TODO Publish docs and reports, port these three jobs to jenkins.heigit oshdb-benchmark/master, oshdb-examples/oshdb-stable, oshdb-examples/oshdb-snapshot, figure out what to do with the check dependencies stage since the multilien rocketchat does not work
