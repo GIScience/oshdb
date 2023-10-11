@@ -42,6 +42,7 @@
     
     <sonar.moduleKey>${project.artifactId}</sonar.moduleKey>
     <sonar.projectKey>${project.groupId}:oshdb</sonar.projectKey>
+    <sonar.projectName>OSHDB</sonar.projectName>
   </properties>
 
   <dependencyManagement>
