@@ -36,7 +36,7 @@ pipeline {
 
         stage('Reports and Statistics') {
             steps {
-                reports_sonar_jacoco()
+                reports_sonar_jacoco('compile')
             }
         }
 
