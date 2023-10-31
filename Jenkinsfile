@@ -96,8 +96,7 @@ pipeline {
                 }
             }
             steps {
-                echo "Warning: Currently not implemented"
-//                build job: 'oshdb-benchmark/master', quietPeriod: 360, wait: false
+                build job: 'oshdb benchmark/master', quietPeriod: 360, wait: false
             }
             post {
                 failure {
