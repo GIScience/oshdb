@@ -96,7 +96,7 @@ pipeline {
                 }
             }
             steps {
-                build job: 'oshdb benchmark/master', quietPeriod: 360, wait: false
+                build job: 'oshdb benchmarks/master', quietPeriod: 360, wait: false
             }
             post {
                 failure {
