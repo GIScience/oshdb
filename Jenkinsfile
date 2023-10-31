@@ -53,6 +53,9 @@ pipeline {
             steps {
                 // START CUSTOM oshdb
                 deploy_snapshot('clean compile javadoc:jar source:jar deploy -P sign,git,withDep')
+                script {
+                    SNAPSHOT_DEPLOY = true
+                }
                 // END CUSTOM oshdb
             }
             post {
@@ -71,6 +74,9 @@ pipeline {
             steps {
                 // START CUSTOM oshdb
                 deploy_release('clean compile javadoc:jar source:jar deploy -P sign,git,withDep')
+                script {
+                    RELEASE_DEPLOY = true
+                }
                 // END CUSTOM oshdb
 
                 deploy_release_central('clean compile javadoc:jar source:jar deploy -P sign,git,deploy-central')
@@ -110,11 +116,9 @@ pipeline {
             steps {
                 script {
                     if (RELEASE_DEPLOY == true) {
-                        echo "Warning: Currently not implemented"
-//                        build job: 'oshdb-examples/oshdb-stable', quietPeriod: 360, wait: false
+                        build job: 'oshdb examples/oshdb-stable', quietPeriod: 360, wait: false
                     } else {
-                        echo "Warning: Currently not implemented"
-//                        build job: 'oshdb-examples/oshdb-snapshot', quietPeriod: 360, wait: false
+                        build job: 'oshdb examples/oshdb-snapshot', quietPeriod: 360, wait: false
                     }
                 }
             }
