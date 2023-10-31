@@ -1,5 +1,7 @@
 pipeline {
-    agent { label 'worker' }
+    agent {
+        label 'worker'
+    }
     options {
         timeout(time: 30, unit: 'MINUTES')
     }
@@ -36,7 +38,9 @@ pipeline {
 
         stage('Reports and Statistics') {
             steps {
+                // START CUSTOM oshdb
                 reports_sonar_jacoco('compile')
+                // END CUSTOM oshdb
             }
         }
 
@@ -48,7 +52,7 @@ pipeline {
             }
             steps {
                 // START CUSTOM oshdb
-                deploy_snapshot('clean compile javadoc:jar source:jar deploy -P sign,git,withDep -DskipTests=true')
+                deploy_snapshot('clean compile javadoc:jar source:jar deploy -P sign,git,withDep')
                 // END CUSTOM oshdb
             }
             post {
@@ -66,15 +70,10 @@ pipeline {
             }
             steps {
                 // START CUSTOM oshdb
-                deploy_release('clean compile javadoc:jar source:jar deploy -P sign,git,withDep -DskipTests=true')
+                deploy_release('clean compile javadoc:jar source:jar deploy -P sign,git,withDep')
                 // END CUSTOM oshdb
 
-                withCredentials([
-            file(credentialsId: 'ossrh-settings', variable: 'settingsFile'),
-            string(credentialsId: 'gpg-signing-key-passphrase', variable: 'PASSPHRASE')
-        ]) {
-                    sh 'mvn --batch-mode --update-snapshots clean compile -s $settingsFile javadoc:jar source:jar deploy -P sign,git,deploy-central -Dmaven.repo.local=.m2  -Dgpg.passphrase=$PASSPHRASE -DskipTests=true'
-        }
+                deploy_release_central('clean compile javadoc:jar source:jar deploy -P sign,git,deploy-central')
             }
             post {
                 failure {
@@ -129,11 +128,11 @@ pipeline {
 
         stage('Check Dependencies') {
             when {
-                expression { 
+                expression {
                     if (currentBuild.number > 1) {
                         return (((currentBuild.getStartTimeInMillis() - currentBuild.previousBuild.getStartTimeInMillis()) > 2592000000) && (env.BRANCH_NAME ==~ SNAPSHOT_BRANCH_REGEX)) //2592000000 30 days in milliseconds
                     }
-                    return false                    
+                    return false
                 }
             }
             steps {
