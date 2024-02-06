@@ -31,7 +31,7 @@
   </modules>
 
   <properties>
-    <guava.version>31.1-jre</guava.version>
+    <guava.version>33.0.0-jre</guava.version>
     <jts.version>1.19.0</jts.version>
     <!-- h2.version has to be in sync with ignite.version -->
     <h2.version>1.4.197</h2.version>

@@ -13,7 +13,7 @@
   <description>Backend implementation of the OSHDB API which runs queries on an Apache Ignite cluster.</description>
   
   <properties>
-    <ignite.version>2.15.0</ignite.version>
+    <ignite.version>2.16.0</ignite.version>
     <argLine>
       --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED
       --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED
