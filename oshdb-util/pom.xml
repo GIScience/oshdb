@@ -14,7 +14,7 @@
   
   <properties>
     <googlejson.version>1.1.1</googlejson.version>
-    <caffeine.version>3.1.5</caffeine.version>
+    <caffeine.version>3.1.8</caffeine.version>
   </properties>
 
   <dependencies>
