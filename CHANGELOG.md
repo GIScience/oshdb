@@ -3,6 +3,15 @@ Changelog
 
 ## 1.3.0-SNAPSHOT (current main)
 
+### other changes
+
+* upgrade dependencies: ignite to v2.16, guava to v33, caffeine to v3.1.8 ([#521]), postgresql to v42.6 ([#523])
+* rename development branch to `main` ([#522])
+
+[#521]: https://github.com/GIScience/oshdb/pull/521
+[#522]: https://github.com/GIScience/oshdb/pull/522
+[#523]: https://github.com/GIScience/oshdb/pull/523
+
 
 ## 1.2.1
 
