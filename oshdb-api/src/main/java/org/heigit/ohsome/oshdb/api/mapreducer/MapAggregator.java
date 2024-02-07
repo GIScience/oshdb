@@ -776,7 +776,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   /**
    * Apply a custom filter expression to this query.
    *
-   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#readme">oshdb-filter
+   * @see <a href="https://github.com/GIScience/oshdb/tree/main/oshdb-filter#readme">oshdb-filter
    *      readme</a> and {@link org.heigit.ohsome.oshdb.filter} for further information about how
    *      to create such a filter expression object.
    *
@@ -792,7 +792,7 @@ public class MapAggregator<U extends Comparable<U> & Serializable, X> implements
   /**
    * Apply a textual filter to this query.
    *
-   * @see <a href="https://github.com/GIScience/oshdb/tree/master/oshdb-filter#syntax">oshdb-filter
+   * @see <a href="https://github.com/GIScience/oshdb/tree/main/oshdb-filter#syntax">oshdb-filter
    *      readme</a> for a description of the filter syntax.
    *
    * @param f the filter string to apply
