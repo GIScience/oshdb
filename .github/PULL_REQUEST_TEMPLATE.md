@@ -10,12 +10,12 @@ Closes #
 -
 
 ### Checklist
-- [ ] My code follows the [code-style](https://github.com/GIScience/oshdb/blob/master/CONTRIBUTING.md) rules, and I have checked on the [static analyses](https://jenkins.ohsome.org/job/oshdb/view/change-requests/) and [benchmark](https://reports.ohsome.org/oshdb-benchmarks/) (if applicable) results
+- [ ] My code follows the [code-style](https://github.com/GIScience/oshdb/blob/main/CONTRIBUTING.md) rules, and I have checked on the [static analyses](https://jenkins.ohsome.org/job/oshdb/view/change-requests/) and [benchmark](https://reports.ohsome.org/oshdb-benchmarks/) (if applicable) results
 - [ ] I have commented my code
 - [ ] I have written javadoc (required for public classes and methods)
 - [ ] I have added sufficient unit tests
-- [ ] I have made corresponding changes to the [documentation](https://github.com/GIScience/oshdb/tree/master/documentation)
-- [ ] I have updated the [CHANGELOG.md](https://github.com/GIScience/oshdb/blob/master/CHANGELOG.md)
+- [ ] I have made corresponding changes to the [documentation](https://github.com/GIScience/oshdb/tree/main/documentation)
+- [ ] I have updated the [CHANGELOG.md](https://github.com/GIScience/oshdb/blob/main/CHANGELOG.md)
 - [ ] I have adjusted the [examples](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples) or [created an issue](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-examples/-/issues/new) in the corresponding repository
 - [ ] I have adjusted the [benchmark](https://reports.ohsome.org/oshdb-benchmarks/) or [created an issue](https://gitlab.gistools.geog.uni-heidelberg.de/giscience/big-data/ohsome/oshdb-benchmarks/-/issues/new) in the corresponding repository
 

@@ -12,8 +12,8 @@ pipeline {
     environment {
         // this regex determines which branch is deployed as a snapshot
         // START CUSTOM oshdb
-        SNAPSHOT_BRANCH_REGEX = /(^master$)/
-        BENCHMARK_BRANCH_REGEX = /(^master$)/
+        SNAPSHOT_BRANCH_REGEX = /(^main$)/
+        BENCHMARK_BRANCH_REGEX = /(^main$)/
         // END CUSTOM oshdb
         RELEASE_REGEX = /^([0-9]+(\.[0-9]+)*)(-(RC|beta-|alpha-)[0-9]+)?$/
         RELEASE_DEPLOY = false

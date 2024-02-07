@@ -5,7 +5,7 @@ High-performance spatio-temporal data analysis platform for OpenStreetMap full-h
 
 <img src="https://heigit.org/wp-content/uploads/2018/01/HeiGIT_Logo_cut-505x100@2x.png" height="80px" width="404px" alt="HeiGIT Logo">
 
-[![Build Status](https://jenkins.heigit.org/buildStatus/icon?job=oshdb/master)](https://jenkins.heigit.org/job/oshdb/job/master/)
+[![Build Status](https://jenkins.heigit.org/buildStatus/icon?job=oshdb/main)](https://jenkins.heigit.org/job/oshdb/job/main/)
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=org.heigit.ohsome:oshdb&metric=alert_status)](https://sonarcloud.io/dashboard?id=org.heigit.ohsome:oshdb)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.ohsome/oshdb/badge.svg)](https://search.maven.org/artifact/org.heigit.ohsome/oshdb)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4146990.svg)](https://doi.org/10.5281/zenodo.4146990)
