@@ -1,7 +1,16 @@
 Changelog
 =========
 
-## 1.3.0-SNAPSHOT (current master)
+## 1.2.2
+
+### other changes
+
+* upgrade dependencies: ignite to v2.16, guava to v33, caffeine to v3.1.8 ([#521]), postgresql to v42.6 ([#523])
+* rename development branch to `main` ([#522])
+
+[#521]: https://github.com/GIScience/oshdb/pull/521
+[#522]: https://github.com/GIScience/oshdb/pull/522
+[#523]: https://github.com/GIScience/oshdb/pull/523
 
 
 ## 1.2.1
@@ -453,7 +462,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 * Source code is now released as open-source under _GNU Lesser General Public License version 3_.
 * Dependencies are updated and reduced to the minimum. Also, they are now declared in the modules where needed instead of the top level. You might therefore have to declare dependencies of your code explicitly when upgrading. ([#79], [#5])
 * Drop most deprecated methods from OSHDB version 0.4.0
-* More [examples and documentation](https://github.com/GIScience/oshdb/tree/master/documentation) are available.
+* More [examples and documentation](https://github.com/GIScience/oshdb/tree/main/documentation) are available.
 * Many small bugfixes and improvements, especially for the Ignite-backend. Ignite can now be considered stable and used to analyze a global data set.
 * oshdb-api: renamed some methods (`where` filter → `osmTag` and `osmEntityFilter`, `osmTypes` filter → `osmType`) and refactored some methods to accept a wider range of input objects.
 * `GeometryCollection` geometries are no longer ignored when calculating lengths or areas of features. ([#51])

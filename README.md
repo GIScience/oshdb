@@ -5,7 +5,7 @@ High-performance spatio-temporal data analysis platform for OpenStreetMap full-h
 
 <img src="https://heigit.org/wp-content/uploads/2018/01/HeiGIT_Logo_cut-505x100@2x.png" height="80px" width="404px" alt="HeiGIT Logo">
 
-[![Build Status](https://jenkins.ohsome.org/buildStatus/icon?job=oshdb/master)](https://jenkins.ohsome.org/blue/organizations/jenkins/oshdb/activity/?branch=master)
+[![Build Status](https://jenkins.heigit.org/buildStatus/icon?job=oshdb/main)](https://jenkins.heigit.org/job/oshdb/job/main/)
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=org.heigit.ohsome:oshdb&metric=alert_status)](https://sonarcloud.io/dashboard?id=org.heigit.ohsome:oshdb)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.ohsome/oshdb/badge.svg)](https://search.maven.org/artifact/org.heigit.ohsome/oshdb)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4146990.svg)](https://doi.org/10.5281/zenodo.4146990)
@@ -65,14 +65,14 @@ The API is based on the MapReduce programming model and offers powerful methods 
 Installation
 ------------
 
-The OSHDB is available as a pre-compiled maven library and can be incorporated easily in any maven project. If you're starting a new project, take a look at how your IDE handles maven projects (for example, here you find instructions how to create a new maven project using [IntelliJ](https://www.jetbrains.com/help/idea/maven-support.html#maven_create_project)). Our [first steps tutorial](https://github.com/GIScience/oshdb/tree/1.2.1/documentation/first-steps#2-add-maven-dependency) includes further information about how to add the OSHDB as a maven dependency to your projects.
+The OSHDB is available as a pre-compiled maven library and can be incorporated easily in any maven project. If you're starting a new project, take a look at how your IDE handles maven projects (for example, here you find instructions how to create a new maven project using [IntelliJ](https://www.jetbrains.com/help/idea/maven-support.html#maven_create_project)). Our [first steps tutorial](https://github.com/GIScience/oshdb/tree/1.2.2/documentation/first-steps#2-add-maven-dependency) includes further information about how to add the OSHDB as a maven dependency to your projects.
 
 Documentation
 -------------
 
 * [first steps tutorial](documentation/first-steps/README.md)
 * [User Manual](documentation/manual/README.md)
-* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/1.2.1/aggregated/)
+* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/1.2.2/aggregated/)
 
 Examples
 --------
