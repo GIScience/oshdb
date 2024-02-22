@@ -13,7 +13,7 @@ Nodes are always presented as [`Point`](https://locationtech.github.io/jts/javad
 Ways
 ----
 
-Ways are converted to either [`LineString`](https://locationtech.github.io/jts/javadoc/org/locationtech/jts/geom/LineString.html) or [`Polygon`](https://locationtech.github.io/jts/javadoc/org/locationtech/jts/geom/Polygon.html) geometries depending on their composition and their tags: A not closed way is always represented as a line, while it depends for a closed one. The [`TagInterpreter`](https://docs.ohsome.org/java/oshdb/1.2.1/aggregated/org/heigit/ohsome/oshdb/util/taginterpreter/TagInterpreter.html) component of the OSHDB is responsible for deciding whether a closed way results in a line or a polygon: A (closed) OSM way with the tag `building=yes` will be converted to a polygon geometry, while a `junction=roundabout` one will not.
+Ways are converted to either [`LineString`](https://locationtech.github.io/jts/javadoc/org/locationtech/jts/geom/LineString.html) or [`Polygon`](https://locationtech.github.io/jts/javadoc/org/locationtech/jts/geom/Polygon.html) geometries depending on their composition and their tags: A not closed way is always represented as a line, while it depends for a closed one. The [`TagInterpreter`](https://docs.ohsome.org/java/oshdb/1.2.2/aggregated/org/heigit/ohsome/oshdb/util/taginterpreter/TagInterpreter.html) component of the OSHDB is responsible for deciding whether a closed way results in a line or a polygon: A (closed) OSM way with the tag `building=yes` will be converted to a polygon geometry, while a `junction=roundabout` one will not.
 
 Relations
 ---------

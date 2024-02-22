@@ -3,6 +3,9 @@ Changelog
 
 ## 1.3.0-SNAPSHOT (current main)
 
+
+## 1.2.2
+
 ### other changes
 
 * upgrade dependencies: ignite to v2.16, guava to v33, caffeine to v3.1.8 ([#521]), postgresql to v42.6 ([#523])
