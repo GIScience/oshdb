@@ -38,9 +38,7 @@ pipeline {
 
         stage('Reports and Statistics') {
             steps {
-                // START CUSTOM oshdb
-                reports_sonar_jacoco('compile')
-                // END CUSTOM oshdb
+                reports_sonar_jacoco()
             }
         }
 
