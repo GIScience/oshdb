@@ -9,7 +9,7 @@ High-performance spatio-temporal data analysis platform for OpenStreetMap full-h
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=org.heigit.ohsome:oshdb&metric=alert_status)](https://sonarcloud.io/dashboard?id=org.heigit.ohsome:oshdb)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.heigit.ohsome/oshdb/badge.svg)](https://search.maven.org/artifact/org.heigit.ohsome/oshdb)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4146990.svg)](https://doi.org/10.5281/zenodo.4146990)
-[![JavaDocs](https://img.shields.io/badge/Java-docs-blue.svg)](https://docs.ohsome.org/java/oshdb)
+[![javadoc](https://javadoc.io/badge2/org.heigit.ohsome/oshdb/javadoc.svg)](https://javadoc.io/doc/org.heigit.ohsome/oshdb) 
 [![status: active](https://github.com/GIScience/badges/raw/master/status/active.svg)](https://github.com/GIScience/badges#active)
 [![LICENSE](https://img.shields.io/github/license/GIScience/oshdb)](COPYING)
 
@@ -72,7 +72,7 @@ Documentation
 
 * [first steps tutorial](documentation/first-steps/README.md)
 * [User Manual](documentation/manual/README.md)
-* [OSHDB Javadoc](https://docs.ohsome.org/java/oshdb/1.2.2/aggregated/)
+* [org.heigit.ohsome Javadoc](https://javadoc.io/doc/org.heigit.ohsome)
 
 Examples
 --------
