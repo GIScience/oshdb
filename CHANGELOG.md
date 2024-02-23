@@ -381,7 +381,7 @@ When switching to the OSHDB version 0.6 you need to adapt your `pom.xml` to the 
 
 ## 0.5.5
 
-* improved performance of data [stream](https://docs.ohsome.org/java/oshdb/0.5.4/oshdb-api/org/heigit/bigspatialdata/oshdb/api/mapreducer/MapReducer.html#stream--)ing queries on ignite (using AffinityCall backend).
+* improved performance of data streaming queries on ignite (using AffinityCall backend).
 * make monthly time intervals more intuitive to use. ([#201])
 
 [#201]: https://github.com/GIScience/oshdb/issues/201
