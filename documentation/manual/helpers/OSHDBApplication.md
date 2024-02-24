@@ -1,7 +1,7 @@
 # OSHDB Application Template
 ## Installation
 
-Replace your OSHDB dependency with the following:
+Set up your Maven project according to the [first steps tutorial](../../first-steps/README.md), but replace your OSHDB dependency with the following:
 
 ```xml
 <dependency>
