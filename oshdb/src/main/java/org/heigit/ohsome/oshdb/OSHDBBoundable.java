@@ -100,7 +100,7 @@ public interface OSHDBBoundable {
    * @return new OSHDBBoundingBox object.
    */
   default OSHDBBoundingBox getBoundingBox() {
-    return OSHDBBoundingBox.bboxWgs84Coordinates(getMinLongitude(), getMinLatitude(),
+    return OSHDBBoundingBox.bboxOSMCoordinates(getMinLongitude(), getMinLatitude(),
         getMaxLongitude(), getMaxLatitude());
   }
 }

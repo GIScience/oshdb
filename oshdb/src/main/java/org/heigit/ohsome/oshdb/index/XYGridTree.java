@@ -1,5 +1,6 @@
 package org.heigit.ohsome.oshdb.index;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
@@ -17,7 +18,10 @@ import org.heigit.ohsome.oshdb.util.CellId;
  */
 @SuppressWarnings("checkstyle:abbreviationAsWordInName")
 public class XYGridTree implements Serializable {
+  @Serial
   private static final long serialVersionUID = 1L;
+
+
   private final int maxLevel;
   private final Map<Integer, XYGrid> gridMap = new TreeMap<>();
 
@@ -97,6 +101,17 @@ public class XYGridTree implements Serializable {
       }
     }
     return null;
+  }
+
+  public CellId getParent(CellId cellId) {
+    if (cellId.getZoomLevel() <= 1) {
+      return cellId;
+    }
+    var zoom = cellId.getZoomLevel() - 1;
+    var bbox = XYGrid.getBoundingBox(cellId);
+    return new CellId( zoom, gridMap.get(zoom).getId(
+        bbox.getMinLongitude() + ((long)bbox.getMaxLongitude() - bbox.getMinLongitude()) / 2,
+        bbox.getMinLatitude() + ((long) bbox.getMaxLatitude() - bbox.getMinLatitude()) / 2));
   }
 
   /**

@@ -1,5 +1,7 @@
 package org.heigit.ohsome.oshdb.index;
 
+import static org.heigit.ohsome.oshdb.OSHDB.MAXZOOM;
+import static org.heigit.ohsome.oshdb.OSHDBBoundingBox.bboxWgs84Coordinates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -97,6 +99,25 @@ class XYGridTreeTest {
       assertEquals(true, expectedCellIds.remove(now));
     }
     assertEquals(0, expectedCellIds.size());
+  }
+
+  @Test
+  void parent() {
+    var xyGridTree = new XYGridTree(MAXZOOM);
+    var cellId = xyGridTree.getInsertId(bboxWgs84Coordinates(8.67, 49.39, 8.71, 49.42));
+    var bbox = XYGrid.getBoundingBox(cellId);
+
+    while (cellId.getZoomLevel() > 1) {
+      var parentId = xyGridTree.getParent(cellId);
+      assertEquals(cellId.getZoomLevel() - 1, parentId.getZoomLevel());
+      var parentBBox = XYGrid.getBoundingBox(parentId);
+      assertTrue(bbox.coveredBy(parentBBox));
+      cellId = parentId;
+      bbox = parentBBox;
+    }
+
+    var parentId = xyGridTree.getParent(cellId);
+    assertEquals(cellId, parentId);
   }
 
 }

@@ -112,14 +112,14 @@ public class OSHWayImpl extends OSHEntityImpl implements OSHWay, Iterable<OSMWay
     return nodes;
   }
 
-  public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes) {
+  public static OSHWayImpl build(List<OSMWay> versions, Collection<OSHNode> nodes) {
     return build(versions, nodes, 0, 0, 0, 0);
   }
 
   /**
    * Creates a {@code OSHway} bases on the given list of way versions.
    */
-  public static OSHWay build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
+  public static OSHWayImpl build(List<OSMWay> versions, Collection<OSHNode> nodes, final long baseId,
       final long baseTimestamp, final int baseLongitude, final int baseLatitude) {
     ByteBuffer buffer =
         buildRecord(versions, nodes, baseId, baseTimestamp, baseLongitude, baseLatitude);
