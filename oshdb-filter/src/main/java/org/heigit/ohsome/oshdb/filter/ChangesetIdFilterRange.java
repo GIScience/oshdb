@@ -8,6 +8,8 @@ import org.heigit.ohsome.oshdb.util.mappable.OSMEntitySnapshot;
  * A filter which selects OSM contributions by matching to a range of changeset ids.
  */
 public class ChangesetIdFilterRange extends NegatableFilter {
+  private final IdRange changesetIdRange;
+
   ChangesetIdFilterRange(IdRange changesetIdRange) {
     super(new FilterInternal() {
       @Override
@@ -30,5 +32,10 @@ public class ChangesetIdFilterRange extends NegatableFilter {
         return "changeset:in-range" + changesetIdRange;
       }
     });
+    this.changesetIdRange = changesetIdRange;
+  }
+
+  public IdRange getChangesetIdRange() {
+    return changesetIdRange;
   }
 }
