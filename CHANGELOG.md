@@ -3,6 +3,10 @@ Changelog
 
 ## 1.3.0-SNAPSHOT (current main)
 
+### bugfixes
+
+* Fix crash while building geometry of multipolygon with zero-node way members under certain circumstances
+
 
 ## 1.2.2
 
