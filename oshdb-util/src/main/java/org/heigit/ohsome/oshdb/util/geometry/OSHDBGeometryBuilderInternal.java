@@ -876,6 +876,9 @@ public class OSHDBGeometryBuilderInternal {
         joinable = false;
         for (var waysIterator = ways.iterator(); waysIterator.hasNext();) {
           LinkedList<OSMNode> what = waysIterator.next();
+          if (what.isEmpty()) {
+            continue;
+          }
           if (lastId == what.getFirst().getId()) {
             // end of partial ring matches to start of current line
             what.removeFirst();

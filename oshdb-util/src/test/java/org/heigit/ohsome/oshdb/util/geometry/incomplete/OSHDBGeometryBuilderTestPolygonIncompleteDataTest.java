@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.heigit.ohsome.oshdb.OSHDBTimestamp;
+import org.heigit.ohsome.oshdb.osm.OSMRelation;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryBuilder;
 import org.heigit.ohsome.oshdb.util.geometry.OSHDBGeometryTest;
 import org.heigit.ohsome.oshdb.util.geometry.helpers.TimestampParser;
@@ -68,5 +69,15 @@ class OSHDBGeometryBuilderTestPolygonIncompleteDataTest extends OSHDBGeometryTes
     // relation with one way with two nodes, both missing
     Geometry result = buildGeometry(relations(502L, 0), timestamp);
     assertNotNull(result);
+  }
+
+  @Test
+  void testRelationMemberWayWithoutNodes() {
+    // ways without nodes references (=invalid OSM data) can occur in old OSM data
+    // example: https://www.openstreetmap.org/api/0.6/way/25714579/6
+    OSMRelation rel = relations(503L, 0);
+    Geometry result = buildGeometry(rel);
+    // no exception should have been thrown at this point
+    assertTrue(result.isValid());
   }
 }
