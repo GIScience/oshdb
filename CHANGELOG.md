@@ -3,6 +3,12 @@ Changelog
 
 ## 1.3.0-SNAPSHOT (current main)
 
+### other changes
+
+* skip/abort some query filter optimization if normalization exceeds reasonable limits ([#530])
+
+[#530]: https://github.com/GIScience/oshdb/issues/530
+
 
 ## 1.2.2
 

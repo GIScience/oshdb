@@ -1915,10 +1915,10 @@ public abstract class MapReducer<X> implements
     for (List<Filter> andSubFilter : filterNormalized) {
       EnumSet<OSMType> subTypes = EnumSet.of(OSMType.NODE, OSMType.WAY, OSMType.RELATION);
       for (Filter subFilter : andSubFilter) {
-        if (subFilter instanceof TypeFilter) {
-          subTypes.retainAll(EnumSet.of(((TypeFilter) subFilter).getType()));
-        } else if (subFilter instanceof GeometryTypeFilter) {
-          subTypes.retainAll(((GeometryTypeFilter) subFilter).getOSMTypes());
+        if (subFilter instanceof TypeFilter typeFilter) {
+          subTypes.retainAll(EnumSet.of(typeFilter.getType()));
+        } else if (subFilter instanceof GeometryTypeFilter geometryTypeFilter) {
+          subTypes.retainAll(geometryTypeFilter.getOSMTypes());
         }
       }
       allTypes.addAll(subTypes);
