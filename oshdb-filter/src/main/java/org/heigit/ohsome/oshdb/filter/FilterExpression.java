@@ -81,7 +81,7 @@ public interface FilterExpression extends Serializable {
    * Apply a filter to a snapshot ({@link OSMEntitySnapshot}) of an OSM entity.
    *
    * @param snapshot a snapshot of the OSM entity to check
-   * @return true if the the OSM entity snapshot fulfills the specified filter, otherwise false.
+   * @return true if the OSM entity snapshot fulfills the specified filter, otherwise false.
    */
   @Contract(pure = true)
   default boolean applyOSMEntitySnapshot(OSMEntitySnapshot snapshot) {
@@ -95,7 +95,7 @@ public interface FilterExpression extends Serializable {
    * modification or the state of it after the modification matches the filter.</p>
    *
    * @param contribution a modification of the OSM entity to check
-   * @return true if the the OSM contribution fulfills the specified filter, otherwise false.
+   * @return true if the OSM contribution fulfills the specified filter, otherwise false.
    */
   @Contract(pure = true)
   default boolean applyOSMContribution(OSMContribution contribution) {
@@ -133,11 +133,11 @@ public interface FilterExpression extends Serializable {
    */
   @Contract(pure = true)
   default List<List<Filter>> normalize() {
-    if (this instanceof Filter) {
-      return Collections.singletonList(Collections.singletonList((Filter) this));
-    } else if (this instanceof AndOperator) {
-      List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
-      List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
+    if (this instanceof Filter filter) {
+      return Collections.singletonList(Collections.singletonList(filter));
+    } else if (this instanceof AndOperator operator) {
+      List<List<Filter>> exp1 = operator.getLeftOperand().normalize();
+      List<List<Filter>> exp2 = operator.getRightOperand().normalize();
       // return cross product of exp1 and exp2
       List<List<Filter>> combined = new LinkedList<>();
       for (List<Filter> e1 : exp1) {
@@ -149,9 +149,9 @@ public interface FilterExpression extends Serializable {
         }
       }
       return combined;
-    } else if (this instanceof OrOperator) {
-      List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
-      List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
+    } else if (this instanceof OrOperator operator) {
+      List<List<Filter>> exp1 = operator.getLeftOperand().normalize();
+      List<List<Filter>> exp2 = operator.getRightOperand().normalize();
       List<List<Filter>> combined = new ArrayList<>(exp1.size() + exp2.size());
       combined.addAll(exp1);
       combined.addAll(exp2);

@@ -12,13 +12,19 @@ import org.heigit.ohsome.oshdb.osm.OSMEntity;
  * A tag filter which executes a "id [not] in (id1, id2, …)" check.
  */
 public class IdFilterEqualsAnyOf extends NegatableFilter {
+
+  private final Set<Long> ids;
+
   IdFilterEqualsAnyOf(@Nonnull Collection<Long> idList) {
+    this(new HashSet<>(idList));
+  }
+
+  IdFilterEqualsAnyOf(@Nonnull Set<Long> ids) {
     super(new FilterInternal() {
-      private final Set<Long> ids = new HashSet<>(idList);
 
       @Override
       public boolean applyOSH(OSHEntity entity) {
-        return this.ids.contains(entity.getId());
+        return ids.contains(entity.getId());
       }
 
       @Override
@@ -28,7 +34,7 @@ public class IdFilterEqualsAnyOf extends NegatableFilter {
 
       @Override
       public boolean applyOSM(OSMEntity entity) {
-        return this.ids.contains(entity.getId());
+        return ids.contains(entity.getId());
       }
 
       @Override
@@ -38,12 +44,18 @@ public class IdFilterEqualsAnyOf extends NegatableFilter {
 
       @Override
       public String toString() {
-        return "id:in" + this.ids.stream().map(String::valueOf).collect(Collectors.joining(","));
+        return "id:in" + ids.stream().map(String::valueOf).collect(Collectors.joining(","));
       }
     });
 
-    if (idList.isEmpty()) {
+    if (ids.isEmpty()) {
       throw new IllegalStateException("list of ids must not be empty in a id in (list) filter");
     }
+
+    this.ids = ids;
+  }
+
+  public Set<Long> getIds() {
+    return ids;
   }
 }
