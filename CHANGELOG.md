@@ -5,7 +5,14 @@ Changelog
 
 ### bugfixes
 
-* Fix crash while building geometry of multipolygon with zero-node way members under certain circumstances
+* Fix crash while building geometry of multipolygon with zero-node way members under certain circumstances ([#529])
+
+### other changes
+
+* skip/abort some query filter optimization if normalization exceeds reasonable limits ([#530])
+
+[#529]: https://github.com/GIScience/oshdb/pull/529
+[#530]: https://github.com/GIScience/oshdb/issues/530
 
 
 ## 1.2.2

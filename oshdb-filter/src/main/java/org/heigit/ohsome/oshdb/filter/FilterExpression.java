@@ -3,7 +3,6 @@ package org.heigit.ohsome.oshdb.filter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 import org.heigit.ohsome.oshdb.osh.OSHEntity;
@@ -129,29 +128,36 @@ public interface FilterExpression extends Serializable {
    * @return a disjunction of conjunctions of filter expressions: A∧B∧… ∨ C∧D∧… ∨ …
    * @throws IllegalStateException if the filter cannot be normalized (all filters provided by the
    *                               oshdb-filter module are normalizable, but this can occur for
-   *                               user defined filter expressions)
+   *                               user defined filter expressions) or if the size of the
+   *                               normalized filter expression exceeds a defined maximum.
    */
   @Contract(pure = true)
   default List<List<Filter>> normalize() {
-    if (this instanceof Filter) {
-      return Collections.singletonList(Collections.singletonList((Filter) this));
-    } else if (this instanceof AndOperator) {
-      List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
-      List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
+    final int maxResultSize = 10_000; // maximum size of a "reasonable" query filter
+
+    if (this instanceof Filter filter) {
+      return Collections.singletonList(Collections.singletonList(filter));
+    } else if (this instanceof AndOperator operator) {
+      List<List<Filter>> exp1 = operator.getLeftOperand().normalize();
+      List<List<Filter>> exp2 = operator.getRightOperand().normalize();
       // return cross product of exp1 and exp2
-      List<List<Filter>> combined = new LinkedList<>();
+      if (exp1.size() * exp2.size() > maxResultSize) {
+        throw new IllegalStateException("size of normalized exceeds maximum of "
+            + maxResultSize);
+      }
+      List<List<Filter>> crossProduct = new ArrayList<>(exp1.size() * exp2.size());
       for (List<Filter> e1 : exp1) {
         for (List<Filter> e2 : exp2) {
-          List<Filter> crossProduct = new ArrayList<>(e1.size() + e2.size());
-          crossProduct.addAll(e1);
-          crossProduct.addAll(e2);
-          combined.add(crossProduct);
+          List<Filter> combined = new ArrayList<>(e1.size() + e2.size());
+          combined.addAll(e1);
+          combined.addAll(e2);
+          crossProduct.add(combined);
         }
       }
-      return combined;
-    } else if (this instanceof OrOperator) {
-      List<List<Filter>> exp1 = ((BinaryOperator) this).getLeftOperand().normalize();
-      List<List<Filter>> exp2 = ((BinaryOperator) this).getRightOperand().normalize();
+      return crossProduct;
+    } else if (this instanceof OrOperator operator) {
+      List<List<Filter>> exp1 = operator.getLeftOperand().normalize();
+      List<List<Filter>> exp2 = operator.getRightOperand().normalize();
       List<List<Filter>> combined = new ArrayList<>(exp1.size() + exp2.size());
       combined.addAll(exp1);
       combined.addAll(exp2);
