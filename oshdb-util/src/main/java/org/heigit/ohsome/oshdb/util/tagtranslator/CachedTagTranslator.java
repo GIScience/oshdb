@@ -17,6 +17,10 @@ public class CachedTagTranslator implements TagTranslator {
   private final Cache<OSHDBTag, OSMTag> lookupOSHDBTag;
   private final Cache<OSHDBRole, OSMRole> lookupOSHDBRole;
 
+  public CachedTagTranslator(TagTranslator source, long maxBytesValues) {
+    this(source, maxBytesValues, Integer.MAX_VALUE);
+  }
+
   public CachedTagTranslator(TagTranslator source, long maxBytesValues, int maxNumRoles) {
     this.source = source;
     this.lookupOSHDBTag = Caffeine.newBuilder()
@@ -49,8 +53,8 @@ public class CachedTagTranslator implements TagTranslator {
   }
 
   @Override
-  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> tags) {
-    var oshdb = source.getOSHDBTagOf(tags);
+  public Map<OSMTag, OSHDBTag> getOSHDBTagOf(Collection<OSMTag> values, TranslationOption option) {
+    var oshdb = source.getOSHDBTagOf(values, option);
     oshdb.forEach((key, value) -> lookupOSHDBTag.put(value, key));
     return oshdb;
   }
@@ -60,14 +64,15 @@ public class CachedTagTranslator implements TagTranslator {
     return source.getOSHDBRoleOf(role);
   }
 
-  @Override
-  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> roles) {
-    return source.getOSHDBRoleOf(roles);
+   @Override
+  public Map<OSMRole, OSHDBRole> getOSHDBRoleOf(Collection<OSMRole> values,
+      TranslationOption option) {
+    return source.getOSHDBRoleOf(values, option);
   }
 
   @Override
-  public OSMTag lookupTag(OSHDBTag tag) {
-    return lookupOSHDBTag.get(tag, source::lookupTag);
+  public Map<OSHDBTagKey, OSMTagKey> lookupKey(Set<? extends OSHDBTagKey> keys) {
+    return source.lookupKey(keys);
   }
 
   @Override

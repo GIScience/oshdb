@@ -12,7 +12,7 @@ public class ClosableSqlArray implements AutoCloseable {
     return new ClosableSqlArray(array);
   }
 
-  private Array array;
+  private final Array array;
 
   public ClosableSqlArray(Array array) {
     this.array = array;
@@ -23,7 +23,7 @@ public class ClosableSqlArray implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws SQLException {
     array.free();
   }
 }

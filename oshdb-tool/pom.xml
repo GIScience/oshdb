@@ -11,6 +11,8 @@
   <description>Toolkit for the OSHDB</description>
   
   <properties>
+    <picocli.version>4.7.1</picocli.version>
+    <progressbar.version>0.9.5</progressbar.version>
   </properties>
   
   <dependencies>
@@ -19,5 +21,30 @@
       <artifactId>oshdb-api-ignite</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb-source</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oshdb-rocksdb</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>${picocli.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>me.tongfei</groupId>
+      <artifactId>progressbar</artifactId>
+      <version>${progressbar.version}</version>
+    </dependency>
+
   </dependencies>
 </project>
