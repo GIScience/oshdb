@@ -29,6 +29,6 @@ In order to use the OSHDB Ignite backend, it is necessary to add the maven modul
 <dependency>
   <groupId>org.heigit.ohsome</groupId>
   <artifactId>oshdb-api-ignite</artifactId>
-  <version>1.2.2</version>
+  <version>1.2.3</version>
 </dependency>
 ```

@@ -1,4 +1,4 @@
-cff-version: 1.2.2
+cff-version: 1.2.3
 message: "If you use this software, please cite it as below."
 authors:
 - family-names: "Raifer"
@@ -12,7 +12,7 @@ authors:
 - family-names: "Schott"
   given-names: "Moritz"
 title: "OSHDB - OpenStreetMap History Data Analysis"
-version: 1.2.2
+version: 1.2.3
 doi: 10.5281/zenodo.4146990
 date-released: 2021-07-22
 url: "https://github.com/GIScience/oshdb"
