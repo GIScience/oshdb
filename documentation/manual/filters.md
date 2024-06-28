@@ -31,9 +31,9 @@ There exists also a [method](https://javadoc.io/doc/org.heigit.ohsome/oshdb-api/
 _OSHDB_ filter
 ---------------
 
-An easy way to provide [`filter`s](https://javadoc.io/doc/org.heigit.ohsome/oshdb-api/latest/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#filter(java.lang.String)) is through the functionality of [OSHDB filters](https://github.com/GIScience/oshdb/blob/1.2.2/oshdb-filter/README.md), which allow one to define osm data filters in a human-readable syntax. With these one can combine several tag-, type- and geometry-filters with arbitrary boolean operators.
+An easy way to provide [`filter`s](https://javadoc.io/doc/org.heigit.ohsome/oshdb-api/latest/org/heigit/ohsome/oshdb/api/mapreducer/MapReducer.html#filter(java.lang.String)) is through the functionality of [OSHDB filters](https://github.com/GIScience/oshdb/blob/1.2.3/oshdb-filter/README.md), which allow one to define osm data filters in a human-readable syntax. With these one can combine several tag-, type- and geometry-filters with arbitrary boolean operators.
 
-Simple examples of filters are `type:node and natural=tree` to select trees, or `geometry:polygon and building=*` to filter for buildings. More examples and can be found on the [dedicated filter documentation page](https://github.com/GIScience/oshdb/blob/1.2.2/oshdb-filter/README.md#examples).
+Simple examples of filters are `type:node and natural=tree` to select trees, or `geometry:polygon and building=*` to filter for buildings. More examples and can be found on the [dedicated filter documentation page](https://github.com/GIScience/oshdb/blob/1.2.3/oshdb-filter/README.md#examples).
 
 By using the methods [`Filter.byOSMEntity`](https://javadoc.io/doc/org.heigit.ohsome/oshdb-filter/latest/org/heigit/ohsome/oshdb/filter/Filter.html#byOSMEntity(org.heigit.ohsome.oshdb.util.function.OSMEntityFilter)) and [`Filter.byOSHEntity`](https://javadoc.io/doc/org.heigit.ohsome/oshdb-filter/latest/org/heigit/ohsome/oshdb/filter/Filter.html#byOSHEntity(org.heigit.ohsome.oshdb.util.function.OSHEntityFilter)) one can define arbitrary callback functions to filter OSM or OSH entities, respectively.
 
