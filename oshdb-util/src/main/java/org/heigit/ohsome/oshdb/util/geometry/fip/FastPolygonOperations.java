@@ -193,5 +193,6 @@ public class FastPolygonOperations implements Serializable {
     if (result.getDimension() != other.getDimension()) {
       return gf.createEmpty(other.getDimension());
     }
+    return result;
   }
 }
