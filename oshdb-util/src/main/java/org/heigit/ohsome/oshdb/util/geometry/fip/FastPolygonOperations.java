@@ -184,10 +184,15 @@ public class FastPolygonOperations implements Serializable {
     }
 
     assert intersector != null;
+    
+    Geometry result;
     if (other instanceof GeometryCollection) {
-      return other.intersection(intersector);
+      result = other.intersection(intersector);
     } else {
-      return intersector.intersection(other);
+      result = intersector.intersection(other);
+    }
+    if (result.getDimension() != other.getDimension()) {
+      return gf.createEmpty(other.getDimension());
     }
   }
 }
