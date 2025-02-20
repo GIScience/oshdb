@@ -34,6 +34,8 @@ public class FastPolygonOperations implements Serializable {
   private final double envWidth;
   private final double envHeight;
 
+  private final GeometryFactory gf = new GeometryFactory();
+
   /**
    * Constructor using a given geometry {@code geom} and geometry type {@code P}.
    *
@@ -49,8 +51,6 @@ public class FastPolygonOperations implements Serializable {
     env = geom.getEnvelopeInternal();
     envWidth = env.getMaxX() - env.getMinX();
     envHeight = env.getMaxY() - env.getMinY();
-
-    GeometryFactory gf = new GeometryFactory();
 
     Geometry[] result = new Geometry[numBands * numBands];
     traverseQuads(bandIterations, 0, 0, env, geom, gf, result);
@@ -184,7 +184,6 @@ public class FastPolygonOperations implements Serializable {
     }
 
     assert intersector != null;
-    
     Geometry result;
     if (other instanceof GeometryCollection) {
       result = other.intersection(intersector);
