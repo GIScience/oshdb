@@ -14,8 +14,8 @@
   <packaging>pom</packaging>
 
   <scm>
-    <connection>scm:git:git@github.com/GIScience/oshdb.git</connection>
-    <developerConnection>scm:git:git@github.com/GIScience/oshdb.git</developerConnection>
+    <connection>scm:git:git@github.com:GIScience/oshdb.git</connection>
+    <developerConnection>scm:git:git@github.com:GIScience/oshdb.git</developerConnection>
     <url>https://github.com/GIScience/oshdb</url>
   </scm>
 
